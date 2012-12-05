@@ -48,7 +48,7 @@ For debugging, use the debug version:
     $ make debug
 
 ## Using Pythia
-To start ace use:
+To start Pythia use:
 
     $ pythia
 
