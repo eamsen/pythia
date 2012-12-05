@@ -1,5 +1,5 @@
 # Pythia
-A semantic search engine and entity oracle.  
+A semantic search oracle.  
 By Eugen Sawin <esawin@me73.com>.
 
 ## Version
@@ -76,7 +76,7 @@ To test code style conformance with the [Google C++ Style Guide](http://google-s
     $ make checkstyle
 
 ## License
-Pythia - a semantic search engine and entity oracle.
+Pythia - a semantic search oracle.
 Copyright (C) 2012  Eugen Sawin
 
 Pythia is free software: you can redistribute it and/or modify
