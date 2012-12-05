@@ -3,6 +3,7 @@ A semantic web oracle.
 By Eugen Sawin <esawin@me73.com>.
 
 ## Version
+Nothing to see here yet.
 
 ## Requirements
 * POSIX.1b-compliant operating system (librt)
