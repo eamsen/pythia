@@ -16,6 +16,7 @@ Nothing to see here yet.
 * SENNA (<http://ml.nec-labs.com/senna>)
 * Boost 1.48+ (<http://www.boost.org> or `$ sudo apt-get install libboost-dev`)
 * gflags (<http://code.google.com/p/gflags> or `$ make gflags`)
+* glog (<http://code.google.com/p/google-glog> or `$ make glog`)
 
 ### Optional
 * gtest (<http://code.google.com/p/googletest>, only for testing)
@@ -30,12 +31,18 @@ locally:
 
     $ make gflags
 
-and then activate the two lines in the makefile, which are commented out.
+and then activate the two lines in the makefile, which are commented out.  
+By default, the system wide gflags version is used.  
 Alternatively you can build all dependencies at once:
 
     $ make depend
 
-## Building Pythia (depends on gflags)
+## Building glog
+To build to included glog version, use:
+
+    $ make glog
+
+## Building Pythia (depends on gflags and glog)
 To build Pythia use:
 
     $ make

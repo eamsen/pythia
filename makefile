@@ -5,11 +5,12 @@ BINDIR:=bin
 OBJDIR:=bin/obj
 GTESTLIBS:=-lgtest -lgtest_main
 GFLAGSDIR:=deps/gflags-2.0
-CXX:=g++ -std=c++0x
-# CXX:=g++ -std=c++0x -I$(GFLAGSDIR)/src
+GLOGDIR:=deps/glog-0.3.2
+CXX:=g++ -std=c++0x -I$(GLOGDIR)/src
+# CXX:=g++ -std=c++0x -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3
-LIBS:=-lgflags -lpthread -lrt
-# LIBS:=$(GFLAGSDIR)/.libs/libgflags.a -lpthread -lrt
+LIBS:=$(GLOGDIR)/.libs/libglog.a -lgflags -lpthread -lrt -lboost_system-mt
+# LIBS:=$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a -lpthread -lrt
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) -lpthread -lrt
 BINS:=pythia
@@ -35,7 +36,7 @@ opt: clean compile
 debug: CFLAGS=-O0 -g
 debug: compile
 
-depend: gflags cpplint
+depend: gflags glog cpplint
 
 makedirs:
 	@mkdir -p bin/obj
@@ -44,6 +45,11 @@ gflags:
 	@tar xf deps/gflags-2.0.tar.gz -C deps/;
 	@cd deps/gflags-2.0/; ./configure; make;
 	@echo "compiled gflags"
+
+glog:
+	@tar xf deps/glog-0.3.2.tar.gz -C deps/;
+	@cd deps/glog-0.3.2/; ./configure; make;
+	@echo "compiled glog"
 
 cpplint: 
 	@if [ -f tools/cpplint/cpplint.py ];\
@@ -72,7 +78,7 @@ clean:
 	@echo "cleaned"
 
 .PRECIOUS: $(OBJS) $(TSTOBJS)
-.PHONY: compile profile opt depend makedirs gflags check cpplint\
+.PHONY: compile profile opt depend makedirs gflags glog check cpplint\
 	checkstyle clean
 
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
