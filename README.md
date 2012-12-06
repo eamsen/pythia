@@ -7,13 +7,14 @@ Nothing to see here yet.
 
 ## Requirements
 * POSIX.1b-compliant operating system (librt)
-* GNU GCC 4.6 or newer
+* GNU GCC 4.6+
 * GNU Make
-* Python 2.7 or newer (only for style checking)
+* Python 2.7+ (only for style checking)
 
 ## Dependencies
 ### Required
 * SENNA (<http://ml.nec-labs.com/senna>)
+* Boost 1.48+ (<http://www.boost.org> or `$ sudo apt-get install libboost-dev`)
 * gflags (<http://code.google.com/p/gflags> or `$ make gflags`)
 
 ### Optional
