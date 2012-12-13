@@ -102,8 +102,12 @@ clean:
 	cpplint checkstyle clean
 
 libpythia-%: $(SRCDIR)/%/*.cc
-	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$*/*.cc
-	@ar rs libs/$(@F).a $(OBJDIR)/$(@F).o >/dev/null
+	$(eval LIBFILES:=$(notdir $(basename $(wildcard $(SRCDIR)/$*/*.cc))))
+	$(eval LIBOBJS:=$(addprefix $(OBJDIR)/$(@F)-, $(addsuffix .o, $(LIBFILES))))
+	@for i in $(LIBFILES); do \
+	  $(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F)-$$i.o -c $(SRCDIR)/$*/$$i.cc; \
+	done;
+	@ar rs libs/$(@F).a $(LIBOBJS)
 	@echo "compiled libs/$(@F).a"
 	
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
