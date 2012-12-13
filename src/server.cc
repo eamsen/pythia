@@ -102,8 +102,8 @@ Server::Server(const string& www, const uint16_t port, const uint16_t threads)
 
 void Server::Run() {
   int argc = 1;
-  char* argv[] = {"pythia"};
-  app_->run(argc, argv);
+  const char* argv[] = {"pythia"};
+  app_->run(argc, const_cast<char**>(argv));
 }
 
 }  // namespace pyt
