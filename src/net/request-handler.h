@@ -18,7 +18,7 @@ class RequestHandler: public Poco::Net::HTTPRequestHandler {
     Handle(&request, &response);
   }
 
-  virtual void Handle(Request* request, Response* response);
+  virtual void Handle(Request* request, Response* response) = 0;
 };
 
 }  // namespace net

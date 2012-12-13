@@ -27,7 +27,7 @@ OBJS:=$(addprefix $(OBJDIR)/, $(OBJS))
 BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
-all: libs compile 
+all: libs compile
 	@echo "compiled all"
 
 compile: makedirs $(BINS)
@@ -71,7 +71,7 @@ glog:
 	@cd deps/glog/; ./configure; make;
 	@echo "compiled glog"
 
-cpplint: 
+cpplint:
 	@if [ -f tools/cpplint/cpplint.py ];\
 	then\
 		echo "updating cpplint";\
@@ -93,6 +93,7 @@ checkstyle:
 
 clean:
 	@rm -f $(OBJDIR)/*.o
+	@rm -f libs/*.a
 	@rm -f $(BINS)
 	@rm -f $(TSTBINS)
 	@echo "cleaned"
@@ -109,11 +110,14 @@ libpythia-%: $(SRCDIR)/%/*.cc
 	done;
 	@ar rs libs/$(@F).a $(LIBOBJS)
 	@echo "compiled libs/$(@F).a"
-	
+
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
 	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$(@F).cc
 	@$(CXX) $(CFLAGS) -o $(BINDIR)/$(@F) $(OBJDIR)/$(@F).o $(OBJS) $(LIBS)
 	@echo "compiled $(BINDIR)/$(@F)"
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cc $(SRCDIR)/%.h
+	$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<
 
 $(BINDIR)/%-test: $(OBJDIR)/%-test.o $(OBJS)
 	@$(CXX) $(TSTFLAGS) -o $(BINDIR)/$(@F) $(OBJS) $< $(TSTLIBS)
@@ -121,6 +125,3 @@ $(BINDIR)/%-test: $(OBJDIR)/%-test.o $(OBJS)
 
 $(OBJDIR)/%-test.o: $(TSTDIR)/%-test.cc
 	@$(CXX) $(TSTFLAGS) -o $(OBJDIR)/$(@F) -c $<
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.cc $(SRCDIR)/%.h
-	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<

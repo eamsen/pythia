@@ -29,8 +29,14 @@ namespace net {
 
 class Application: public ServerApplication {
  public:
-  explicit Application(uint16_t port)
-      : port_(port) {}
+  Application(const string& name, const string& version, const uint16_t port,
+              const uint16_t threads, const uint16_t queue_size)
+      : name_(name),
+        version_(version),
+        port_(port),
+        num_threads_(threads),
+        queue_size_(queue_size) {}
+
  private:
   void initialize(Application& self) {  // NOLINT
     ServerApplication::initialize(self);
@@ -42,22 +48,35 @@ class Application: public ServerApplication {
 
   int main(const vector<string>& args) {
     ServerSocket socket(port_);
-    HTTPServer server(new RequestHandlerFactory(), socket,
-                      new HTTPServerParams());
+    HTTPServerParams* params = new HTTPServerParams();
+    params->setServerName(name_);
+    params->setSoftwareVersion(version_);
+    params->setMaxQueued(queue_size_);
+    params->setMaxThreads(num_threads_);
+    HTTPServer server(new RequestHandlerFactory(), socket, params);
     server.start();
     waitForTerminationRequest();
     server.stop();
     return Application::EXIT_OK;
   }
 
+  string name_;
+  string version_;
   uint16_t port_;
+  uint16_t num_threads_;
+  uint16_t queue_size_;
 };
 
-Server::Server(const string& www, const uint16_t port, const uint16_t threads)
-    : www_path_(www),
+Server::Server(const string& name, const string& version, const string& www,
+               const uint16_t port, const uint16_t threads,
+               const uint16_t queue_size)
+    : name_(name),
+      version_(version),
+      www_path_(www),
       port_(port),
       num_threads_(threads),
-      app_(new Application(port_)) {}
+      queue_size_(queue_size),
+      app_(new Application(name, version, port, threads, queue_size)) {}
 
 void Server::Run() {
   int argc = 1;
