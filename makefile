@@ -27,11 +27,11 @@ OBJS:=$(addprefix $(OBJDIR)/, $(OBJS))
 BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
-compile: makedirs $(BINS)
-	@echo "compiled pythia"
-
 all: libs compile 
 	@echo "compiled all"
+
+compile: makedirs $(BINS)
+	@echo "compiled pythia"
 
 libs: makedirs $(INTLIBS)
 	@echo "compiled libs"
@@ -89,7 +89,7 @@ check: makedirs $(TSTBINS)
 checkstyle:
 	@python tools/cpplint/cpplint.py \
 		--filter=-readability/streams,-readability/multiline_string\
-		$(SRCDIR)/*.h $(SRCDIR)/*.cc
+		$(SRCDIR)/*.h $(SRCDIR)/*.cc $(SRCDIR)/*/*.h $(SRCDIR)/*/*.cc
 
 clean:
 	@rm -f $(OBJDIR)/*.o

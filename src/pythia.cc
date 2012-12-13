@@ -9,8 +9,8 @@
 using std::vector;
 using std::string;
 
-DEFINE_int32(port, 8080, "Server listen port.");
-DEFINE_int32(threads, 4, "Number of threads.");
+DEFINE_int32(port, 55073, "Server listen port.");
+DEFINE_int32(threads, 10, "Number of threads.");
 DEFINE_string(www, "www", "Web documents directory.");
 
 const char* kUsage = "Usage: ./pythia";
