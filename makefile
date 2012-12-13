@@ -1,16 +1,17 @@
-# Copyright 2012: Eugen Sawin <esawin@me73.com>
 SRCDIR:=src
 TSTDIR:=src/test
 BINDIR:=bin
 OBJDIR:=bin/obj
 GTESTLIBS:=-lgtest -lgtest_main
-GFLAGSDIR:=deps/gflags-2.0
-GLOGDIR:=deps/glog-0.3.2
-CXX:=g++ -std=c++0x -I$(GLOGDIR)/src
-# CXX:=g++ -std=c++0x -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
+POCODIR:=deps/poco/install
+GFLAGSDIR:=deps/gflags
+GLOGDIR:=deps/glog
+CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3
-LIBS:=$(GLOGDIR)/.libs/libglog.a -lgflags -lpthread -lrt -lboost_system-mt
-# LIBS:=$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a -lpthread -lrt
+LIBS:=-L$(POCODIR)/lib\
+	$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a\
+	-lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
+	-lpthread -lrt -lboost_system-mt
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) -lpthread -lrt
 BINS:=pythia
@@ -36,19 +37,28 @@ opt: clean compile
 debug: CFLAGS=-O0 -g
 debug: compile
 
-depend: gflags glog cpplint
+depend: poco gflags glog cpplint
+	@echo "compiled all dependencies"
 
 makedirs:
 	@mkdir -p bin/obj
 
+poco:
+	@tar xf deps/poco.tar.gz -C deps/;
+	@cd deps/poco/;\
+		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
+		--no-samples --static;\
+		make; make install;
+	@echo "compiled poco"
+
 gflags:
-	@tar xf deps/gflags-2.0.tar.gz -C deps/;
-	@cd deps/gflags-2.0/; ./configure; make;
+	@tar xf deps/gflags.tar.gz -C deps/;
+	@cd deps/gflags/; ./configure; make;
 	@echo "compiled gflags"
 
 glog:
-	@tar xf deps/glog-0.3.2.tar.gz -C deps/;
-	@cd deps/glog-0.3.2/; ./configure; make;
+	@tar xf deps/glog.tar.gz -C deps/;
+	@cd deps/glog/; ./configure; make;
 	@echo "compiled glog"
 
 cpplint: 
@@ -59,7 +69,7 @@ cpplint:
 	else\
 		echo "cloning cpplint";\
 		mkdir tools && cd tools;\
-		git clone git@github.com:eamsen/cpplint.git; cd ..;\
+		git clone git://github.com/eamsen/cpplint.git; cd ..;\
 	fi
 
 check: makedirs $(TSTBINS)
@@ -78,7 +88,7 @@ clean:
 	@echo "cleaned"
 
 .PRECIOUS: $(OBJS) $(TSTOBJS)
-.PHONY: compile profile opt depend makedirs gflags glog check cpplint\
+.PHONY: compile profile opt depend makedirs poco gflags glog check cpplint\
 	checkstyle clean
 
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc

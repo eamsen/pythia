@@ -1,92 +1,100 @@
 # Pythia
-A semantic web oracle.  
+A Semantic Web Oracle.  
 By Eugen Sawin <esawin@me73.com>.
 
 ## Version
 Nothing to see here yet.
 
 ## Requirements
-* POSIX.1b-compliant operating system (librt)
-* GNU GCC 4.6+
+* POSIX.1b-compliant operating system (support for librt)
 * GNU Make
-* Python 2.7+ (only for style checking)
+* GNU GCC 4.6+ (`sudo apt-get install build-essential`)
+* OpenSSL (`sudo apt-get install openssl libssl-dev`)
+* Python 2.7+ (optional, for style checking)
 
 ## Dependencies
 ### Required
 * SENNA (<http://ml.nec-labs.com/senna>)
-* Boost 1.48+ (<http://www.boost.org> or `$ sudo apt-get install libboost-dev`)
-* gflags (<http://code.google.com/p/gflags> or `$ make gflags`)
-* glog (<http://code.google.com/p/google-glog> or `$ make glog`)
+* POCO C++ Libraries (<http://pocoproject.org> or `make poco`)
+* gflags (<http://code.google.com/p/gflags> or `make gflags`)
+* glog (<http://code.google.com/p/google-glog> or `make glog`)
 
 ### Optional
-* gtest (<http://code.google.com/p/googletest>, only for testing)
-* gperftools (<http://code.google.com/p/gperftools>, only for profiling)
-* cpplint (`$ make cpplint`, only for style checking)
+* gtest (<http://code.google.com/p/googletest>, for testing)
+* gperftools (<http://code.google.com/p/gperftools>, for profiling)
+* cpplint (`make cpplint`, for style checking)
 
-## Building gflags
+## Building
+### Building dependencies
+To build all dependencies automatically, use:
+
+    make depend
+
+Alternatively, you can build each dependency separately by following the
+instructions here, otherwise you may skip the rest of this section.
+
+#### Building gflags
 The repository contains a slightly modified gflags version with less verbose
-help output.  
-If you want to use the provided version instead, you need to build gflags
-locally:
+help output, which is used by default. If you prefer using your installed
+version, modify the makefile accordingly (follow the comments). 
 
-    $ make gflags
+    make gflags
 
-and then activate the two lines in the makefile, which are commented out.  
-By default, the system wide gflags version is used.  
-Alternatively you can build all dependencies at once:
-
-    $ make depend
-
-## Building glog
+#### Building glog
 To build to included glog version, use:
 
-    $ make glog
+    make glog
 
-## Building Pythia (depends on gflags and glog)
+#### Building POCO C++ Libraries
+To build the included POCO version, use:
+
+    make poco
+
+### Building Pythia
 To build Pythia use:
 
-    $ make
+    make
 
 For performance measuring use the more optimised version:
 
-    $ make opt
+    make opt
 
 For debugging, use the debug version:
 
-    $ make debug
+    make debug
 
-## Using Pythia
+## Using
 To start Pythia use:
 
-    $ pythia
+    ./pythia
 
 To show the full usage and flags help use:
 
-    $ pythia -help
+    ./pythia -help
 
-## Testing Pythia (depends on gtest)
+## Testing (depends on gtest)
 To build and run the unit tests use:
 
-    $ make check
+    make check
 
-## Profiling Pythia (depends on gperftools)
+## Profiling (depends on gperftools)
 To build Pythia with profiling turned on use:
 
-    $ make profile
+    make profile
 
 ## Getting cpplint
 Code style checking depends on a modified version of Google's cpplint. Get it via
   
-    $ make cpplint
+    make cpplint
 
 ## Checking style (depends on cpplint)
 To test code style conformance with the [Google C++ Style Guide](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml) use:
 
-    $ make checkstyle
+    make checkstyle
 
 ## License
-Pythia - a semantic web oracle.  
-Copyright (C) 2012  Eugen Sawin
+Pythia - A Semantic Web Oracle.  
+Copyright (C) 2012 Eugen Sawin
 
 Pythia is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

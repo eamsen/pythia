@@ -13,11 +13,14 @@ DEFINE_int32(port, 8080, "Server listen port.");
 DEFINE_int32(threads, 4, "Number of threads.");
 DEFINE_string(www, "www", "Web documents directory.");
 
+const string kUsage = "Usage: ./pythia";
+
 namespace pyt {
 
 }  // namespace pyt
 
 int main(int argc, char* argv[]) {
+  google::SetUsageMessage(kUsage);
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);

@@ -3,29 +3,22 @@
 #define SRC_SERVER_H
 
 #include <string>
-#include "./io-service-pool.h"
-#include "./connection.h"
-#include "./request-handler.h"
 
 namespace pyt {
 
+class Application;
+
 class Server {
  public:
-  Server(const std::string& docs_dir, const int port, const int num_threads);
+  Server(const std::string& www, const uint16_t port, const uint16_t threads);
   void Run();
-
  private:
-  void startAccept();
-  void handleAccept(const boost::system::error_code& e);
+  std::string www_path_;
+  uint32_t port_;
+  uint32_t num_threads_;
 
-  std::string docs_dir_;
-  int port_;
-  int num_threads_;
-  IoServicePool service_pool_;
-  boost::asio::ip::tcp::acceptor acceptor_;
-  ConnectionPtr connection_ptr_;
-  RequestHandler request_handler_;
+  Application* app_;
 };
 
-}  // namspace pyt
+}  // namespace pyt
 #endif  // SRC_SERVER_H
