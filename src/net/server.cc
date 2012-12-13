@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include "document-request-handler.h"
 
 using std::string;
 using std::vector;
@@ -42,20 +43,6 @@ using Poco::Util::HelpFormatter;
 
 namespace pyt {
 namespace net {
-
-class DocumentRequestHandler: public HTTPRequestHandler {
- public:
-  void handleRequest(HTTPServerRequest& request,  // NOLINT
-                     HTTPServerResponse& response) {  // NOLINT
-    using Poco::Util::Application;
-    // Application& app = Application::instance();
-    response.setChunkedTransferEncoding(true);
-    response.setContentType("text/html");
-    std::ostream& str = response.send();
-    str << "<html><head><title>Pythia</title>"
-        << "<body>Pythia</body></html>";
-  }
-};
 
 class RequestHandlerFactory: public HTTPRequestHandlerFactory {
  public:

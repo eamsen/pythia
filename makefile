@@ -27,8 +27,14 @@ OBJS:=$(addprefix $(OBJDIR)/, $(OBJS))
 BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
-compile: makedirs $(INTLIBS) $(BINS)
+compile: makedirs $(BINS)
+	@echo "compiled pythia"
+
+all: libs compile 
 	@echo "compiled all"
+
+libs: makedirs $(INTLIBS)
+	@echo "compiled libs"
 
 profile: CFLAGS=-Wall -O3 -DPROFILE
 profile: LIBS+=-lprofiler
@@ -92,13 +98,13 @@ clean:
 	@echo "cleaned"
 
 .PRECIOUS: $(OBJS) $(TSTOBJS)
-.PHONY: compile profile opt depend makedirs poco gflags glog check cpplint\
-	checkstyle clean
+.PHONY: libs all compile profile opt depend makedirs poco gflags glog check\
+	cpplint checkstyle clean
 
 libpythia-%: $(SRCDIR)/%/*.cc
 	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$*/*.cc
-	@ar rs libs/$(@F).a $(OBJDIR)/$(@F).o
-	@echo "compiled library $(@F)"
+	@ar rs libs/$(@F).a $(OBJDIR)/$(@F).o >/dev/null
+	@echo "compiled libs/$(@F).a"
 	
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
 	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$(@F).cc

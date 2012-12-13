@@ -15,10 +15,6 @@ DEFINE_string(www, "www", "Web documents directory.");
 
 const char* kUsage = "Usage: ./pythia";
 
-namespace pyt {
-
-}  // namespace pyt
-
 int main(int argc, char* argv[]) {
   google::SetUsageMessage(kUsage);
   google::ParseCommandLineFlags(&argc, &argv, true);
