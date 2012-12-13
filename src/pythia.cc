@@ -1,9 +1,9 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
-#include <vector>
-#include <string>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <boost/asio.hpp>
+#include <vector>
+#include <string>
 #include "./server.h"
 
 using std::vector;
@@ -13,7 +13,7 @@ DEFINE_int32(port, 8080, "Server listen port.");
 DEFINE_int32(threads, 4, "Number of threads.");
 DEFINE_string(www, "www", "Web documents directory.");
 
-const string kUsage = "Usage: ./pythia";
+const char* kUsage = "Usage: ./pythia";
 
 namespace pyt {
 

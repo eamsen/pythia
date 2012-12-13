@@ -1,8 +1,5 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./server.h"
-#include <string>
-#include <vector>
-#include <ostream>
 #include <Poco/Net/HTTPServer.h>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
@@ -19,6 +16,9 @@
 #include <Poco/Util/Option.h>
 #include <Poco/Util/OptionSet.h>
 #include <Poco/Util/HelpFormatter.h>
+#include <string>
+#include <vector>
+#include <ostream>
 
 using std::string;
 using std::vector;
@@ -38,13 +38,14 @@ using Poco::Util::Application;
 using Poco::Util::Option;
 using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
-using Poco::Util::HelpFormatter;;
+using Poco::Util::HelpFormatter;
 
 namespace pyt {
 
 class DocumentRequestHandler: public HTTPRequestHandler {
  public:
-  void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
+  void handleRequest(HTTPServerRequest& request,  // NOLINT
+                     HTTPServerResponse& response) {  // NOLINT
     using Poco::Util::Application;
     // Application& app = Application::instance();
     response.setChunkedTransferEncoding(true);
@@ -69,10 +70,10 @@ class RequestHandlerFactory: public HTTPRequestHandlerFactory {
 
 class Application: public ServerApplication {
  public:
-  Application(uint16_t port)
+  explicit Application(uint16_t port)
       : port_(port) {}
  private:
-  void initialize(Application& self) {
+  void initialize(Application& self) {  // NOLINT
     ServerApplication::initialize(self);
   }
 

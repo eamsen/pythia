@@ -1,6 +1,6 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
-#ifndef SRC_SERVER_H
-#define SRC_SERVER_H
+#ifndef SRC_SERVER_H_
+#define SRC_SERVER_H_
 
 #include <string>
 
@@ -21,4 +21,4 @@ class Server {
 };
 
 }  // namespace pyt
-#endif  // SRC_SERVER_H
+#endif  // SRC_SERVER_H_
