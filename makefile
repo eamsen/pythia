@@ -2,19 +2,22 @@ SRCDIR:=src
 TSTDIR:=src/test
 BINDIR:=bin
 OBJDIR:=bin/obj
+SRCSUBDIRS:=$(notdir $(patsubst %/,%,$(filter %/,$(wildcard $(SRCDIR)/*/))))
 GTESTLIBS:=-lgtest -lgtest_main
 POCODIR:=deps/poco/install
 GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
 CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3
-LIBS:=-L$(POCODIR)/lib\
+LIBS:=-Llibs -L$(POCODIR)/lib\
 	$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a\
+	-lpythia-net\
 	-lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
 	-lpthread -lrt -lboost_system-mt
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) -lpthread -lrt
 BINS:=pythia
+INTLIBS:=$(addprefix libpythia-, $(SRCSUBDIRS))
 
 TSTBINS:=$(notdir $(basename $(wildcard $(TSTDIR)/*.cc)))
 TSTOBJS:=$(addsuffix .o, $(notdir $(basename $(wildcard $(TSTDIR)/*.cc))))
@@ -24,7 +27,7 @@ OBJS:=$(addprefix $(OBJDIR)/, $(OBJS))
 BINS:=$(addprefix $(BINDIR)/, $(BINS))
 TSTBINS:=$(addprefix $(BINDIR)/, $(TSTBINS))
 
-compile: makedirs $(BINS)
+compile: makedirs $(INTLIBS) $(BINS)
 	@echo "compiled all"
 
 profile: CFLAGS=-Wall -O3 -DPROFILE
@@ -41,6 +44,7 @@ depend: poco gflags glog cpplint
 	@echo "compiled all dependencies"
 
 makedirs:
+	@mkdir -p libs
 	@mkdir -p bin/obj
 
 poco:
@@ -91,6 +95,11 @@ clean:
 .PHONY: compile profile opt depend makedirs poco gflags glog check cpplint\
 	checkstyle clean
 
+libpythia-%: $(SRCDIR)/%/*.cc
+	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$*/*.cc
+	@ar rs libs/$(@F).a $(OBJDIR)/$(@F).o
+	@echo "compiled library $(@F)"
+	
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
 	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/$(@F).cc
 	@$(CXX) $(CFLAGS) -o $(BINDIR)/$(@F) $(OBJDIR)/$(@F).o $(OBJS) $(LIBS)

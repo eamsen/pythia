@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <string>
-#include "./server.h"
+#include "net/server.h"
 
 using std::vector;
 using std::string;
@@ -25,6 +25,6 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);
   LOG(INFO) << "Starting Pythia.";
-  pyt::Server server(FLAGS_www, FLAGS_port, FLAGS_threads);
+  pyt::net::Server server(FLAGS_www, FLAGS_port, FLAGS_threads);
   server.Run();
 }

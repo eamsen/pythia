@@ -5,6 +5,7 @@
 #include <string>
 
 namespace pyt {
+namespace net {
 
 class Application;
 
@@ -20,5 +21,6 @@ class Server {
   Application* app_;
 };
 
+}  // namespace net
 }  // namespace pyt
 #endif  // SRC_SERVER_H_

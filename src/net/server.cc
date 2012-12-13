@@ -41,6 +41,7 @@ using Poco::Util::OptionCallback;
 using Poco::Util::HelpFormatter;
 
 namespace pyt {
+namespace net {
 
 class DocumentRequestHandler: public HTTPRequestHandler {
  public:
@@ -106,5 +107,6 @@ void Server::Run() {
   app_->run(argc, const_cast<char**>(argv));
 }
 
+}  // namespace net
 }  // namespace pyt
 
