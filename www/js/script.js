@@ -11,7 +11,7 @@ function command() {
 }
 
 function callback(data, status, xhr) {
-  var view_left = "<div id=\"view-left\">";
+  var view_left = "";
   for (var i in data.results) {
     var title = data.results[i]["htmlTitle"];
     var snippet = data.results[i]["snippet"];
@@ -21,17 +21,16 @@ function callback(data, status, xhr) {
         + snippet + "<br />"
         + "<a href=\"" + link + "\">" + link_name + "</a></p>";
     view_left += element;
-    $.cookie("view-left-title" + i, title);
-    $.cookie("view-left-snippet" + i, snippet);
-    $.cookie("view-left-link" + i, link);
-    $.cookie("view-left-link-name" + i, link_name);
+    // $.cookie("view-left-title" + i, title);
+    // $.cookie("view-left-snippet" + i, snippet);
+    // $.cookie("view-left-link" + i, link);
+    // $.cookie("view-left-link-name" + i, link_name);
   }
-  $.cookie("view-left" + data.results.length, null);
+  // $.cookie("view-left" + data.results.length, null);
   if (data.results.length == 0) {
-    view_left += "<p><h2>no results</h2></p>";
+    view_left += "<h2>no results</h2>";
   }
-  view_left += "</div>";
-  $("#view-left").replaceWith(view_left);
+  $("#view-left").html(view_left);
 
   var meta_result1 = "<div id=\"meta-result-area1\">";
   for (var i in data.target_keywords) {
@@ -44,7 +43,7 @@ function callback(data, status, xhr) {
   }
   meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> " +
                   data.target_type + "</div>";
-  $.cookie("meta-result-target", meta_result1);
+  // $.cookie("meta-result-target", meta_result1);
   $("#meta-result-area1").replaceWith(meta_result1);
 
   var meta_result2 = "<div id=\"meta-result-area2\">";
@@ -53,10 +52,10 @@ function callback(data, status, xhr) {
     var rank = data.entities[i][1];
     var element = "<h2>" + name + "</h2>:" + rank + "   ";
     meta_result2 += element;
-    $.cookie("meta-result-name" + i, name);
-    $.cookie("meta-result-rank" + i, rank);
+    // $.cookie("meta-result-name" + i, name);
+    // $.cookie("meta-result-rank" + i, rank);
   }
-  $.cookie("meta-result" + data.entities.length, null);
+  // $.cookie("meta-result" + data.entities.length, null);
   if (data.entities.length == 0) {
     meta_result2 += "no entities found";
   }
