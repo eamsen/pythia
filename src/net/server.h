@@ -14,7 +14,7 @@ class Server: public Poco::Util::ServerApplication {
          const std::string& doc_path, const uint16_t port,
          const uint16_t threads, const uint16_t queue_size);
   void Run();
-  const std::string& DocumentsPath() const;
+  const std::string& DocumentPath() const;
 
  private:
   void initialize(Poco::Util::Application& self);

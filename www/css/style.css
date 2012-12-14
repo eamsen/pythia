@@ -1,0 +1,128 @@
+@font-face {
+    font-family: TangerineRegular;
+    src: url(../fonts/Tangerine_Regular.woff);
+}
+
+@font-face {
+    font-family: TangerineBold;
+    src: url(../fonts/Tangerine_Bold.woff);
+}
+
+body {
+    font-family: Helvetica Neue, Arial, Helvetica, 'Liberation Sans', FreeSans, sans-serif;
+    padding: 0px;
+    padding-top: 10px;
+    text-align: center;
+    background-color: #333;
+    color: #ccc;
+    border-style: none;
+}
+
+#wrap {
+    margin: 0px auto;
+    width: 730px;
+    text-align: left;
+}
+
+#title-area {
+    font-family: TangerineRegular;
+    color: orange;
+    font-size: 4em;
+    position: relative;
+    text-align: center;
+    z-index: 100;
+}
+
+#query-area input {
+    font-size: 1em;
+    position: absolute;
+    width: 730px;
+    height: 2em;
+    border-style: none;
+    background-color: #222;
+    color: #ccc;
+    margin-top: -1em;
+    margin-bottom: 1em;
+    outline: none;
+    z-index: 10;
+}
+
+#meta-result-area1 {
+    font-weight: bold;
+    margin-top: 35px;
+    height: 1em;
+    text-align: left;
+    color: #666;
+    font-size: 0.9em;
+    font-variant: small-caps;
+}
+
+#meta-result-area1 h2 {
+    display: inline;
+    color: #5AD;
+}
+
+#meta-result-area2 {
+    font-weight: bold;
+    margin-top: 20px;
+    height: 5em;
+    text-align: left;
+    color: #666;
+    font-size: 0.9em;
+    font-variant: small-caps;
+    word-spacing: 0.81em;
+}
+
+#meta-result-area2 h2 {
+    display: inline;
+    color: #E05;
+}
+
+#result-area {
+    margin-top: 0px;
+    text-align: left;
+}
+
+#result-area li {
+    list-style-type: square;
+}
+
+#result-area h2 {
+    font-size: 1em;
+    color: orange;
+    margin-bottom: 0px;
+}
+
+#result-area a:link {
+    color: #5AD;
+    text-decoration: none;
+}
+
+#result-area a:visited {
+    color: #328EB5;
+}
+
+#result-area a:focus {
+    color: #328EB5;
+}
+
+#result-area a:hover {
+    color: #328EB5;
+}
+
+#result-area a:active {
+    color: #328EB5;
+}
+
+#result-area p {
+    margin: 0px;
+    padding: 0px;
+}
+
+#result-area #view-left {
+
+}
+
+#result-area #view-right {
+
+}

@@ -45,7 +45,7 @@ void Server::Run() {
   run(args);
 }
 
-const string& Server::DocumentsPath() const {
+const string& Server::DocumentPath() const {
   return doc_path_;
 }
 
