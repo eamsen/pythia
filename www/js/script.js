@@ -3,8 +3,8 @@ var server = "http://" + window.location.hostname + ":" + window.location.port;
 function command() {
   var query = document.getElementById("query").value.toLowerCase();
   var query = query.replace(/ /g, "+");
-  $.ajax({url: server + "/query",
-    data: "q=" + query,
+  $.ajax({url: server + "/",
+    data: "qf=" + query,
     dataType: "json",
     success: callback});
   query.value = "";
@@ -42,7 +42,8 @@ function callback(data, status, xhr) {
     }
     meta_result1 += element;
   }
-  meta_result1 += " / " + data.target_type + "</div>";
+  meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> " +
+                  data.target_type + "</div>";
   $.cookie("meta-result-target", meta_result1);
   $("#meta-result-area1").replaceWith(meta_result1);
 

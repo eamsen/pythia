@@ -11,7 +11,6 @@
 body {
     font-family: Helvetica Neue, Arial, Helvetica, 'Liberation Sans', FreeSans, sans-serif;
     padding: 0px;
-    padding-top: 10px;
     text-align: center;
     background-color: #333;
     color: #ccc;
@@ -30,7 +29,7 @@ body {
     /* color: #ffa500; */
     font-size: 4em;
     position: relative;
-    padding-top: 4px;
+    padding-top: 14px;
     text-align: center;
     z-index: 100;
 }
@@ -55,35 +54,49 @@ body {
     box-shadow: inset 0px -2px 3px #3f3f3f;
 }
 
+#query-area input:hover {
+    background-color: #1e1e1e;
+}
+
 #query-area input:focus {
-    background-color: #1f1f1f;
+    background-color: #1e1e1e;
     color: #cc9511;
 }
 
 #meta-result-area1 {
     font-weight: bold;
-    margin-top: 35px;
-    height: 1em;
+    margin-top: 30px;
+    height: 1.4em;
+    width: 730px;
+    padding-left: 9px;
+    padding-right: 9px;
     text-align: left;
     color: #666;
-    font-size: 0.9em;
+    font-size: 1.4em;
     font-variant: small-caps;
+    background-color: #2c2c2c;
 }
 
 #meta-result-area1 h2 {
     display: inline;
-    color: #5AD;
+    font-size: 1.0em;
+    /* color: #5AD; */
 }
 
 #meta-result-area2 {
     font-weight: bold;
-    margin-top: 20px;
+    margin-top: 13px;
     height: 5em;
+    width: 730px;
+    padding-left: 9px;
+    padding-right: 9px;
     text-align: left;
     color: #666;
     font-size: 0.9em;
     font-variant: small-caps;
-    word-spacing: 0.81em;
+    /* word-spacing: 0.81em; */
+    white-space: pre;
+    background-color: #2c2c2c;
 }
 
 #meta-result-area2 h2 {
@@ -92,8 +105,12 @@ body {
 }
 
 #result-area {
-    margin-top: 0px;
+    margin-top: 10px;
     text-align: left;
+    width: 730px;
+    padding-left: 9px;
+    padding-right: 9px;
+    background-color: #2c2c2c;
 }
 
 #result-area li {
