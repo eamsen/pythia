@@ -79,7 +79,10 @@ const vector<string> ContentType::subtypes_ =
 
 void DocumentRequestHandler::Handle(Request* request, Response* response) {
   Server& server = dynamic_cast<Server&>(Poco::Util::Application::instance());
-  const string& uri = request->getURI();
+  string uri = request->getURI();
+  if (uri.empty() || uri == "/") {
+    uri = "index.html";
+  }
   ContentType type(uri);
   DLOG(INFO) << "Content type for " << uri  
              << ": " << type.FullType() << ".";
