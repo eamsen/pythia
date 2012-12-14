@@ -55,7 +55,7 @@ To build Pythia use:
 
     make
 
-For performance measuring use the more optimized version:
+To build the version optimized for speed (`-Ofast`), use:
 
     make opt
 
