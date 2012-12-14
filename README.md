@@ -15,14 +15,14 @@ Nothing to see here yet.
 ## Dependencies
 ### Required
 * SENNA (<http://ml.nec-labs.com/senna>)
-* POCO C++ Libraries (<http://pocoproject.org> or `make poco`)
-* gflags (<http://code.google.com/p/gflags> or `make gflags`)
-* glog (<http://code.google.com/p/google-glog> or `make glog`)
+* POCO C++ Libraries (`make poco` or from <http://pocoproject.org>)
+* gflags (`make gflags` or from <http://code.google.com/p/gflags>)
+* glog (`make glog` or from <http://code.google.com/p/google-glog>)
 
 ### Optional
-* gtest (<http://code.google.com/p/googletest>, for testing)
-* gperftools (<http://code.google.com/p/gperftools>, for profiling)
-* cpplint (`make cpplint`, for style checking)
+* gtest *for testing* (<http://code.google.com/p/googletest>)
+* gperftools *for profiling* (<http://code.google.com/p/gperftools>)
+* cpplint *for style checking* (`make cpplint`)
 
 ## Building
 ### Building dependencies
