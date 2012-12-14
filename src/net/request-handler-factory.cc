@@ -5,6 +5,7 @@
 #include <glog/logging.h>
 #include <Poco/URI.h>
 #include "./document-request-handler.h"
+#include "./full-query-request-handler.h"
 
 using std::string;
 using std::vector;
@@ -16,13 +17,16 @@ namespace net {
 Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(
     const Poco::Net::HTTPServerRequest& request) {
   URI uri(request.getURI());
-  // vector<string> segments;
-  // uri.getPathSegments(segments);
+  const string query = uri.getQuery();
   LOG(INFO) << "Request from " << request.clientAddress().toString()
             << ": path(" << uri.getPath()
-            << "), query(" << uri.getQuery() << ").";
-  if (uri.getQuery().empty()) {
+            << "), query(" << query << ").";
+  if (query.empty()) {
+    // Document request.
     return new DocumentRequestHandler();
+  } else if (query.find("qf=") != string::npos) {
+    // Full query request.
+    return new FullQueryRequestHandler();
   }
   LOG(WARNING) << "Unknown request type for URI " << uri.toString() << ".";
   google::FlushLogFiles(google::INFO);
