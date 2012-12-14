@@ -1,5 +1,5 @@
 # Pythia
-A Semantic Web Oracle.  
+**A Semantic Web Oracle.**   
 By Eugen Sawin <esawin@me73.com>.
 
 ## Version
@@ -55,7 +55,7 @@ To build Pythia use:
 
     make
 
-For performance measuring use the more optimised version:
+For performance measuring use the more optimized version:
 
     make opt
 
@@ -93,7 +93,7 @@ To test code style conformance with the [Google C++ Style Guide](http://google-s
     make checkstyle
 
 ## License
-Pythia - A Semantic Web Oracle.  
+**Pythia - A Semantic Web Oracle.**   
 Copyright (C) 2012 Eugen Sawin
 
 Pythia is free software: you can redistribute it and/or modify
