@@ -108,7 +108,7 @@ libpythia-%: $(SRCDIR)/%/*.cc
 	@for i in $(LIBFILES); do \
 	  $(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F)-$$i.o -c $(SRCDIR)/$*/$$i.cc; \
 	done;
-	@ar rs libs/$(@F).a $(LIBOBJS)
+	@ar rs libs/$(@F).a $(LIBOBJS) 2>/dev/null
 	@echo "compiled libs/$(@F).a"
 
 $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
