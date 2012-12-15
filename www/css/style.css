@@ -45,7 +45,7 @@ body {
   width: 730px;
   height: 2em;
   border-style: none;
-  background-color: #222;
+  background-color: #232323;
   color: #777;
   padding-left: 9px;
   padding-right: 9px;
@@ -96,7 +96,7 @@ body {
   padding-right: 9px;
   text-align: left;
   color: #666;
-  font-size: 0.9em;
+  font-size: 1.0em;
   font-variant: small-caps;
   /* word-spacing: 0.81em; */
   white-space: pre;
@@ -105,7 +105,8 @@ body {
 
 #meta-result-area2 h2 {
   display: inline;
-  color: #E05;
+  font-size: 1.4em;
+  /* color: #E05; */
 }
 
 #result-area {
