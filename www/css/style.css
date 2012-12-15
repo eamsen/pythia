@@ -98,7 +98,7 @@ body {
   padding-right: 9px;
   text-align: left;
   color: #666;
-  font-size: 1.0em;
+  font-size: 0.9em;
   font-variant: small-caps;
   /* word-spacing: 0.81em; */
   white-space: pre;
@@ -107,7 +107,7 @@ body {
 
 #meta-result-area2 h2 {
   display: inline;
-  font-size: 1.4em;
+  font-size: 1.5em;
   /* color: #E05; */
 }
 
