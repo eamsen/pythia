@@ -81,6 +81,9 @@ body {
   font-size: 1.4em;
   font-variant: small-caps;
   background-color: #2c2c2c;
+  -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
+  -moz-box-shadow: inset 0px -1px 2px #3f3f3f;
+  box-shadow: inset 0px -1px 2px #3f3f3f;
 }
 
 #meta-result-area1 h2 {
@@ -103,6 +106,9 @@ body {
   /* word-spacing: 0.81em; */
   white-space: pre;
   background-color: #2c2c2c;
+  -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
+  -moz-box-shadow: inset 0px -1px 2px #3f3f3f;
+  box-shadow: inset 0px -1px 2px #3f3f3f;
 }
 
 #meta-result-area2 h2 {
@@ -115,9 +121,12 @@ body {
   margin-top: 15px;
   text-align: left;
   width: 730px;
-  height: 1em;
-  padding: 7px 9px;
+  padding: 1px 9px;
+  white-space: normal;
   background-color: #2c2c2c;
+  -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
+  -moz-box-shadow: inset 0px -1px 2px #3f3f3f;
+  box-shadow: inset 0px -1px 2px #3f3f3f;
 }
 
 #result-area li {
@@ -127,7 +136,6 @@ body {
 #result-area h2 {
   font-size: 1em;
   color: orange;
-  margin-top: 0px;
   margin-bottom: 0px;
 }
 

@@ -28,21 +28,27 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Full query request: " << query["qf"] << ".";
   
   HTTPSClientSession session(server.SearchHost());
-  DLOG(INFO) << server.SearchBase() + query["qf"];
-  HTTPRequest search_request(HTTPRequest::HTTP_GET, server.SearchBase() + query["qf"]);
+  HTTPRequest search_request(HTTPRequest::HTTP_GET,
+                             server.SearchBase() + query["qf"]);
   session.sendRequest(search_request);
   HTTPResponse search_response;
-  string info;
-  session.receiveResponse(search_response) >> info;
-  DLOG(INFO) << info;
-  // DLOG(INFO) << session.receiveResponse(search_response);
+  std::istream& stream = session.receiveResponse(search_response);
+  LOG(INFO) << search_response.getStatus() << ".";
+  LOG(INFO) << search_response.getContentLength() << ".";
+  string msg;
+  while (stream.good()) {
+    string buffer;
+    std::getline(stream, buffer);
+    msg += buffer;
+  }
+  // LOG(INFO) << msg;
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
-  response->send() << "{\"results\": [],"
+  response->send() << "{\"results\": " << msg << "," 
                    << "\"target_keywords\": [\"keyword\"],"
                    << "\"target_type\": \"target type\","
                    << "\"entities\": [[\"entity a\", 400], [\"entity b\", 200]]}";
-  google::FlushLogFiles(google::INFO);
+  // google::FlushLogFiles(google::INFO);
 }
 
 }  // namespace net
