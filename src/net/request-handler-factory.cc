@@ -26,7 +26,7 @@ Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(
     return new DocumentRequestHandler();
   } else if (query.find("qf=") != string::npos) {
     // Full query request.
-    return new FullQueryRequestHandler();
+    return new FullQueryRequestHandler(uri);
   }
   LOG(WARNING) << "Unknown request type for URI " << uri.toString() << ".";
   google::FlushLogFiles(google::INFO);

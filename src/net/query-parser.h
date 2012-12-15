@@ -29,11 +29,11 @@ class Query {
 
  private:
   void partition(const std::string& query) {
-    const size_t query_size = query.size();
-    size_t pos = query.find("?") + 1;
-    while (pos < query_size) {
-      size_t end = query.find("=", pos) + 1;
+    size_t pos = 0;
+    while (pos != std::string::npos) {
+      size_t end = query.find("=", pos);
       std::string& value = parts_[query.substr(pos, end - pos)];
+      ++end;
       pos = query.find("&", end);
       value = query.substr(end, pos - end);
     }

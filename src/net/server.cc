@@ -10,9 +10,12 @@
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/Util/Option.h>
 #include <Poco/Util/OptionSet.h>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 #include <string>
 #include <vector>
 #include <ostream>
+#include <fstream>
 #include "./request-handler-factory.h"
 
 using std::string;
@@ -30,6 +33,8 @@ using Poco::Util::OptionCallback;
 namespace pyt {
 namespace net {
 
+DEFINE_string(api, "api.txt", "Google API key + CX file.");
+
 Server::Server(const string& name, const string& version,
                const string& doc_path, const uint16_t port,
                const uint16_t threads, const uint16_t queue_size)
@@ -38,7 +43,20 @@ Server::Server(const string& name, const string& version,
       doc_path_(doc_path),
       port_(port),
       num_threads_(threads),
-      queue_size_(queue_size) {}
+      queue_size_(queue_size) {
+  std::fstream file(FLAGS_api);
+  LOG_IF(FATAL, !file.good()) << "Google API file " << FLAGS_api
+                               << " not found.";
+  std::getline(file, api_key_);
+  LOG_IF(FATAL, file.eof()) << "Provided Google API file " << FLAGS_api
+                            << " has invalid format. Should be <key>\n<cx>.";
+  std::getline(file, api_cx_);
+  search_host_ = "www.googleapis.com";
+  search_base_ = "/customsearch/v1?";
+  search_base_ += "key=" + api_key_;
+  search_base_ += "&cx=" + api_cx_;
+  search_base_ += "&q=";
+}
 
 void Server::Run() {
   vector<string> args = {"pythia"};
@@ -47,6 +65,22 @@ void Server::Run() {
 
 const string& Server::DocumentPath() const {
   return doc_path_;
+}
+
+const string& Server::ApiKey() const {
+  return api_key_;
+}
+
+const string& Server::ApiCx() const {
+  return api_cx_;
+}
+
+const string& Server::SearchHost() const {
+  return search_host_;
+}
+
+const string& Server::SearchBase() const {
+  return search_base_;
 }
 
 void Server::initialize(Application& self) {  // NOLINT

@@ -12,8 +12,8 @@ CFLAGS:=-Wall -O3
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a\
 	-lpythia-net\
-	-lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
-	-lpthread -lrt -lboost_system-mt
+	-lPocoNetSSL -lPocoCrypto -lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
+	-lpthread -lrt -lboost_system-mt -lssl
 TSTFLAGS:=
 TSTLIBS:=$(GTESTLIBS) -lpthread -lrt
 BINS:=pythia

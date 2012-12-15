@@ -15,6 +15,10 @@ class Server: public Poco::Util::ServerApplication {
          const uint16_t threads, const uint16_t queue_size);
   void Run();
   const std::string& DocumentPath() const;
+  const std::string& ApiKey() const;
+  const std::string& ApiCx() const;
+  const std::string& SearchHost() const;
+  const std::string& SearchBase() const;
 
  private:
   void initialize(Poco::Util::Application& self);
@@ -27,6 +31,10 @@ class Server: public Poco::Util::ServerApplication {
   uint32_t port_;
   uint32_t num_threads_;
   uint16_t queue_size_;
+  std::string api_key_;
+  std::string api_cx_;
+  std::string search_host_;
+  std::string search_base_;
 };
 
 }  // namespace net
