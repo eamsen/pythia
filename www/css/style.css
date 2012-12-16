@@ -23,6 +23,7 @@ body {
 
 #wrap {
   margin: 0px auto;
+  padding: 0px 0px 10px;
   width: 730px;
   text-align: left;
 }
@@ -118,10 +119,10 @@ body {
 }
 
 #result-area {
-  margin-top: 15px;
   text-align: left;
   width: 730px;
-  padding: 1px 9px;
+  margin: 15px 0px 0px;
+  padding: 1px 9px 9px;
   white-space: normal;
   background-color: #2c2c2c;
   -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
@@ -170,4 +171,26 @@ body {
 
 #result-area #view-right {
 
+}
+
+#footer {
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  width: 730px;
+  height: 2em;
+  position: relative;
+  bottom: 0;
+  margin: 14px 0px 0px;
+  padding: 9px 9px 0px;
+  background-color: #2c2c2c;
+  -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
+  -moz-box-shadow: inset 0px -1px 2px #3f3f3f;
+  box-shadow: inset 0px -1px 2px #3f3f3f;
+}
+
+a {
+  color: #666;
+  text-decoration: none;
+  font-weight: bold;
 }

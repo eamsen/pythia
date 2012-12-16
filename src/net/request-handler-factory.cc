@@ -21,12 +21,12 @@ Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(
   LOG(INFO) << "Request from " << request.clientAddress().toString()
             << ": path(" << uri.getPath()
             << "), query(" << query << ").";
-  if (query.empty()) {
-    // Document request.
-    return new DocumentRequestHandler();
-  } else if (query.find("qf=") != string::npos) {
+  if (query.find("qf=") != string::npos) {
     // Full query request.
     return new FullQueryRequestHandler(uri);
+  } else {
+    // Document request.
+    return new DocumentRequestHandler();
   }
   LOG(WARNING) << "Unknown request type for URI " << uri.toString() << ".";
   google::FlushLogFiles(google::INFO);

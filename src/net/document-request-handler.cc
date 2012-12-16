@@ -1,6 +1,7 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./document-request-handler.h"
 #include <Poco/Exception.h>
+#include <Poco/URI.h>
 #include <glog/logging.h>
 #include <ostream>
 #include <string>
@@ -36,8 +37,7 @@ class ContentType {
   static std::pair<size_t, size_t> GetType(const string& doc) {
     const size_t pos = doc.rfind(".");
     if (pos == string::npos) {
-      // Unknown type.
-      return {2, 5};
+      return {2, 2};
     }
     const string suffix = doc.substr(pos + 1);
     if (suffix == "html") {
@@ -79,18 +79,21 @@ const vector<string> ContentType::subtypes_ =
 
 void DocumentRequestHandler::Handle(Request* request, Response* response) {
   Server& server = dynamic_cast<Server&>(Poco::Util::Application::instance());
-  string uri = request->getURI();
-  if (uri.empty() || uri == "/") {
-    uri = "index.html";
-  }
-  ContentType type(uri);
-  DLOG(INFO) << "Content type for " << uri  
+  const Poco::URI uri(request->getURI());
+  ContentType type(uri.getPath());
+  DLOG(INFO) << "Content type for " << uri.getPath()  
              << ": " << type.FullType() << ".";
   response->setChunkedTransferEncoding(true);
   try {
-    response->sendFile(server.DocumentPath() + "/" + uri, type.FullType());
+    string file_path = server.DocumentPath() + "/";
+    if (uri.getPath().empty() || uri.getPath() == "/") {
+      file_path += "index.html";
+    } else {
+      file_path += uri.getPath();
+    }
+    response->sendFile(file_path, type.FullType());
   } catch (const Poco::FileException& e) {
-    LOG(WARNING) << e.name() << ": " << uri;
+    LOG(WARNING) << e.name() << ": " << uri.getPath();
     response->setContentType("text/plain");
     response->send() << "File not found.";
   }
