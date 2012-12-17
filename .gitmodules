@@ -1,0 +1,6 @@
+[submodule "deps/poco"]
+	path = deps/poco
+	url = https://github.com/pocoproject/poco.git
+[submodule "tools/cpplint"]
+	path = tools/cpplint
+	url = https://github.com/eamsen/cpplint

@@ -54,7 +54,8 @@ makedirs:
 	@mkdir -p bin/obj
 
 poco:
-	@tar xf deps/poco.tar.gz -C deps/;
+	#@git submodule init;
+	#@git submodule update;
 	@cd deps/poco/;\
 		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
 		--no-samples --static;\
@@ -72,15 +73,8 @@ glog:
 	@echo "compiled glog"
 
 cpplint:
-	@if [ -f tools/cpplint/cpplint.py ];\
-	then\
-		echo "updating cpplint";\
-		cd tools/cpplint; git pull; cd ../..;\
-	else\
-		echo "cloning cpplint";\
-		mkdir tools && cd tools;\
-		git clone git://github.com/eamsen/cpplint.git; cd ..;\
-	fi
+	@git submodule init;
+	@git submodule update;
 
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done
