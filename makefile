@@ -54,8 +54,8 @@ makedirs:
 	@mkdir -p bin/obj
 
 poco:
-	#@git submodule init;
-	#@git submodule update;
+	@git submodule init;
+	@git submodule update;
 	@cd deps/poco/;\
 		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
 		--no-samples --static;\
