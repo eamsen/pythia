@@ -6,6 +6,7 @@
 #include <Poco/Net/HTTPServer.h>
 #include <Poco/Net/HTTPServerParams.h>
 #include <Poco/Net/ServerSocket.h>
+#include <Poco/Net/PrivateKeyPassphraseHandler.h>
 #include <Poco/Net/SSLManager.h>
 #include <Poco/ThreadPool.h>
 #include <Poco/Util/ServerApplication.h>
@@ -86,7 +87,10 @@ const string& Server::SearchBase() const {
 
 void Server::initialize(Application& self) {  // NOLINT
   ServerApplication::initialize(self);
-  Poco::Net::SSLManager::instance().initializeClient(0, 0, new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, "", Poco::Net::Context::VERIFY_NONE, 9, false, "ALL:!ADH:!LOW:!EXP!MD5:@STRENGTH"));
+  Poco::Net::SSLManager::instance().initializeClient(
+      0, 0, new Poco::Net::Context(Poco::Net::Context::CLIENT_USE, "",
+                                   Poco::Net::Context::VERIFY_NONE, 9, false,
+                                   "ALL:!ADH:!LOW:!EXP!MD5:@STRENGTH"));
 }
 
 void Server::uninitialize() {
