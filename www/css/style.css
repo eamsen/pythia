@@ -1,11 +1,77 @@
 @font-face {
-  font-family: TangerineRegular;
-  src: url(../fonts/Tangerine_Regular.woff);
+  font-family: "TangerineRegular";
+  src: url("../fonts/Tangerine_Regular.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/Tangerine_Regular.woff") format("woff"),
+       url("../fonts/Tangerine_Regular.ttf") format("truetype"),
+       url("../fonts/Tangerine_Regular.svg#svgFontName") format("svg");
 }
 
 @font-face {
-  font-family: TangerineBold;
-  src: url(../fonts/Tangerine_Bold.woff);
+  font-family: "TangerineBold";
+  src: url("../fonts/Tangerine_Bold.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/Tangerine_Bold.woff") format("woff"),
+       url("../fonts/Tangerine_Bold.ttf") format("truetype"),
+       url("../fonts/Tangerine_Bold.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "UbuntuMono";
+  src: url("../fonts/UbuntuMono-R.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/UbuntuMono-R.woff") format("woff"),
+       url("../fonts/UbuntuMono-R.ttf") format("truetype"),
+       url("../fonts/UbuntuMono-R.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Inconsolata";
+  src: url("../fonts/Inconsolata.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/Inconsolata.woff") format("woff"),
+       url("../fonts/Inconsolata.ttf") format("truetype"),
+       url("../fonts/Inconsolata.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Anonymous";
+  src: url("../fonts/anonymous.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/anonymous.woff") format("woff"),
+       url("../fonts/anonymous.ttf") format("truetype"),
+       url("../fonts/anonymous.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Cousine";
+  src: url("../fonts/cousine-regular.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/cousine-regular.woff") format("woff"),
+       url("../fonts/cousine-regular.ttf") format("truetype"),
+       url("../fonts/cousine-regular.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Cousine";
+  font-weight: bold;
+  src: url("../fonts/cousine-bold.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/cousine-bold.woff") format("woff"),
+       url("../fonts/cousine-bold.ttf") format("truetype"),
+       url("../fonts/cousine-bold.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Cousine";
+  font-style: italic;
+  src: url("../fonts/cousine-italic.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/cousine-italic.woff") format("woff"),
+       url("../fonts/cousine-italic.ttf") format("truetype"),
+       url("../fonts/cousine-italic.svg#svgFontName") format("svg");
+}
+
+@font-face {
+  font-family: "Cousine";
+  font-weight: bold;
+  font-style: italic;
+  src: url("../fonts/cousine-bold-italic.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/cousine-bold-italic.woff") format("woff"),
+       url("../fonts/cousine-bold-italic.ttf") format("truetype"),
+       url("../fonts/cousine-bold-italic.svg#svgFontName") format("svg");
 }
 
 html {
@@ -14,6 +80,7 @@ html {
 
 body {
   font-family: Helvetica Neue, Arial, Helvetica, 'Liberation Sans', FreeSans, sans-serif;
+  font-family: "Cousine";
   padding: 0px;
   text-align: center;
   background-color: #333;
@@ -29,7 +96,7 @@ body {
 }
 
 #title-area {
-  font-family: TangerineRegular;
+  font-family: "TangerineRegular";
   color: orange;
   /* color: #ffa500; */
   font-size: 4em;
@@ -46,7 +113,7 @@ body {
 
 #query-area input {
   font-size: 1em;
-  font-family: Courier, "Courier New", monospace;
+  font-family: "Cousine";
   position: absolute;
   width: 730px;
   height: 2em;
@@ -73,10 +140,9 @@ body {
 #meta-result-area1 {
   font-weight: bold;
   margin-top: 30px;
-  height: 1.4em;
+  height: 1.2em;
   width: 730px;
-  padding-left: 9px;
-  padding-right: 9px;
+  padding: 0px 9px 0px;
   text-align: left;
   color: #666;
   font-size: 1.4em;
