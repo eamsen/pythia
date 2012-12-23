@@ -37,7 +37,7 @@ function callback(data, status, xhr) {
     var snippet = data.results.items[i]["snippet"];
     var link = data.results.items[i]["link"];
     var link_name = data.results.items[i]["displayLink"]
-    var element = "<p>" + "<h2>" + title  + "</h2>"
+    var element = "<p>" + "<a href=\"" + link + "\"><h2>" + title  + "</a></h2>"
         + snippet + "<br />"
         + "<a href=\"" + link + "\">" + link_name + "</a></p>";
     view_left += element;

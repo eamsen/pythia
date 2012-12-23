@@ -97,8 +97,7 @@ body {
 
 #title-area {
   font-family: "TangerineRegular";
-  color: orange;
-  /* color: #ffa500; */
+  color: #ffa500;
   font-size: 4em;
   position: relative;
   padding: 14px 0px 0px;
@@ -186,6 +185,7 @@ body {
 
 #result-area {
   text-align: left;
+  font-style: italic;
   width: 730px;
   margin: 15px 0px 0px;
   padding: 1px 9px 9px;
@@ -201,13 +201,27 @@ body {
 }
 
 #result-area h2 {
+  font-style: normal;
   font-size: 1em;
-  color: orange;
   margin-bottom: 0px;
+  color: #ccc;
+}
+
+#result-area h2 a:link {
+  font-style: normal;
+  font-size: 1em;
+  margin-bottom: 0px;
+  color: #ccc;
+  color: #cc9511;
+}
+
+#result-area h2 a:hover {
+  color: #328EB5;
 }
 
 #result-area a:link {
-  color: #5AD;
+  /*color: #5AD;*/
+  color: #666;
   text-decoration: none;
 }
 
@@ -256,7 +270,7 @@ body {
 }
 
 a {
-  color: #666;
+  /*color: #666;*/
   text-decoration: none;
   font-weight: bold;
 }
