@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "./net/server.h"
+#include "./nlp/tagger.h"
 
 using std::vector;
 using std::string;
@@ -24,6 +25,7 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);
   LOG(INFO) << "Started.";
+  pyt::nlp::Tagger tagger(pyt::nlp::Tagger::kPos);
   pyt::net::Server server(kName, kVersion, FLAGS_doc_path, FLAGS_port,
                           FLAGS_threads, FLAGS_queue_size);
   server.Run();

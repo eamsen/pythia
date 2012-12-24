@@ -10,12 +10,12 @@ GLOGDIR:=deps/glog
 CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3
 LIBS:=-Llibs -L$(POCODIR)/lib\
-	$(GFLAGSDIR)/.libs/libgflags.a $(GLOGDIR)/.libs/libglog.a\
-	-lpythia-net\
+	-lpythia-net -lpythia-nlp\
+	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
 	-lPocoNetSSL -lPocoCrypto -lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
 	-lpthread -lrt -lboost_system-mt -lssl
-TSTFLAGS:=
-TSTLIBS:=$(GTESTLIBS) -lpthread -lrt
+TSTFLAGS:=-O0 -Wall -g
+TSTLIBS:=$(GTESTLIBS) $(LIBS)
 BINS:=pythia
 INTLIBS:=$(addprefix libpythia-, $(SRCSUBDIRS))
 
@@ -41,17 +41,29 @@ profile: LIBS+=-lprofiler
 profile: clean compile
 
 opt: CFLAGS=-Ofast -flto -mtune=native -DNDEBUG
-opt: clean compile
+opt: clean all
 
 debug: CFLAGS=-O0 -g
-debug: compile
+debug: clean all
 
-depend: poco gflags glog cpplint
+depend: senna poco gflags glog cpplint
 	@echo "compiled all dependencies"
 
 makedirs:
 	@mkdir -p libs
 	@mkdir -p bin/obj
+
+senna:
+	@if [ ! -d deps/senna ]; then \
+		cd deps; \
+		if [ ! -f senna-v3.0.tgz ]; then \
+			wget http://ml.nec-labs.com/senna/senna-v3.0.tgz; \
+		fi; \
+		tar xf senna-v3.0.tgz; \
+		sed -i "s/_new()/_new(const char* path, const char* subpath)/g" senna/*.h; \
+		cd ..; \
+	fi
+	@cd $(OBJDIR); gcc -c -O3 -ffast-math ../../deps/senna/*.c;
 
 poco:
 	@git submodule init;
@@ -94,7 +106,16 @@ clean:
 
 .PRECIOUS: $(OBJS) $(TSTOBJS)
 .PHONY: libs all compile profile opt depend makedirs poco gflags glog check\
-	cpplint checkstyle clean
+	cpplint checkstyle clean senna
+
+libpythia-nlp: senna $(SRCDIR)/nlp/*.cc
+	$(eval LIBFILES:=$(notdir $(basename $(wildcard $(SRCDIR)/nlp/*.cc))))
+	$(eval LIBOBJS:=$(wildcard $(OBJDIR)/SENNA*.o) $(addprefix $(OBJDIR)/$(@F)-, $(addsuffix .o, $(LIBFILES))))
+	@for i in $(LIBFILES); do \
+	  $(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F)-$$i.o -c $(SRCDIR)/nlp/$$i.cc; \
+	done;
+	@ar rs libs/$(@F).a $(LIBOBJS) 2>/dev/null
+	@echo "compiled libs/$(@F).a"
 
 libpythia-%: $(SRCDIR)/%/*.cc
 	$(eval LIBFILES:=$(notdir $(basename $(wildcard $(SRCDIR)/$*/*.cc))))
@@ -111,11 +132,12 @@ $(BINDIR)/%: $(OBJS) $(SRCDIR)/%.cc
 	@echo "compiled $(BINDIR)/$(@F)"
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cc $(SRCDIR)/%.h
-	$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<
+	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<
 
-$(BINDIR)/%-test: $(OBJDIR)/%-test.o $(OBJS)
-	@$(CXX) $(TSTFLAGS) -o $(BINDIR)/$(@F) $(OBJS) $< $(TSTLIBS)
+$(BINDIR)/%-test: $(OBJS) $(TSTDIR)/*.cc
+	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/test/$(@F).cc
+	@$(CXX) $(CFLAGS) -o $(BINDIR)/$(@F) $(OBJDIR)/$(@F).o $(OBJS) $(TSTLIBS)
 	@echo "compiled $(BINDIR)/$(@F)"
 
-$(OBJDIR)/%-test.o: $(TSTDIR)/%-test.cc
-	@$(CXX) $(TSTFLAGS) -o $(OBJDIR)/$(@F) -c $<
+$(OBJDIR)/%-test.o: $(TSTDIR)/%.cc
+	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<

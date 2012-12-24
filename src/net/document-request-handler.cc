@@ -16,7 +16,7 @@ namespace net {
 
 class ContentType {
  public:
-  ContentType(const string& doc) {
+  explicit ContentType(const string& doc) {
     const auto type = GetType(doc);
     type_ = type.first;
     subtype_ = type.second;
@@ -31,7 +31,7 @@ class ContentType {
   }
 
   string FullType() const {
-    return Type() + "/" + Subtype(); 
+    return Type() + "/" + Subtype();
   }
 
   static std::pair<size_t, size_t> GetType(const string& doc) {
@@ -60,7 +60,7 @@ class ContentType {
   }
 
  private:
-  static const vector<string> types_; 
+  static const vector<string> types_;
   static const vector<string> subtypes_;
 
   size_t type_;
@@ -78,10 +78,10 @@ const vector<string> ContentType::subtypes_ =
   "octet-stream", "pdf"};
 
 void DocumentRequestHandler::Handle(Request* request, Response* response) {
-  Server& server = dynamic_cast<Server&>(Poco::Util::Application::instance());
+  Server& server = static_cast<Server&>(Poco::Util::Application::instance());
   const Poco::URI uri(request->getURI());
   ContentType type(uri.getPath());
-  DLOG(INFO) << "Content type for " << uri.getPath()  
+  DLOG(INFO) << "Content type for " << uri.getPath()
              << ": " << type.FullType() << ".";
   response->setChunkedTransferEncoding(true);
   try {
@@ -92,7 +92,7 @@ void DocumentRequestHandler::Handle(Request* request, Response* response) {
       file_path += uri.getPath();
     }
     response->sendFile(file_path, type.FullType());
-  } catch (const Poco::FileException& e) {
+  } catch(const Poco::FileException& e) {
     LOG(WARNING) << e.name() << ": " << uri.getPath();
     response->setContentType("text/plain");
     response->send() << "File not found.";

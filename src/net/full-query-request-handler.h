@@ -1,3 +1,4 @@
+// Copyright 2012 Eugen Sawin <esawin@me73.com>
 #ifndef SRC_NET_FULL_QUERY_REQUEST_HANDLER_H_
 #define SRC_NET_FULL_QUERY_REQUEST_HANDLER_H_
 
@@ -9,7 +10,7 @@ namespace net {
 
 class FullQueryRequestHandler: public RequestHandler {
  public:
-  FullQueryRequestHandler(const Poco::URI& uri);
+  explicit FullQueryRequestHandler(const Poco::URI& uri);
   void Handle(Request* request, Response* response);
  private:
   Poco::URI uri_;

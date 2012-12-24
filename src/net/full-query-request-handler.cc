@@ -23,10 +23,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   using Poco::Net::HTTPRequest;
   using Poco::Net::HTTPResponse;
 
-  Server& server = dynamic_cast<Server&>(Poco::Util::Application::instance());
+  Server& server = static_cast<Server&>(Poco::Util::Application::instance());
   const Query query(uri_.getQuery());
   LOG(INFO) << "Full query request: " << query["qf"] << ".";
-  
+
   HTTPSClientSession session(server.SearchHost());
   HTTPRequest search_request(HTTPRequest::HTTP_GET,
                              server.SearchBase() + query["qf"]);
@@ -44,10 +44,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // LOG(INFO) << msg;
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
-  response->send() << "{\"results\": " << msg << "," 
+  response->send() << "{\"results\": " << msg << ","
                    << "\"target_keywords\": [\"keyword\"],"
                    << "\"target_type\": \"target type\","
-                   << "\"entities\": [[\"entity a\", 400], [\"entity b\", 200]]}";
+                   << "\"entities\": [[\"entity a\", 40], [\"entity b\", 20]]}";
   // google::FlushLogFiles(google::INFO);
 }
 

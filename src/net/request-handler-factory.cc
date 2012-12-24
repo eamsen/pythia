@@ -1,9 +1,9 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./request-handler-factory.h"
-#include <string>
-#include <vector>
 #include <glog/logging.h>
 #include <Poco/URI.h>
+#include <string>
+#include <vector>
 #include "./document-request-handler.h"
 #include "./full-query-request-handler.h"
 

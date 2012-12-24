@@ -10,7 +10,7 @@ namespace net {
 
 class Query {
  public:
-  Query(const std::string& query) {
+  explicit Query(const std::string& query) {
     partition(query);
   }
 

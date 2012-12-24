@@ -4,6 +4,7 @@
 
 #include <Poco/Util/ServerApplication.h>
 #include <string>
+#include <vector>
 
 namespace pyt {
 namespace net {
@@ -21,7 +22,7 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& SearchBase() const;
 
  private:
-  void initialize(Poco::Util::Application& self);
+  void initialize(Poco::Util::Application& self);  // NOLINT
   void uninitialize();
   int main(const std::vector<std::string>& args);
 
