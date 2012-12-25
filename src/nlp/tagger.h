@@ -39,6 +39,34 @@ class Tagger {
     kAll = 32u
   };
 
+  enum PosLabel {
+    kPosNNP = 0,
+    kPosComma, kPosCD, kPosNNS, kPosJJ, kPosMD, kPosVB, kPosDT, kPosNN, kPosIN,
+    kPosFullStop, kPosVBZ, kPosVBG, kPosVBN, kPosRB, kPosTO, kPosPRP, kPosRBR,
+    kPosWDT, kPosVBP, kPosRP, kPosPRPE, kPosJJS, kPosPOS, kPosQuote1, kPosWP,
+    kPosQuote2, kPosColon, kPosJJR, kPosWRB, kPosEX, kPosE, kPosNNPS, kPosWPE,
+    kPosLRB, kPosRRB, kPosPDT, kPosRBS, kPosFW, kPosUH, kPosSYM, kPosLS,
+    kPosHash, kPosPADDING, kPosUNAVAILABLE
+  };
+
+  enum ChkLabel {
+    kChkENP = 0,
+    kChkBNP, kChkO, kChkINP, kChkSPP, kChkSNP, kChkSVP, kChkEVP, kChkBVP,
+    kChkIVP, kChkSADVP, kChkSBAR, kChkSADJP, kChkSPRT, kChkEADJP, kChkBADJP,
+    kChkEADVP, kChkBADVP, kChkEPP, kChkBPP, kChkIADJP, kChkESBAR, kChkBSBAR,
+    kChkIADVP, kChkECONJP, kChkCONJP, kChkSINTJ, kChkICONJP, kChkIPP, kChkSLST,
+    kChkEINTJ, kChkBINTJ, kChkSCONJP, kChkIUCP, kChkIINTJ, kChkEUCP, kChkBUCP,
+    kChkIPRT, kChkEPRT, kChkBPRT, kChkBLST, kChkELST, kChkPADDING,
+    kChkUNAVAILABLE
+  };
+
+  enum NerLabel {
+    kNerO = 0,
+    kNerSLOC, kNerEPER, kNerBPER, kNerSORG, kNerEORG, kNerBORG, kNerSPER,
+    kNerSMISC, kNerIORG, kNerELOC, kNerBLOC, kNerEMISC, kNerBMISC, kNerIPER,
+    kNerIMISC, kNerILOC, kNerPADDING, kNerUNAVAILABLE
+  };
+
   struct Tag {
     Tag(const Offset& offset, Type type, int label)
         : offset(offset), type(type), label(label) {}
@@ -56,13 +84,14 @@ class Tagger {
   static size_t kMaxTargetVbSize;
   static std::string SennaPath;
 
-  explicit Tagger(Type type);
+  explicit Tagger(uint8_t type = kPos);
   ~Tagger();
+  Tagger& operator=(const Tagger& rhs);
   std::vector<Tag> Tags(const std::string& text) const;
   const char* Label(Type type, const int id) const;
 
  private:
-  Type type_;
+  uint8_t type_;
 
   // Senna stuff.
   SENNA_Hash* word_hash_;

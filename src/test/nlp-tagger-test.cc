@@ -27,12 +27,17 @@ class TaggerTest : public ::testing::Test {
 };
 
 TEST_F(TaggerTest, POS) {
-  Tagger::SennaPath = "deps/senna/";
-  Tagger tagger(Tagger::kPos);
+  Tagger pos_tagger(Tagger::kPos);
   {
-    vector<Tagger::Tag> tags = tagger.Tags("first targets of the atomic bomb");
-    vector<Tagger::Tag> exp;
-    exp.push_back(Tagger::Tag({0, 5}, Tagger::kPos, 0));
-    EXPECT_EQ(exp[0], tags[0]);
+    vector<Tagger::Tag> tags = pos_tagger.Tags(
+        "first targets of the atomic bomb");
+    vector<Tagger::Tag> exp =
+        {{{0, 5}, Tagger::kPos, Tagger::kPosJJ},
+         {{6, 13}, Tagger::kPos, Tagger::kPosNNS},
+         {{14, 16}, Tagger::kPos, Tagger::kPosIN},
+         {{17, 20}, Tagger::kPos, Tagger::kPosDT},
+         {{21, 27}, Tagger::kPos, Tagger::kPosJJ},
+         {{28, 32}, Tagger::kPos, Tagger::kPosNN}};
+    EXPECT_EQ(exp, tags);
   }
 }

@@ -17,7 +17,7 @@ size_t Tagger::kMaxTextSize = 1024;
 size_t Tagger::kMaxTargetVbSize = 256;
 string Tagger::SennaPath = "deps/senna/";
 
-Tagger::Tagger(Type type)
+Tagger::Tagger(uint8_t type)
     : type_(type) {
   SENNA_set_verbose_mode(false);
 
@@ -85,6 +85,11 @@ Tagger::~Tagger() {
   SENNA_Hash_free(srl_hash_);
   SENNA_Hash_free(psg_left_hash_);
   SENNA_Hash_free(psg_right_hash_);
+}
+
+Tagger& Tagger::operator=(const Tagger& rhs) {
+  type_ = rhs.type_;  
+  return *this;
 }
 
 vector<Tagger::Tag> Tagger::Tags(const string& text) const {
