@@ -42,11 +42,11 @@ class Tagger {
   enum PosLabel {
     kPosNNP = 0,
     kPosComma, kPosCD, kPosNNS, kPosJJ, kPosMD, kPosVB, kPosDT, kPosNN, kPosIN,
-    kPosFullStop, kPosVBZ, kPosVBG, kPosVBN, kPosRB, kPosTO, kPosPRP, kPosRBR,
-    kPosWDT, kPosVBP, kPosRP, kPosPRPE, kPosJJS, kPosPOS, kPosQuote1, kPosWP,
-    kPosQuote2, kPosColon, kPosJJR, kPosWRB, kPosEX, kPosE, kPosNNPS, kPosWPE,
-    kPosLRB, kPosRRB, kPosPDT, kPosRBS, kPosFW, kPosUH, kPosSYM, kPosLS,
-    kPosHash, kPosPADDING, kPosUNAVAILABLE
+    kPosFullStop, kPosVBZ, kPosVBG, kPosCC, kPosVBD, kPosVBN, kPosRB, kPosTO,
+    kPosPRP, kPosRBR, kPosWDT, kPosVBP, kPosRP, kPosPRPE, kPosJJS, kPosPOS,
+    kPosQuote1, kPosWP, kPosQuote2, kPosColon, kPosJJR, kPosWRB, kPosEX, kPosE,
+    kPosNNPS, kPosWPE, kPosLRB, kPosRRB, kPosPDT, kPosRBS, kPosFW, kPosUH,
+    kPosSYM, kPosLS, kPosHash, kPosPADDING, kPosUNAVAILABLE
   };
 
   enum ChkLabel {

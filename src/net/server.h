@@ -5,6 +5,7 @@
 #include <Poco/Util/ServerApplication.h>
 #include <string>
 #include <vector>
+#include "../nlp/tagger.h"
 
 namespace pyt {
 namespace net {
@@ -20,6 +21,7 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& ApiCx() const;
   const std::string& SearchHost() const;
   const std::string& SearchBase() const;
+  const pyt::nlp::Tagger& Tagger() const;
 
  private:
   void initialize(Poco::Util::Application& self);  // NOLINT
@@ -36,6 +38,7 @@ class Server: public Poco::Util::ServerApplication {
   std::string api_cx_;
   std::string search_host_;
   std::string search_base_;
+  pyt::nlp::Tagger tagger_;
 };
 
 }  // namespace net

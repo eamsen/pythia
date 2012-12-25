@@ -31,6 +31,7 @@ using Poco::Util::Application;
 using Poco::Util::Option;
 using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
+using pyt::nlp::Tagger;
 
 namespace pyt {
 namespace net {
@@ -45,7 +46,8 @@ Server::Server(const string& name, const string& version,
       doc_path_(doc_path),
       port_(port),
       num_threads_(threads),
-      queue_size_(queue_size) {
+      queue_size_(queue_size),
+      tagger_(Tagger::kPos) {
   std::fstream file(FLAGS_api);
   LOG_IF(FATAL, !file.good()) << "Google API file " << FLAGS_api
                                << " not found.";
@@ -83,6 +85,10 @@ const string& Server::SearchHost() const {
 
 const string& Server::SearchBase() const {
   return search_base_;
+}
+
+const Tagger& Server::Tagger() const {
+  return tagger_;
 }
 
 void Server::initialize(Application& self) {  // NOLINT
