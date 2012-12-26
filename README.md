@@ -14,7 +14,7 @@ Nothing to see here yet.
 
 ## Dependencies
 ### Required
-* SENNA (<http://ml.nec-labs.com/senna>)
+* SENNA (`make senna` or from <http://ml.nec-labs.com/senna>)
 * POCO C++ Libraries (`make poco` or from <http://pocoproject.org>)
 * gflags (`make gflags` or from <http://code.google.com/p/gflags>)
 * glog (`make glog` or from <http://code.google.com/p/google-glog>)
