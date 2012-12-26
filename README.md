@@ -46,9 +46,20 @@ To build to included glog version, use:
     make glog
 
 #### Building POCO C++ Libraries
-To build the included POCO version, use:
+To build the POCO submodule, use:
 
     make poco
+
+*This will check out the required POCO version from GitHub and build it, which
+can take a while.*
+
+#### Building SENNA
+To get the required SENNA version, use:
+
+    make senna
+
+*This will download SENNA from the web (~250MB) and modify the source files, so
+that it compiles with g++. Downloading the files may take a while.*
 
 ### Building Pythia
 To build Pythia use:
