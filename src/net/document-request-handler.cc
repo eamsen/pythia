@@ -51,9 +51,17 @@ class ContentType {
     } else if (suffix == "jpg") {
       return {1, 8};
     } else if (suffix == "exe") {
-      return {1, 9};
+      return {0, 9};
     } else if (suffix == "pdf") {
-      return {1, 10};
+      return {0, 10};
+    } else if (suffix == "woff") {
+      return {0, 12};
+    } else if (suffix == "ttf") {
+      return {0, 11};
+    } else if (suffix == "svg") {
+      return {1, 14};
+    } else if (suffix == "eot") {
+      return {0, 13};
     }
     // Default type.
     return {2, 5};
@@ -74,8 +82,10 @@ const vector<string> ContentType::types_ =
 const vector<string> ContentType::subtypes_ =
 // 0,   1,     2,      3,            4,      5,       6,     7,        8,
 {"css", "csv", "html", "javascript", "json", "plain", "xml", "x-icon", "jpeg",
-// 9,             10,
-  "octet-stream", "pdf"};
+//  9,              10,    11,           12,            13,
+    "octet-stream", "pdf", "x-font-ttf", "x-font-woff", "vnd.ms-fontobject",
+//  14
+    "svg+xml"};
 
 void DocumentRequestHandler::Handle(Request* request, Response* response) {
   Server& server = static_cast<Server&>(Poco::Util::Application::instance());

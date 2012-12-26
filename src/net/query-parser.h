@@ -15,13 +15,22 @@ class Query {
   }
 
   bool Empty() const {
-    return parts_.size();
+    return text_parts_.size();
   }
 
-  const std::string& operator[](const std::string& key) const {
+  const std::string& Text(const std::string& key) const {
     static std::string _empty;
-    const auto it = parts_.find(key);
-    if (it == parts_.end()) {
+    const auto it = text_parts_.find(key);
+    if (it == text_parts_.end()) {
+      return _empty;
+    }
+    return it->second;
+  }
+
+  const std::string& Uri(const std::string& key) const {
+    static std::string _empty;
+    const auto it = uri_parts_.find(key);
+    if (it == uri_parts_.end()) {
       return _empty;
     }
     return it->second;
@@ -32,14 +41,18 @@ class Query {
     size_t pos = 0;
     while (pos != std::string::npos) {
       size_t end = query.find("=", pos);
-      std::string& value = parts_[query.substr(pos, end - pos)];
+      std::string& text_value = text_parts_[query.substr(pos, end - pos)];
+      std::string& uri_value = uri_parts_[query.substr(pos, end - pos)];
       ++end;
       pos = query.find("&", end);
-      value = query.substr(end, pos - end);
+      text_value = query.substr(end, pos - end);
+      uri_value = query.substr(end, pos - end);
+      std::replace(text_value.begin(), text_value.end(), '+', ' ');
     }
   }
 
-  std::unordered_map<std::string, std::string> parts_;
+  std::unordered_map<std::string, std::string> text_parts_;
+  std::unordered_map<std::string, std::string> uri_parts_;
 };
 
 }  // namespace net

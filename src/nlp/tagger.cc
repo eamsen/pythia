@@ -94,6 +94,9 @@ Tagger& Tagger::operator=(const Tagger& rhs) {
 
 vector<Tagger::Tag> Tagger::Tags(const string& text) const {
   vector<Tag> tags;
+  if (text.empty()) {
+    return tags;
+  }
   SENNA_Tokens* tokens = SENNA_Tokenizer_tokenize(tokenizer_, text.c_str());
   if (tokens->n == 0) {
     LOG(WARNING) << "Tokenizer failed.";
