@@ -97,17 +97,32 @@ vector<Tagger::Tag> Tagger::Tags(const string& text) const {
   if (text.empty()) {
     return tags;
   }
+  // TODO(esawin): Is this thread-safe?
   SENNA_Tokens* tokens = SENNA_Tokenizer_tokenize(tokenizer_, text.c_str());
   if (tokens->n == 0) {
     LOG(WARNING) << "Tokenizer failed.";
     return tags;
   }
-  int* pos_labels = SENNA_POS_forward(pos_, tokens->word_idx, tokens->caps_idx,
-                                      tokens->suff_idx, tokens->n);
-  tags.reserve(tokens->n);
-  for (int i = 0; i < tokens->n; ++i) {
-    tags.push_back({{tokens->start_offset[i], tokens->end_offset[i]}, kPos,
-                    pos_labels[i]});
+  // TODO(esawin): Is this thread-safe?
+  if (type_ & kPos) {
+    // Part-of-speech tagging.
+    int* pos_labels = SENNA_POS_forward(pos_, tokens->word_idx, tokens->caps_idx,
+        tokens->suff_idx, tokens->n);
+    tags.reserve(tokens->n);
+    for (int i = 0; i < tokens->n; ++i) {
+      tags.push_back({{tokens->start_offset[i], tokens->end_offset[i]}, kPos,
+                      pos_labels[i]});
+    }
+  }
+  if (type_ & kNer) {
+    // Named entity recognition.
+    int* ner_labels = SENNA_NER_forward(ner_, tokens->word_idx,
+        tokens->caps_idx, tokens->gazl_idx, tokens->gazm_idx, tokens->gazo_idx,
+        tokens->gazp_idx, tokens->n);
+    for (int i = 0; i < tokens->n; ++i) {
+      tags.push_back({{tokens->start_offset[i], tokens->end_offset[i]}, kNer,
+                      ner_labels[i]});
+    }
   }
   return tags;
 }

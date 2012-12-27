@@ -36,7 +36,7 @@ class Tagger {
     kNer = 4u,
     kSrl = 8u,
     kPsg = 16u,
-    kAll = 32u
+    kAll = 31u
   };
 
   enum PosLabel {
