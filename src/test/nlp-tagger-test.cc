@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <vector>
 #include "../nlp/tagger.h"
+#include "../nlp/named-entity-extractor.h"
 
 using std::vector;
 using std::set;
@@ -49,16 +50,17 @@ TEST_F(TaggerTest, Pos) {
 
 TEST_F(TaggerTest, Ner) {
   Tagger tagger(Tagger::kNer);
+  NamedEntityExtractor extractor;
   {
-    vector<Tagger::Tag> tags = tagger.Tags("");
     vector<Tagger::Tag> exp;
-    EXPECT_EQ(exp, tags);
+    EXPECT_EQ(exp, tagger.Tags(""));
+    EXPECT_EQ(exp, extractor.Extract(""));
   }
   {
-    vector<Tagger::Tag> tags = tagger.Tags(
-        string("Internet giant Google has made a very high-profile hire, ") +
-        "bringing famed inventor and futurist Ray Kurzweil on board as the " +
-        "company's new director of engineering.");
+    string text = "Internet giant Google has made a very high-profile hire, ";
+    text += "bringing famed inventor and futurist Ray Kurzweil on board as ";
+    text += "the company's new director of engineering.";
+    vector<Tagger::Tag> tags = tagger.Tags(text);
     vector<Tagger::Tag> exp =
         {{{0, 8}, Tagger::kNer, Tagger::kNerO},
          {{9, 14}, Tagger::kNer, Tagger::kNerO},
@@ -89,5 +91,10 @@ TEST_F(TaggerTest, Ner) {
          {{149, 160}, Tagger::kNer, Tagger::kNerO},
          {{160, 161}, Tagger::kNer, Tagger::kNerO}};
     EXPECT_EQ(exp, tags);
+    vector<Tagger::Tag> entities = extractor.Extract(text);
+    exp = {{{15, 21}, Tagger::kNer, Tagger::kNerSORG},
+           {{94, 97}, Tagger::kNer, Tagger::kNerBPER},
+           {{98, 106}, Tagger::kNer, Tagger::kNerEPER}};
+    EXPECT_EQ(exp, entities);
   }
 }
