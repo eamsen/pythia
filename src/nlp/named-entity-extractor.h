@@ -9,10 +9,13 @@
 namespace pyt {
 namespace nlp {
 
+class EntityIndex;
+
 class NamedEntityExtractor: public Tagger {
  public:
   NamedEntityExtractor();
   std::vector<Tag> Extract(const std::string& text) const;
+  std::vector<Tag> Extract(const std::string& text, EntityIndex* index) const;
 };
 
 }  // namespace nlp

@@ -4,6 +4,7 @@
 #include <vector>
 #include "../nlp/tagger.h"
 #include "../nlp/named-entity-extractor.h"
+#include "../nlp/entity-index.h"
 
 using std::vector;
 using std::set;
@@ -39,11 +40,11 @@ TEST_F(TaggerTest, Pos) {
         "first targets of the atomic bomb");
     vector<Tagger::Tag> exp =
         {{{0, 5}, Tagger::kPos, Tagger::kPosJJ},
-         {{6, 13}, Tagger::kPos, Tagger::kPosNNS},
-         {{14, 16}, Tagger::kPos, Tagger::kPosIN},
-         {{17, 20}, Tagger::kPos, Tagger::kPosDT},
-         {{21, 27}, Tagger::kPos, Tagger::kPosJJ},
-         {{28, 32}, Tagger::kPos, Tagger::kPosNN}};
+         {{6, 7}, Tagger::kPos, Tagger::kPosNNS},
+         {{14, 2}, Tagger::kPos, Tagger::kPosIN},
+         {{17, 3}, Tagger::kPos, Tagger::kPosDT},
+         {{21, 6}, Tagger::kPos, Tagger::kPosJJ},
+         {{28, 4}, Tagger::kPos, Tagger::kPosNN}};
     EXPECT_EQ(exp, tags);
   }
 }
@@ -63,38 +64,72 @@ TEST_F(TaggerTest, Ner) {
     vector<Tagger::Tag> tags = tagger.Tags(text);
     vector<Tagger::Tag> exp =
         {{{0, 8}, Tagger::kNer, Tagger::kNerO},
-         {{9, 14}, Tagger::kNer, Tagger::kNerO},
-         {{15, 21}, Tagger::kNer, Tagger::kNerSORG},
-         {{22, 25}, Tagger::kNer, Tagger::kNerO},
-         {{26, 30}, Tagger::kNer, Tagger::kNerO},
-         {{31, 32}, Tagger::kNer, Tagger::kNerO},
-         {{33, 37}, Tagger::kNer, Tagger::kNerO},
-         {{38, 50}, Tagger::kNer, Tagger::kNerO},
-         {{51, 55}, Tagger::kNer, Tagger::kNerO},
-         {{55, 56}, Tagger::kNer, Tagger::kNerO},
-         {{57, 65}, Tagger::kNer, Tagger::kNerO},
-         {{66, 71}, Tagger::kNer, Tagger::kNerO},
-         {{72, 80}, Tagger::kNer, Tagger::kNerO},
-         {{81, 84}, Tagger::kNer, Tagger::kNerO},
-         {{85, 93}, Tagger::kNer, Tagger::kNerO},
-         {{94, 97}, Tagger::kNer, Tagger::kNerBPER},
-         {{98, 106}, Tagger::kNer, Tagger::kNerEPER},
-         {{107, 109}, Tagger::kNer, Tagger::kNerO},
-         {{110, 115}, Tagger::kNer, Tagger::kNerO},
-         {{116, 118}, Tagger::kNer, Tagger::kNerO},
-         {{119, 122}, Tagger::kNer, Tagger::kNerO},
-         {{123, 130}, Tagger::kNer, Tagger::kNerO},
-         {{130, 132}, Tagger::kNer, Tagger::kNerO},
-         {{133, 136}, Tagger::kNer, Tagger::kNerO},
-         {{137, 145}, Tagger::kNer, Tagger::kNerO},
-         {{146, 148}, Tagger::kNer, Tagger::kNerO},
-         {{149, 160}, Tagger::kNer, Tagger::kNerO},
-         {{160, 161}, Tagger::kNer, Tagger::kNerO}};
-    EXPECT_EQ(exp, tags);
-    vector<Tagger::Tag> entities = extractor.Extract(text);
-    exp = {{{15, 21}, Tagger::kNer, Tagger::kNerSORG},
-           {{94, 97}, Tagger::kNer, Tagger::kNerBPER},
-           {{98, 106}, Tagger::kNer, Tagger::kNerEPER}};
+         {{9, 5}, Tagger::kNer, Tagger::kNerO},
+         {{15, 6}, Tagger::kNer, Tagger::kNerSORG},
+         {{22, 3}, Tagger::kNer, Tagger::kNerO},
+         {{26, 4}, Tagger::kNer, Tagger::kNerO},
+         {{31, 1}, Tagger::kNer, Tagger::kNerO},
+         {{33, 4}, Tagger::kNer, Tagger::kNerO},
+         {{38, 12}, Tagger::kNer, Tagger::kNerO},
+         {{51, 4}, Tagger::kNer, Tagger::kNerO},
+         {{55, 1}, Tagger::kNer, Tagger::kNerO},
+         {{57, 8}, Tagger::kNer, Tagger::kNerO},
+         {{66, 5}, Tagger::kNer, Tagger::kNerO},
+         {{72, 8}, Tagger::kNer, Tagger::kNerO},
+         {{81, 3}, Tagger::kNer, Tagger::kNerO},
+         {{85, 8}, Tagger::kNer, Tagger::kNerO},
+         {{94, 3}, Tagger::kNer, Tagger::kNerBPER},
+         {{98, 8}, Tagger::kNer, Tagger::kNerEPER},
+         {{107, 2}, Tagger::kNer, Tagger::kNerO},
+         {{110, 5}, Tagger::kNer, Tagger::kNerO},
+         {{116, 2}, Tagger::kNer, Tagger::kNerO},
+         {{119, 3}, Tagger::kNer, Tagger::kNerO},
+         {{123, 7}, Tagger::kNer, Tagger::kNerO},
+         {{130, 2}, Tagger::kNer, Tagger::kNerO},
+         {{133, 3}, Tagger::kNer, Tagger::kNerO},
+         {{137, 8}, Tagger::kNer, Tagger::kNerO},
+         {{146, 2}, Tagger::kNer, Tagger::kNerO},
+         {{149, 11}, Tagger::kNer, Tagger::kNerO},
+         {{160, 1}, Tagger::kNer, Tagger::kNerO}};
+    EXPECT_EQ(exp[0], tags[0]);
+    EXPECT_EQ(exp[1], tags[1]);
+    EXPECT_EQ(exp[2], tags[2]);
+    EXPECT_EQ(exp[3], tags[3]);
+    EXPECT_EQ(exp[4], tags[4]);
+    EXPECT_EQ(exp[5], tags[5]);
+    EXPECT_EQ(exp[6], tags[6]);
+    EXPECT_EQ(exp[7], tags[7]);
+    EXPECT_EQ(exp[8], tags[8]);
+    EXPECT_EQ(exp[9], tags[9]);
+    EXPECT_EQ(exp[10], tags[10]);
+    EXPECT_EQ(exp[11], tags[11]);
+    EXPECT_EQ(exp[12], tags[12]);
+    EXPECT_EQ(exp[13], tags[13]);
+    EXPECT_EQ(exp[14], tags[14]);
+    EXPECT_EQ(exp[15], tags[15]);
+    EXPECT_EQ(exp[16], tags[16]);
+    EXPECT_EQ(exp[17], tags[17]);
+    EXPECT_EQ(exp[18], tags[18]);
+    EXPECT_EQ(exp[19], tags[19]);
+    EXPECT_EQ(exp[20], tags[20]);
+    EXPECT_EQ(exp[21], tags[21]);
+    EXPECT_EQ(exp[22], tags[22]);
+    EXPECT_EQ(exp[23], tags[23]);
+    EXPECT_EQ(exp[24], tags[24]);
+    EXPECT_EQ(exp[25], tags[25]);
+    EXPECT_EQ(exp[26], tags[26]);
+    EXPECT_EQ(exp[27], tags[27]);
+
+    EntityIndex index;
+    vector<Tagger::Tag> entities = extractor.Extract(text, &index);
+    exp = {{{15, 6}, Tagger::kNer, Tagger::kNerSORG},
+           {{94, 3}, Tagger::kNer, Tagger::kNerBPER},
+           {{98, 8}, Tagger::kNer, Tagger::kNerEPER}};
     EXPECT_EQ(exp, entities);
+    vector<EntityIndex::Item> google_items = {{1.0f}};
+    vector<EntityIndex::Item> kurzweil_items = {{1.0f}};
+    EXPECT_EQ(google_items, index.Items({"google", Entity::kOrganizationType}));
+    EXPECT_EQ(kurzweil_items,
+              index.Items({"ray kurzweil", Entity::kPersonType}));
   }
 }

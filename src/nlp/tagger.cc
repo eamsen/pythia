@@ -110,8 +110,9 @@ vector<Tagger::Tag> Tagger::Tags(const string& text) const {
         tokens->suff_idx, tokens->n);
     tags.reserve(tokens->n);
     for (int i = 0; i < tokens->n; ++i) {
-      tags.push_back({{tokens->start_offset[i], tokens->end_offset[i]}, kPos,
-                      pos_labels[i]});
+      Offset offset = {tokens->start_offset[i],
+                       tokens->end_offset[i] - tokens->start_offset[i]};
+      tags.push_back({offset, kPos, pos_labels[i]});
     }
   }
   if (type_ & kNer) {
@@ -120,8 +121,9 @@ vector<Tagger::Tag> Tagger::Tags(const string& text) const {
         tokens->caps_idx, tokens->gazl_idx, tokens->gazm_idx, tokens->gazo_idx,
         tokens->gazp_idx, tokens->n);
     for (int i = 0; i < tokens->n; ++i) {
-      tags.push_back({{tokens->start_offset[i], tokens->end_offset[i]}, kNer,
-                      ner_labels[i]});
+      Offset offset = {tokens->start_offset[i],
+                       tokens->end_offset[i] - tokens->start_offset[i]};
+      tags.push_back({offset, kNer, ner_labels[i]});
     }
   }
   return tags;

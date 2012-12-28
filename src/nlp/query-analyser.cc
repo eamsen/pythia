@@ -35,13 +35,11 @@ vector<string> QueryAnalyser::TargetKeywords(const string& query) const {
            IsNN((it - 2)->label))) {
         // Simple NN or NN conjunction.
         keywords.push_back(
-            Singular(query.substr(it->offset.begin,
-                                  it->offset.end - it->offset.begin), label));
+            Singular(query.substr(it->offset.begin, it->offset.size), label));
       } else if (it != beg && IsNN((it - 1)->label)) {
         // Multi-word NN.
         keywords.back() += " " +
-          Singular(query.substr(it->offset.begin,
-                                it->offset.end - it->offset.begin), label);
+          Singular(query.substr(it->offset.begin, it->offset.size), label);
       } else if (keywords.size()) {
         // Found all relevant target keywords.
         break;
