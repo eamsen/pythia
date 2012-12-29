@@ -32,17 +32,17 @@ function search() {
 
 function callback(data, status, xhr) {
   var view_left = "";
-  for (var i in data.results.items) {
-    var title = data.results.items[i]["htmlTitle"];
-    var snippet = data.results.items[i]["snippet"];
-    var link = data.results.items[i]["link"];
-    var link_name = data.results.items[i]["displayLink"]
+  for (var i in data.results) {
+    var title = data.results[i]["htmlTitle"];
+    var snippet = data.results[i]["snippet"];
+    var link = data.results[i]["link"];
+    var link_name = data.results[i]["displayLink"]
     var element = "<p>" + "<a href=\"" + link + "\"><h2>" + title  + "</a></h2>"
         + snippet + "<br />"
         + "<a href=\"" + link + "\">" + link_name + "</a></p>";
     view_left += element;
   }
-  if (data.results.items.length == 0) {
+  if (data.results.length == 0) {
     view_left += "<h2>no results</h2>";
   }
   $("#view-left").html(view_left);

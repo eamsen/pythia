@@ -2,7 +2,11 @@
 #include "./full-query-request-handler.h"
 #include <Poco/Exception.h>
 #include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/JSON/Parser.h>
+#include <Poco/JSON/DefaultHandler.h>
+#include <Poco/JSON/Query.h>
 #include <glog/logging.h>
+#include <iostream>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -64,10 +68,21 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     std::getline(stream, buffer);
     msg += buffer;
   }
-  // LOG(INFO) << msg;
+
+  Poco::JSON::Parser json_parser;
+  Poco::JSON::DefaultHandler json_handler;
+  json_parser.setHandler(&json_handler);
+  json_parser.parse(msg);
+  Poco::Dynamic::Var json_msg = json_handler.result();
+  Poco::JSON::Query json_query(json_msg);
+  auto items = json_query.findArray("items");
+
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
-  response->send() << "{\"results\": " << msg << ","
+  std::ostream& response_stream = response->send();
+  response_stream << "{\"results\": ";
+  items->stringify(response_stream, 0);
+  response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
       << "\"target_type\": \"target type\","

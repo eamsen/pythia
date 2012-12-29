@@ -18,10 +18,11 @@ vector<string> QueryAnalyser::TargetKeywords(const string& query) const {
   };
 
   auto Singular = [](const string& word, const int label) {
-    if ((label == Tagger::kPosNNS || label == Tagger::kPosNNPS) &&
-        word[word.size() - 1] == 's') {
-      return word.substr(0, word.size() - 1);
-    }
+    // We don't convert to singular form yet.
+    // if ((label == Tagger::kPosNNS || label == Tagger::kPosNNPS) &&
+    //     word[word.size() - 1] == 's') {
+    //   return word.substr(0, word.size() - 1);
+    // }
     return word;
   };
 
