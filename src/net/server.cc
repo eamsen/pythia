@@ -55,7 +55,7 @@ Server::Server(const string& name, const string& version,
   LOG_IF(FATAL, file.eof()) << "Provided Google API file " << FLAGS_api
                             << " has invalid format. Should be <key>\n<cx>.";
   std::getline(file, api_cx_);
-  search_host_ = "www.googleapis.com";
+  search_host_ = "https://www.googleapis.com";
   search_base_ = "/customsearch/v1?";
   search_base_ += "key=" + api_key_;
   search_base_ += "&cx=" + api_cx_;

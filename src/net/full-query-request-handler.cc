@@ -1,7 +1,6 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./full-query-request-handler.h"
 #include <Poco/Exception.h>
-#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/DefaultHandler.h>
 #include <Poco/JSON/Query.h>
@@ -13,6 +12,7 @@
 #include <vector>
 #include "./server.h"
 #include "./query-parser.h"
+#include "./http-request.h"
 
 using std::string;
 using std::vector;
@@ -43,10 +43,6 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
       query_analyser_(server_.Tagger()) {}
 
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
-  using Poco::Net::HTTPSClientSession;
-  using Poco::Net::HTTPRequest;
-  using Poco::Net::HTTPResponse;
-
   const Query query(uri_.getQuery());
   const string& query_text = query.Text("qf");
   const string& query_uri = query.Uri("qf");
@@ -56,18 +52,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
-  HTTPSClientSession session(server_.SearchHost());
-  HTTPRequest search_request(HTTPRequest::HTTP_GET,
-                             server_.SearchBase() + query_uri);
-  session.sendRequest(search_request);
-  HTTPResponse search_response;
-  std::istream& stream = session.receiveResponse(search_response);
-  string msg;
-  while (stream.good()) {
-    string buffer;
-    std::getline(stream, buffer);
-    msg += buffer;
-  }
+  string msg = HttpsGetRequest(server_.SearchHost() + server_.SearchBase() +
+                               query_uri);
 
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
@@ -76,7 +62,9 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   Poco::Dynamic::Var json_msg = json_handler.result();
   Poco::JSON::Query json_query(json_msg);
   auto items = json_query.findArray("items");
-
+  for (size_t end = items->size(), i = 0; i < end; ++i) {
+    std::cerr << items->getObject(i)->getValue<string>("link") << std::endl;
+  }
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
