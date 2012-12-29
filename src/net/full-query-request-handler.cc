@@ -52,18 +52,20 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
-  string msg = HttpsGetRequest(server_.SearchHost() + server_.SearchBase() +
-                               query_uri);
+  string response_data = HttpsGetRequest(server_.SearchHost() +
+                                         server_.SearchBase() + query_uri);
 
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
-  json_parser.parse(msg);
-  Poco::Dynamic::Var json_msg = json_handler.result();
-  Poco::JSON::Query json_query(json_msg);
+  json_parser.parse(response_data);
+  Poco::Dynamic::Var json_data = json_handler.result();
+  Poco::JSON::Query json_query(json_data);
   auto items = json_query.findArray("items");
   for (size_t end = items->size(), i = 0; i < end; ++i) {
-    std::cerr << items->getObject(i)->getValue<string>("link") << std::endl;
+    const string& url = items->getObject(i)->getValue<string>("link");
+    string content = HttpGetRequest(url);
+    std::cerr << url << ": " << content.size() << std::endl;
   }
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");

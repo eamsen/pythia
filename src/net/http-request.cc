@@ -26,11 +26,19 @@ template<class SessionType>
 string ReceiveResponse(SessionType* session) {
   HTTPResponse response;
   std::istream& stream = session->receiveResponse(response);
+  std::streamsize size = response.getContentLength();
   string data;
-  while (stream.good()) {
-    string buffer;
-    std::getline(stream, buffer);
-    data += buffer;
+  if (size == HTTPResponse::UNKNOWN_CONTENT_LENGTH) {
+    // Content-length header field not set.
+    while (stream.good()) {
+      string buffer;
+      std::getline(stream, buffer);
+      data += buffer;
+    }
+  } else {
+    // Content length is known.
+    data.resize(size);
+    stream.read(&data[0], size);
   }
   return data;
 }
