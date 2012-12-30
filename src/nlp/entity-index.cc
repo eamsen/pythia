@@ -1,5 +1,6 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./entity-index.h"
+#include <glog/logging.h>
 #include <algorithm>
 #include <sstream>
 
@@ -10,6 +11,9 @@ using std::vector;
 namespace pyt {
 namespace nlp {
 
+EntityIndex::EntityIndex()
+    : queue_(QueueComp(*this)) {}
+
 void EntityIndex::Add(const string& _entity, Entity::Type type) {
   Entity entity({_entity, type});
   std::transform(entity.name.begin(), entity.name.end(), entity.name.begin(),
@@ -18,8 +22,28 @@ void EntityIndex::Add(const string& _entity, Entity::Type type) {
   if (it == index_.end()) {
     index_[entity].push_back({1.0f});
   } else {
-    it->second.back().score += 1.0f;
+    it->second.push_back({it->second.back().score + 1.0f});
   }
+  queue_.push(entity);
+}
+
+Entity EntityIndex::PopTop() {
+  LOG_IF(FATAL, queue_.empty()) << "Empty entity index queue.";
+  Entity top = queue_.top();
+  queue_.pop();
+  return top;
+}
+
+size_t EntityIndex::QueueSize() const {
+  return queue_.size();
+}
+
+size_t EntityIndex::Frequency(const Entity& entity) const {
+  auto it = index_.find(entity);
+  if (it == index_.end()) {
+    return 0;
+  }
+  return it->second.size();
 }
 
 auto EntityIndex::Items(const Entity& entity) const -> const vector<Item>& {

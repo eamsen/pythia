@@ -10,13 +10,19 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include "./server.h"
 #include "./query-parser.h"
 #include "./http-request.h"
+#include "../nlp/entity-index.h"
+#include "../nlp/named-entity-extractor.h"
 
 using std::string;
 using std::vector;
 using pyt::nlp::Tagger;
+using pyt::nlp::NamedEntityExtractor;
+using pyt::nlp::EntityIndex;
+using pyt::nlp::Entity;
 
 namespace pyt {
 namespace net {
@@ -61,10 +67,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   json_parser.parse(response_data);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
+  EntityIndex index;
+  NamedEntityExtractor extractor;
   auto items = json_query.findArray("items");
   for (size_t end = items->size(), i = 0; i < end; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     string content = HttpGetRequest(url);
+    extractor.Extract(content, &index);
     std::cerr << url << ": " << content.size() << std::endl;
   }
   response->setChunkedTransferEncoding(true);
@@ -76,8 +85,23 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
       << "\"target_type\": \"target type\","
-      << "\"entities\": [[\"entity a\", 40], [\"entity b\", 20]]}";
-  // google::FlushLogFiles(google::INFO);
+      << "\"entities\":[";
+  size_t num_top = 10;
+  std::unordered_set<string> entities;
+  while (num_top && index.QueueSize()) {
+    Entity entity = index.PopTop();
+    if (entities.count(entity.name)) {
+      continue;
+    }
+    --num_top;
+    if (entities.size()) {
+      response_stream << ",";
+    }
+    response_stream << "{\"name\":\"" << entity.name
+                    << "\",\"score\":" << index.Frequency(entity) << "}";
+    entities.insert(entity.name);
+  }
+  response_stream << "]}";
 }
 
 }  // namespace net

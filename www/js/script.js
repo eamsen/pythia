@@ -62,8 +62,8 @@ function callback(data, status, xhr) {
 
   var meta_result2 = "<div id=\"meta-result-area2\">";
   for (var i in data.entities) {
-    var name = data.entities[i][0];
-    var rank = data.entities[i][1];
+    var name = data.entities[i]["name"];
+    var rank = data.entities[i]["score"];
     var element = "<h2>" + name + "</h2>:" + rank + "   ";
     meta_result2 += element;
   }

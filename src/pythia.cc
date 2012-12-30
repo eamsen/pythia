@@ -1,7 +1,6 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include <boost/asio.hpp>
 #include <vector>
 #include <string>
 #include "./net/server.h"
