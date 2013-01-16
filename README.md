@@ -105,7 +105,7 @@ To test code style conformance with the [Google C++ Style Guide](http://google-s
 
 ## License
 **Pythia - A Semantic Web Oracle.**   
-Copyright (C) 2012 Eugen Sawin
+Copyright (C) 2012, 2013 Eugen Sawin
 
 Pythia is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
