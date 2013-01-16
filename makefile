@@ -62,6 +62,7 @@ senna:
 		fi; \
 		tar xf senna-v3.0.tgz; \
 		sed -i "s/_new()/_new(const char* path, const char* subpath)/g" senna/*.h; \
+		sed -i "s/fprintf/\/\/ fprintf/g" senna/SENNA_Tokenizer.c; \
 		cd ..; \
 	fi
 	@cd $(OBJDIR); gcc -c -O3 -ffast-math ../../deps/senna/*.c;

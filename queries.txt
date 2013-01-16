@@ -1,0 +1,85 @@
+1 Apollo astronauts who walked on the Moon
+$1 :r:is-a :e:astronaut:Astronaut;
+$1 :r:occurs-with apollo
+$1 :r:occurs-with walk* on the moon
+
+2 Arab states of the Persian Gulf
+$1 :r:is-a :e:country:Country;
+$1 :r:occurs-with arab;
+$1 :r:occurs-with persian gulf
+
+3 astronauts who landed on the Moon
+$1 :r:is-a :e:astronaut:Astronaut;
+$1 :r:occurs-with land* moon
+
+4 Axis powers of World War II
+$1 :r:is-a :e:country:Country;
+$1 :r:occurs-with axis power*
+
+5 books of the Jewish canon
+$1 :r:is-a :e:book:Book;
+$1 :r:occurs-with jewish canon
+
+6 boroughs of New York City
+$1 :r:is-a :e:borough:Borough;
+$1 :r:occurs-with new york city
+
+7 Branches of the US military
+$1 :r:is-a :e:branchdivision:Branch_(Division);
+$1 :r:occurs-with us military
+
+8 continents in the world
+$1 :r:is-a :e:branchdivision:Branch_(Division);
+$1 :r:occurs-with us military
+
+9 degrees of Eastern Orthodox monasticism
+
+10 did nicole kidman have any siblings
+
+11 dioceses of the church of ireland
+$1 :r:is-a :e:diocese:Diocese;
+$1 :r:occurs-with church of ireland
+
+12 first targets of the atomic bomb
+13 five great epics of Tamil literature
+14 gods who dwelt on Mount Olympus
+15 henry ii's brothers and sisters
+16 hijackers in the September 11 attacks
+17 houses of the Russian parliament
+18 john lennon, parents
+19 kenya's captain in cricket
+20 kublai khan siblings
+21 lilly allen parents
+22 major leagues in the united states
+23 manfred von richthofen parents
+24  matt berry tv series
+25 members of u2?
+26 movies starring erykah badu
+27 movies starring joe frazier
+28 movies starring rafael rosell
+29 nations where Portuguese is an official language
+30 orders (or 'choirs') of angels
+31 permanent members of the UN Security Council
+32 presidents depicted on mount rushmore who died of shooting
+33 provinces and territories of Canada
+34 ratt albums
+35 republics of the former Yugoslavia
+36 revolutionaries of 1959 in Cuba
+37 standard axioms of set theory
+38 states that border oklahoma
+39 ten ancient Greek city-kingdoms of Cyprus
+40 the first 13 american states
+41 the four of the companions of the prophet
+42 twelve tribes or sons of Israel
+43 what books did paul of tarsus write?
+44 what languages do they speak in afghanistan
+45 what tv shows has thomas jane been in
+46 where the British monarch is also head of state
+47 who created stumbleupon
+48 who has jackie weaver been married to
+49 who invented the python programming language
+50 wonders of the ancient world
+
+51 german car manufacturers
+
+52 books by lewis carroll

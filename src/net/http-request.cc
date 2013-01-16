@@ -46,6 +46,7 @@ string ReceiveResponse(SessionType* session) {
 string HttpGetRequest(const string& url) {
   URI uri(url);
   HTTPClientSession session(uri.getHost());
+  session.setTimeout(3 * 1e6);
   SendRequest(uri, &session);
   return ReceiveResponse(&session);
 }

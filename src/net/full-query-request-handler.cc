@@ -16,6 +16,7 @@
 #include "./http-request.h"
 #include "../nlp/entity-index.h"
 #include "../nlp/named-entity-extractor.h"
+#include "../nlp/edit-distance.h"
 
 using std::string;
 using std::vector;
@@ -23,6 +24,8 @@ using pyt::nlp::Tagger;
 using pyt::nlp::NamedEntityExtractor;
 using pyt::nlp::EntityIndex;
 using pyt::nlp::Entity;
+using pyt::nlp::EditDistance;
+using pyt::nlp::PrefixEditDistance;
 
 namespace pyt {
 namespace net {
@@ -80,27 +83,56 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
   response_stream << "{\"results\": ";
-  items->stringify(response_stream, 0);
+  // items->stringify(response_stream, 0);
+  response_stream << "[]";
   response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
       << "\"target_type\": \"target type\","
       << "\"entities\":[";
+  const vector<string>& query_words = query.Words("qf");
+
+  auto IsSimilarToQuery = [&query_words](const string& word) {
+    for (const string& w: query_words) {
+      const int ped = PrefixEditDistance(w, word);
+      if (ped <= std::abs((w.size() - 1) / 3)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  auto IsBadName = [](const string& word) {
+    for (const char c: word) {
+      if (!std::isalpha(c)) {
+        return true;
+      }
+    }
+    return word.size() < 2 || word.size() > 40;
+  };
+
   size_t num_top = 10;
   std::unordered_set<string> entities;
   while (num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
-    if (entities.count(entity.name)) {
+    if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
+        IsBadName(entity.name)) {
+      // LOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
     --num_top;
     if (entities.size()) {
+      LOG(INFO) << ",";
       response_stream << ",";
     }
+    LOG(INFO) << "{\"name\":\"" << entity.name
+              << "\",\"score\":" << index.Frequency(entity) << "}";
+
     response_stream << "{\"name\":\"" << entity.name
                     << "\",\"score\":" << index.Frequency(entity) << "}";
     entities.insert(entity.name);
   }
+  LOG(INFO) << "]}";
   response_stream << "]}";
 }
 

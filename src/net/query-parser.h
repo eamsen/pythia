@@ -4,6 +4,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <sstream>
 
 namespace pyt {
 namespace net {
@@ -15,25 +17,24 @@ class Query {
   }
 
   bool Empty() const {
-    return text_parts_.size();
+    return word_index_.size();
   }
 
-  const std::string& Text(const std::string& key) const {
-    static std::string _empty;
-    const auto it = text_parts_.find(key);
-    if (it == text_parts_.end()) {
+  const std::vector<std::string>& Words(const std::string& key) const {
+    static const std::vector<std::string> _empty = {""};
+    const auto it = word_index_.find(key);
+    if (it == word_index_.end()) {
       return _empty;
     }
     return it->second;
   }
 
-  const std::string& Uri(const std::string& key) const {
-    static std::string _empty;
-    const auto it = uri_parts_.find(key);
-    if (it == uri_parts_.end()) {
-      return _empty;
-    }
-    return it->second;
+  std::string Text(const std::string& key) const {
+    return join(Words(key), " ");
+  }
+
+  std::string Uri(const std::string& key) const {
+    return join(Words(key), "+");
   }
 
  private:
@@ -41,18 +42,44 @@ class Query {
     size_t pos = 0;
     while (pos != std::string::npos) {
       size_t end = query.find("=", pos);
-      std::string& text_value = text_parts_[query.substr(pos, end - pos)];
-      std::string& uri_value = uri_parts_[query.substr(pos, end - pos)];
-      ++end;
-      pos = query.find("&", end);
-      text_value = query.substr(end, pos - end);
-      uri_value = query.substr(end, pos - end);
-      std::replace(text_value.begin(), text_value.end(), '+', ' ');
+      std::vector<std::string>& words = word_index_[
+          query.substr(pos, end - pos)];
+      pos = query.find("&", ++end);
+      words = split(query.substr(end, pos - end));
     }
   }
+    
+  static std::vector<std::string> split(
+      const std::string& content, const std::string& delims = "+") {
+    std::vector<std::string> items;
+    size_t pos = content.find_first_not_of(delims);
+    while (pos != std::string::npos) {
+      size_t end = content.find_first_of(delims, pos);
+      if (end == std::string::npos) {
+        // Last item found.
+        items.push_back(content.substr(pos));
+      } else {
+        // Item found.
+        items.push_back(content.substr(pos, end - pos));
+      }
+      pos = content.find_first_not_of(delims, end);
+    }
+    return items;
+  }
 
-  std::unordered_map<std::string, std::string> text_parts_;
-  std::unordered_map<std::string, std::string> uri_parts_;
+  static std::string join(
+      const std::vector<std::string>& words, const std::string& delim) {
+    std::string join;
+    for (const std::string& w: words) {
+      if (join.size()) {
+        join += delim;
+      }
+      join += w;
+    }
+    return join;
+  }
+
+  std::unordered_map<std::string, std::vector<std::string> > word_index_;
 };
 
 }  // namespace net
