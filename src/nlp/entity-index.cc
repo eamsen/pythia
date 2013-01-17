@@ -11,6 +11,12 @@ using std::vector;
 namespace pyt {
 namespace nlp {
 
+const string& Entity::TypeName(const Type type) {
+  static const vector<string> _names = {"person", "location", "organization",
+                                        "misc", "invalid"};
+  return _names[type];
+}
+
 EntityIndex::EntityIndex()
     : queue_(QueueComp(*this)) {}
 

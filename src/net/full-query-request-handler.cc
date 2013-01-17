@@ -75,9 +75,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   auto items = json_query.findArray("items");
   for (size_t end = items->size(), i = 0; i < end; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
+    LOG(INFO) << "Processing " << url;
     string content = HttpGetRequest(url);
-    extractor.Extract(content, &index);
-    std::cerr << url << ": " << content.size() << std::endl;
+    auto start = content.find("<body");
+    if (start != string::npos) {
+      auto end = content.find("</body", start + 5);
+      content = content.substr(start, end - start);
+      extractor.Extract(content, &index);
+    }
   }
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
@@ -104,7 +109,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   auto IsBadName = [](const string& word) {
     for (const char c: word) {
-      if (!std::isalpha(c)) {
+      if (!std::isalpha(c) && c != ' ' && c != '-' && c != '\'') {
         return true;
       }
     }
@@ -113,6 +118,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   size_t num_top = 10;
   std::unordered_set<string> entities;
+  string top_candidates;
   while (num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
@@ -120,19 +126,17 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       // LOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
+    top_candidates += (top_candidates.size() ? ", ": "") + entity.name;
     --num_top;
     if (entities.size()) {
-      LOG(INFO) << ",";
       response_stream << ",";
     }
-    LOG(INFO) << "{\"name\":\"" << entity.name
-              << "\",\"score\":" << index.Frequency(entity) << "}";
-
     response_stream << "{\"name\":\"" << entity.name
+                    << "\",\"type\":\"" << Entity::TypeName(entity.type)
                     << "\",\"score\":" << index.Frequency(entity) << "}";
     entities.insert(entity.name);
   }
-  LOG(INFO) << "]}";
+  LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "]}";
 }
 

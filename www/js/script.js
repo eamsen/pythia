@@ -43,7 +43,7 @@ function callback(data, status, xhr) {
     view_left += element;
   }
   if (data.results.length == 0) {
-    view_left += "<h2>no results</h2>";
+    // view_left += "<h2>no results</h2>";
   }
   $("#view-left").html(view_left);
 
@@ -63,8 +63,9 @@ function callback(data, status, xhr) {
   var meta_result2 = "<div id=\"meta-result-area2\">";
   for (var i in data.entities) {
     var name = data.entities[i]["name"];
+    var type = data.entities[i]["type"];
     var rank = data.entities[i]["score"];
-    var element = "<h2>" + name + "</h2>:" + rank + "   ";
+    var element = "<h2>" + name + "</h2>:" + type + ":" + rank + "   ";
     meta_result2 += element;
   }
   if (data.entities.length == 0) {

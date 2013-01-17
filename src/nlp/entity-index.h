@@ -12,12 +12,14 @@ namespace nlp {
 
 struct Entity {
   enum Type {
-    kPersonType,
+    kPersonType = 0,
     kLocationType,
     kOrganizationType,
     kMiscType,
     kInvalidType
   };
+  
+  static const std::string& TypeName(const Type type);
 
   bool operator==(const Entity& rhs) const {
     return name == rhs.name && type == rhs.type;
