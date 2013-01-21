@@ -1,4 +1,4 @@
-// Copyright 2012 Eugen Sawin <esawin@me73.com>
+// Copyright 2012, 2013 Eugen Sawin <esawin@me73.com>
 #include "./full-query-request-handler.h"
 #include <Poco/Exception.h>
 #include <Poco/JSON/Parser.h>
@@ -52,6 +52,7 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
       query_analyser_(server_.Tagger()) {}
 
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
+  static const int64_t timeout = 3 * 1e6;  // Microseconds.
   const Query query(uri_.getQuery());
   const string& query_text = query.Text("qf");
   const string& query_uri = query.Uri("qf");
@@ -62,7 +63,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
                                                 target_keywords.end());
 
   string response_data = HttpsGetRequest(server_.SearchHost() +
-                                         server_.SearchBase() + query_uri);
+                                         server_.SearchBase() + query_uri,
+                                         timeout);
 
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
@@ -76,7 +78,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   for (size_t end = items->size(), i = 0; i < end; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     LOG(INFO) << "Processing " << url;
-    string content = HttpGetRequest(url);
+    string content = HttpGetRequest(url, timeout);
     auto start = content.find("<body");
     if (start != string::npos) {
       auto end = content.find("</body", start + 5);
@@ -87,13 +89,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
-  response_stream << "{\"results\": ";
+  response_stream << "{\"results\":";
   // items->stringify(response_stream, 0);
   response_stream << "[]";
   response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
-      << "\"target_type\": \"target type\","
+      << "\"target_type\":\"target type\","
       << "\"entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
@@ -116,7 +118,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return word.size() < 2 || word.size() > 40;
   };
 
-  size_t num_top = 10;
+  size_t num_top = 30;
   std::unordered_set<string> entities;
   string top_candidates;
   while (num_top && index.QueueSize()) {

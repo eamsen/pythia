@@ -1,5 +1,6 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./http-request.h"
+#include <glog/logging.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -43,17 +44,31 @@ string ReceiveResponse(SessionType* session) {
   return data;
 }
 
-string HttpGetRequest(const string& url) {
+string HttpGetRequest(const string& url, const int64_t timeout) {
   URI uri(url);
   HTTPClientSession session(uri.getHost());
-  session.setTimeout(3 * 1e6);
-  SendRequest(uri, &session);
-  return ReceiveResponse(&session);
+  session.setTimeout(timeout);
+  string response; 
+  try {
+    SendRequest(uri, &session);
+    response = ReceiveResponse(&session);
+  } catch(const Poco::Exception& e) {
+    LOG(WARNING) << e.what();
+  }
+  return response;
 }
 
-string HttpsGetRequest(const string& url) {
+string HttpsGetRequest(const string& url, const int64_t timeout) {
   URI uri(url);
   HTTPSClientSession session(uri.getHost());
+  session.setTimeout(timeout);
+  string response; 
+  try {
+    SendRequest(uri, &session);
+    response = ReceiveResponse(&session);
+  } catch(const Poco::Exception& e) {
+    LOG(WARNING) << e.what();
+  }
   SendRequest(uri, &session);
   return ReceiveResponse(&session);
 }

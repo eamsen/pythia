@@ -7,8 +7,8 @@
 namespace pyt {
 namespace net {
 
-std::string HttpGetRequest(const std::string& url);
-std::string HttpsGetRequest(const std::string& url);
+std::string HttpGetRequest(const std::string& url, const int64_t timeout);
+std::string HttpsGetRequest(const std::string& url, const int64_t timeout);
 
 }  // namespace net
 }  // namespace pyt

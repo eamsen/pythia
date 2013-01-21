@@ -160,11 +160,9 @@ body {
 
 #meta-result-area2 {
   font-weight: bold;
-  margin-top: 15px;
-  height: 5em;
+  margin: 15px 0px 0px;
   width: 730px;
-  padding-left: 9px;
-  padding-right: 9px;
+  padding: 1px 9px 9px;
   text-align: left;
   color: #666;
   font-size: 0.9em;
@@ -180,6 +178,7 @@ body {
 #meta-result-area2 h2 {
   display: inline;
   font-size: 1.5em;
+  color: #cc9511;
   /* color: #E05; */
 }
 

@@ -1,9 +1,10 @@
-// Copyright 2012 Eugen Sawin <esawin@me73.com>
+// Copyright 2012, 2013 Eugen Sawin <esawin@me73.com>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 #include <vector>
 #include <string>
 #include "./net/server.h"
+#include "./io/ontology-parser.h"
 
 using std::vector;
 using std::string;
@@ -22,6 +23,7 @@ int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);
+  // pyt::io::OntologyParser::Parse("data/ontology-is-a.txt");
   LOG(INFO) << "Started.";
   pyt::net::Server server(kName, kVersion, FLAGS_doc_path, FLAGS_port,
                           FLAGS_threads, FLAGS_queue_size);
