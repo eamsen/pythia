@@ -10,7 +10,7 @@ GLOGDIR:=deps/glog
 CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3
 LIBS:=-Llibs -L$(POCODIR)/lib\
-	-lpythia-io -lpythia-net -lpythia-nlp\
+	-lpythia-net -lpythia-nlp\
 	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
 	-lPocoJSON\
 	-lPocoNetSSL -lPocoCrypto -lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\

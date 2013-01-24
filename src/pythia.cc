@@ -3,8 +3,9 @@
 #include <gflags/gflags.h>
 #include <vector>
 #include <string>
+#include <fstream>
 #include "./net/server.h"
-#include "./io/ontology-parser.h"
+#include "./nlp/ontology-index.h"
 
 using std::vector;
 using std::string;
@@ -23,6 +24,11 @@ int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);
+  std::ifstream ontology_stream("data/ontology-is-a.txt");
+  pyt::nlp::OntologyIndex ontology_index;
+  const int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
+      &ontology_index); 
+  LOG(INFO) << "Indexed " << num_triples << " ontology triples.";
   // pyt::io::OntologyParser::Parse("data/ontology-is-a.txt");
   LOG(INFO) << "Started.";
   pyt::net::Server server(kName, kVersion, FLAGS_doc_path, FLAGS_port,
