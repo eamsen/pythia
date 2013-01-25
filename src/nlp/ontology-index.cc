@@ -1,6 +1,7 @@
 // Copyright 2013 Eugen Sawin <esawin@me73.com>
 #include "./ontology-index.h"
 #include <glog/logging.h>
+#include "../io/serialize.h"
 
 using std::string;
 using std::vector;
@@ -118,6 +119,26 @@ int OntologyIndex::RelationId(const string& name) const {
     return kInvalidId;
   }
   return it->second;
+}
+
+void OntologyIndex::Save(std::ostream& stream) const {
+  std::unordered_map<std::string, int> lhs_ids_;
+  std::unordered_map<std::string, int> rhs_ids_;
+  std::unordered_map<std::string, int> relation_ids_;
+  std::vector<std::string> names_;
+  std::vector<std::string> relations_;
+  std::vector<std::vector<std::pair<int, int> > > lhs_triples_;
+
+}
+
+void OntologyIndex::Load(std::istream& stream) {
+  using pyt::io::Reader;
+  lhs_ids_ = Reader<unordered_map<string, int> >::Read(stream);
+  rhs_ids_ = Reader<unordered_map<string, int> >::Read(stream);
+  relation_ids_ = Reader<unordered_map<string, int> >::Read(stream);
+  names_ = Reader<vector<string> >::Read(stream);
+  relations_ = Reader<vector<string> >::Read(stream);
+  lhs_triples_ = Reader<vector<vector<std::pair<int, int> > > >::Read(stream);
 }
 
 }  // namespace nlp

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "../nlp/tagger.h"
+#include "../nlp/ontology-index.h"
 
 namespace pyt {
 namespace net {
@@ -39,6 +40,7 @@ class Server: public Poco::Util::ServerApplication {
   std::string search_host_;
   std::string search_base_;
   pyt::nlp::Tagger tagger_;
+  pyt::nlp::OntologyIndex ontology_index_;
 };
 
 }  // namespace net

@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_map>
 #include <istream>
+#include <ostream>
 
 namespace pyt {
 namespace nlp {
@@ -24,6 +25,8 @@ class OntologyIndex {
   int RhsNameId(const std::string& name) const;
   int NameId(const std::string& name) const;
   int RelationId(const std::string& name) const;
+  void Save(std::ostream& stream) const;
+  void Load(std::istream& stream);
 
  private:
   std::unordered_map<std::string, int> lhs_ids_;

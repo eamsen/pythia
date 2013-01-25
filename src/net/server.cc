@@ -1,4 +1,4 @@
-// Copyright 2012 Eugen Sawin <esawin@me73.com>
+// Copyright 2012, 2013 Eugen Sawin <esawin@me73.com>
 #ifndef SRC_NET_SERVER_APPLICATION_H_
 #define SRC_NET_SERVER_APPLICATION_H_
 
@@ -48,6 +48,7 @@ Server::Server(const string& name, const string& version,
       num_threads_(threads),
       queue_size_(queue_size),
       tagger_(Tagger::kPos) {
+  // Read Google API file.
   std::fstream file(FLAGS_api);
   LOG_IF(FATAL, !file.good()) << "Google API file " << FLAGS_api
                                << " not found.";
@@ -60,6 +61,12 @@ Server::Server(const string& name, const string& version,
   search_base_ += "key=" + api_key_;
   search_base_ += "&cx=" + api_cx_;
   search_base_ += "&q=";
+
+  // Construct ontology index.
+  std::ifstream ontology_stream("data/ontology-is-a.txt");
+  const int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
+      &ontology_index_); 
+  LOG(INFO) << "Indexed " << num_triples << " ontology triples.";
 }
 
 void Server::Run() {

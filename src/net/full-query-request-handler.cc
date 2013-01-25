@@ -58,20 +58,24 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   const string& query_uri = query.Uri("qf");
   LOG(INFO) << "Full query request: " << query_text << ".";
 
+  // Get the target keywords.
   vector<string> target_keywords = query_analyser_.TargetKeywords(query_text);
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
+  // Get Google search results.
   string response_data = HttpsGetRequest(server_.SearchHost() +
                                          server_.SearchBase() + query_uri,
                                          timeout);
-
+  
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_data);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
+
+  // Get page contents and extract named entities.
   EntityIndex index;
   NamedEntityExtractor extractor;
   auto items = json_query.findArray("items");
@@ -86,6 +90,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       extractor.Extract(content, &index);
     }
   }
+
+  // Assemble the response.
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
@@ -95,7 +101,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
-      << "\"target_type\":\"target type\","
       << "\"entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
@@ -118,6 +123,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return word.size() < 2 || word.size() > 40;
   };
 
+  // Find the top candidates.
   size_t num_top = 30;
   std::unordered_set<string> entities;
   string top_candidates;
@@ -139,7 +145,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     entities.insert(entity.name);
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "]}";
+  response_stream << "],\"target_type\":\"target type\",";
+  response_stream << "}";
 }
 
 }  // namespace net
