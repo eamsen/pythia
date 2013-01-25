@@ -137,7 +137,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cc $(SRCDIR)/%.h
 	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F) -c $<
 
 $(BINDIR)/%-test: $(OBJS) $(TSTDIR)/*.cc
-	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(SRCDIR)/test/$(@F).cc
+	@$(CXX) $(CFLAGS) -o $(OBJDIR)/$(@F).o -c $(TSTDIR)/$(@F).cc
 	@$(CXX) $(CFLAGS) -o $(BINDIR)/$(@F) $(OBJDIR)/$(@F).o $(OBJS) $(TSTLIBS)
 	@echo "compiled $(BINDIR)/$(@F)"
 

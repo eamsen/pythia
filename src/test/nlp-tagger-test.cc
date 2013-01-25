@@ -198,7 +198,7 @@ TEST_F(TaggerTest, Ner) {
     EXPECT_EQ(exp, entities);
     vector<EntityIndex::Item> dick_items = {{1.0f}};
     vector<EntityIndex::Item> asimov_items = {{1.0f}};
-    vector<EntityIndex::Item> carroll_items = {{2.0f}};
+    vector<EntityIndex::Item> carroll_items = {{1.0f}, {2.0f}};
     EXPECT_EQ(dick_items,
               index.Items({"dick", Entity::kPersonType}));
     EXPECT_EQ(asimov_items,

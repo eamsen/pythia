@@ -133,12 +133,12 @@ void OntologyIndex::Save(std::ostream& stream) const {
 
 void OntologyIndex::Load(std::istream& stream) {
   using pyt::io::Reader;
-  lhs_ids_ = Reader<unordered_map<string, int> >::Read(stream);
-  rhs_ids_ = Reader<unordered_map<string, int> >::Read(stream);
-  relation_ids_ = Reader<unordered_map<string, int> >::Read(stream);
-  names_ = Reader<vector<string> >::Read(stream);
-  relations_ = Reader<vector<string> >::Read(stream);
-  lhs_triples_ = Reader<vector<vector<std::pair<int, int> > > >::Read(stream);
+  Reader<unordered_map<string, int> >::Read(stream, &lhs_ids_);
+  Reader<unordered_map<string, int> >::Read(stream, &rhs_ids_);
+  Reader<unordered_map<string, int> >::Read(stream, &relation_ids_);
+  Reader<vector<string> >::Read(stream, &names_);
+  Reader<vector<string> >::Read(stream, &relations_);
+  Reader<vector<vector<std::pair<int, int> > > >::Read(stream, &lhs_triples_);
 }
 
 }  // namespace nlp
