@@ -120,7 +120,7 @@ TEST(SerializeTest, vector) {
   }
 }
 
-TEST(SerializeTest, map) {
+TEST(SerializeTest, unordered_map) {
   stringstream stream;
   {
     unordered_map<int, int> v;
@@ -135,11 +135,92 @@ TEST(SerializeTest, map) {
     EXPECT_EQ(v, r);
   
     for (int i = 0; i < 99; ++i) {
-      v = {{i, 12}};
+      v = {{i, 12}, {i + 1, 13}};
       Write(v, stream);
     }
     for (int i = 0; i < 99; ++i) {
-      v = {{i, 12}};
+      v = {{i, 12}, {i + 1, 13}};
+      r = {};
+      Read(stream, &r);
+      ASSERT_EQ(v, r);
+    }
+  }
+}
+
+TEST(SerializeTest, map) {
+  stringstream stream;
+  {
+    map<int, int> v;
+    map<int, int> r;
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    v = {{0, 1}, {1, 2}, {2, 3}};
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+  
+    for (int i = 0; i < 99; ++i) {
+      v = {{i, 12}, {i + 1, 13}};
+      Write(v, stream);
+    }
+    for (int i = 0; i < 99; ++i) {
+      v = {{i, 12}, {i + 1, 13}};
+      r = {};
+      Read(stream, &r);
+      ASSERT_EQ(v, r);
+    }
+  }
+}
+
+TEST(SerializeTest, unordered_set) {
+  stringstream stream;
+  {
+    unordered_set<int> v;
+    unordered_set<int> r;
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    v = {0, 1, 2, 3};
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+  
+    for (int i = 0; i < 99; ++i) {
+      v = {i, i + 1, i + 2};
+      Write(v, stream);
+    }
+    for (int i = 0; i < 99; ++i) {
+      v = {i, i + 1, i + 2};
+      r = {};
+      Read(stream, &r);
+      ASSERT_EQ(v, r);
+    }
+  }
+}
+
+TEST(SerializeTest, set) {
+  stringstream stream;
+  {
+    set<int> v;
+    set<int> r;
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    v = {0, 1, 2, 3};
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+  
+    for (int i = 0; i < 99; ++i) {
+      v = {i, i + 1, i + 2};
+      Write(v, stream);
+    }
+    for (int i = 0; i < 99; ++i) {
+      v = {i, i + 1, i + 2};
       r = {};
       Read(stream, &r);
       ASSERT_EQ(v, r);

@@ -5,7 +5,6 @@
 #include <istream>
 #include <ostream>
 #include <vector>
-#include <unordered_map>
 #include <glog/logging.h>
 
 namespace pyt {
@@ -37,86 +36,78 @@ T FromNetworkFormat(const T& value) {
 }
 
 template<typename T>
-struct ContainerType {
-  enum Type { kNone, kVector, kMap };
-  static const Type type = kNone;
-};
-
-template<typename T>
-struct ContainerType<std::vector<T> > {
-  enum Type { kNone, kVector, kMap };
-  static const Type type = kVector;
-};
-
-template<typename Key, typename Value>
-struct ContainerType<std::unordered_map<Key, Value> > {
-  enum Type { kNone, kVector, kMap };
-  static const Type type = kMap;
-};
-
-template<typename T>
-struct IsContainer {
-  static const bool value = ContainerType<T>::type != ContainerType<T>::kNone;
-};
-
-template<typename T>
-struct IsPair {
-  static const bool value = false;
-};
-
-template<typename T1, typename T2>
-struct IsPair<std::pair<T1, T2> >{
-  static const bool value = true;
-};
-
-template<typename T>
 void Read(std::istream& stream, T* target) {
   stream.read(reinterpret_cast<char*>(target), sizeof(T));
   *target = FromNetworkFormat(*target);
 }
 
+template<bool isMap, template <typename T, typename...> class Container,
+         typename T, typename... Args>
+struct Reader {
+  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+    LOG(FATAL) << "Not implemented.";
+  }
+};
+
+template<template<typename T, typename...> class Container,
+         typename T, typename... Args>
+struct Reader<false, Container, T, Args...> {
+  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+    LOG_IF(FATAL, target->size())
+        << "Reading into non-empty containers is not supported yet.";
+    uint64_t n;
+    Read(stream, &n);
+    std::vector<T> vec;
+    vec.reserve(n);
+    while (n--) {
+      vec.push_back(T());
+      Read(stream, &vec.back());
+    }
+    *target = Container<T, Args...>(vec.begin(), vec.end());
+  }
+};
+
+template<template<typename T, typename...> class Container,
+         typename T, typename... Args>
+struct Reader<true, Container, T, Args...> {
+  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+    typedef typename Container<T, Args...>::key_type K;
+    typedef typename Container<T, Args...>::mapped_type M;
+    LOG_IF(FATAL, target->size())
+        << "Reading into non-empty containers is not supported yet.";
+    uint64_t n;
+    Read(stream, &n);
+    std::vector<std::pair<K, M> > vec;
+    vec.reserve(n);
+    while (n--) {
+      vec.push_back(std::make_pair(K(), M()));
+      Read(stream, &vec.back());
+    }
+    *target = Container<T, Args...>(vec.begin(), vec.end());
+  }
+};
+
+template<typename T1, typename T2>
+struct Equal {
+  static const bool value = false;
+};
+
 template<typename T>
-void Read(std::istream& stream, const T* target) {
-  T* t = const_cast<T*>(target);
-  stream.read(reinterpret_cast<char*>(t), sizeof(T));
-  *t = FromNetworkFormat(*target);
+struct Equal<T, T> {
+  static const bool value = true;
+};
+
+template<template<typename T, typename...> class Container,
+         typename T, typename... Args>
+void Read(std::istream& stream, Container<T, Args...>* target) {
+  return Reader<!Equal<T, typename Container<T, Args...>::value_type>::value,
+                Container, T, Args...>::_Read(stream, target);
 }
 
 template<typename T1, typename T2>
 void Read(std::istream& stream, std::pair<T1, T2>* target) {
   Read(stream, &target->first);
   Read(stream, &target->second);
-}
-
-template<template <typename...> class Container, typename... Args>
-void Read(std::istream& stream, Container<Args...>* target) {
-  typedef typename Container<Args...>::value_type T;
-  LOG_IF(FATAL, target->size())
-      << "Reading into non-empty containers is not supported yet.";
-  uint64_t n;
-  Read(stream, &n);
-  std::vector<T> vec;
-  vec.reserve(n);
-  while (n--) {
-    vec.push_back(T());
-    Read(stream, &vec.back());
-  }
-  *target = Container<Args...>(vec.begin(), vec.end());
-}
-
-template<typename K, typename T, class H, class P, class A>
-void Read(std::istream& stream, std::unordered_map<K, T, H, P, A>* target) {
-  LOG_IF(FATAL, target->size())
-      << "Reading into non-empty containers is not supported yet.";
-  uint64_t n;
-  Read(stream, &n);
-  std::vector<std::pair<K, T> > vec;
-  vec.reserve(n);
-  while (n--) {
-    vec.push_back(std::make_pair(K(), T()));
-    Read(stream, &vec.back());
-  }
-  *target = std::unordered_map<K, T, H, P, A>(vec.begin(), vec.end());
 }
 
 template<>
@@ -126,16 +117,6 @@ void Read(std::istream& stream, std::string* target) {
   uint64_t prev_size = target->size();
   target->resize(prev_size + size);
   stream.read(&(*target)[prev_size], size);
-}
-
-template<>
-void Read(std::istream& stream, const std::string* target) {
-  uint64_t size;
-  Read(stream, &size);
-  uint64_t prev_size = target->size();
-  std::string* t = const_cast<std::string*>(target);
-  t->resize(prev_size + size);
-  stream.read(&(*t)[prev_size], size);
 }
 
 template<typename T>
