@@ -122,23 +122,23 @@ int OntologyIndex::RelationId(const string& name) const {
 }
 
 void OntologyIndex::Save(std::ostream& stream) const {
-  std::unordered_map<std::string, int> lhs_ids_;
-  std::unordered_map<std::string, int> rhs_ids_;
-  std::unordered_map<std::string, int> relation_ids_;
-  std::vector<std::string> names_;
-  std::vector<std::string> relations_;
-  std::vector<std::vector<std::pair<int, int> > > lhs_triples_;
-
+  using pyt::io::Write;
+  Write(lhs_ids_, stream);
+  Write(rhs_ids_, stream);
+  Write(relation_ids_, stream);
+  Write(names_, stream);
+  Write(relations_, stream);
+  Write(lhs_triples_, stream);
 }
 
 void OntologyIndex::Load(std::istream& stream) {
-  using pyt::io::Reader;
-  Reader<unordered_map<string, int> >::Read(stream, &lhs_ids_);
-  Reader<unordered_map<string, int> >::Read(stream, &rhs_ids_);
-  Reader<unordered_map<string, int> >::Read(stream, &relation_ids_);
-  Reader<vector<string> >::Read(stream, &names_);
-  Reader<vector<string> >::Read(stream, &relations_);
-  Reader<vector<vector<std::pair<int, int> > > >::Read(stream, &lhs_triples_);
+  using pyt::io::Read;
+  Read(stream, &lhs_ids_);
+  Read(stream, &rhs_ids_);
+  Read(stream, &relation_ids_);
+  Read(stream, &names_);
+  Read(stream, &relations_);
+  Read(stream, &lhs_triples_);
 }
 
 }  // namespace nlp
