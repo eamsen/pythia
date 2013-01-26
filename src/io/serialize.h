@@ -2,10 +2,10 @@
 #ifndef SRC_IO_SERIALIZE_H_
 #define SRC_IO_SERIALIZE_H_
 
+#include <glog/logging.h>
 #include <istream>
 #include <ostream>
 #include <vector>
-#include <glog/logging.h>
 
 namespace pyt {
 namespace io {
@@ -36,7 +36,7 @@ T FromNetworkFormat(const T& value) {
 }
 
 template<typename T>
-void Read(std::istream& stream, T* target) {
+void Read(std::istream& stream, T* target) {  // NOLINT
   stream.read(reinterpret_cast<char*>(target), sizeof(T));
   *target = FromNetworkFormat(*target);
 }
@@ -44,7 +44,8 @@ void Read(std::istream& stream, T* target) {
 template<bool isMap, template <typename T, typename...> class Container,
          typename T, typename... Args>
 struct Reader {
-  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+  static void _Read(std::istream& stream,  // NOLINT
+                    Container<T, Args...>* target) {
     LOG(FATAL) << "Not implemented.";
   }
 };
@@ -52,7 +53,8 @@ struct Reader {
 template<template<typename T, typename...> class Container,
          typename T, typename... Args>
 struct Reader<false, Container, T, Args...> {
-  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+  static void _Read(std::istream& stream,  // NOLINT
+                    Container<T, Args...>* target) {
     LOG_IF(FATAL, target->size())
         << "Reading into non-empty containers is not supported yet.";
     uint64_t n;
@@ -70,7 +72,8 @@ struct Reader<false, Container, T, Args...> {
 template<template<typename T, typename...> class Container,
          typename T, typename... Args>
 struct Reader<true, Container, T, Args...> {
-  static void _Read(std::istream& stream, Container<T, Args...>* target) {
+  static void _Read(std::istream& stream,  // NOLINT
+                    Container<T, Args...>* target) {
     typedef typename Container<T, Args...>::key_type K;
     typedef typename Container<T, Args...>::mapped_type M;
     LOG_IF(FATAL, target->size())
@@ -99,19 +102,19 @@ struct Equal<T, T> {
 
 template<template<typename T, typename...> class Container,
          typename T, typename... Args>
-void Read(std::istream& stream, Container<T, Args...>* target) {
+void Read(std::istream& stream, Container<T, Args...>* target) {  // NOLINT
   return Reader<!Equal<T, typename Container<T, Args...>::value_type>::value,
                 Container, T, Args...>::_Read(stream, target);
 }
 
 template<typename T1, typename T2>
-void Read(std::istream& stream, std::pair<T1, T2>* target) {
+void Read(std::istream& stream, std::pair<T1, T2>* target) {  // NOLINT
   Read(stream, &target->first);
   Read(stream, &target->second);
 }
 
 template<>
-void Read(std::istream& stream, std::string* target) {
+void Read(std::istream& stream, std::string* target) {  // NOLINT
   uint64_t size;
   Read(stream, &size);
   uint64_t prev_size = target->size();
@@ -120,19 +123,19 @@ void Read(std::istream& stream, std::string* target) {
 }
 
 template<typename T>
-void Write(const T& target, std::ostream& stream) {
+void Write(const T& target, std::ostream& stream) {  // NOLINT
   const T net_target = ToNetworkFormat(target);
   stream.write(reinterpret_cast<const char*>(&net_target), sizeof(T));
 }
 
 template<typename T1, typename T2>
-void Write(const std::pair<T1, T2>& target, std::ostream& stream) {
+void Write(const std::pair<T1, T2>& target, std::ostream& stream) {  // NOLINT
   Write(target.first, stream);
   Write(target.second, stream);
 }
 
 template<template <typename...> class Container, typename... Args>
-void Write(const Container<Args...>& target, std::ostream& stream) {
+void Write(const Container<Args...>& target, std::ostream& stream) {  // NOLINT
   const uint64_t n = target.size();
   Write(n, stream);
   for (const auto& e: target) {
@@ -141,7 +144,7 @@ void Write(const Container<Args...>& target, std::ostream& stream) {
 }
 
 template<>
-void Write(const std::string& target, std::ostream& stream) {
+void Write(const std::string& target, std::ostream& stream) {  // NOLINT
   uint64_t size = target.size();
   Write(size, stream);
   stream.write(&target[0], size);

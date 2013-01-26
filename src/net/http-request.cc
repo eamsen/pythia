@@ -48,7 +48,7 @@ string HttpGetRequest(const string& url, const int64_t timeout) {
   URI uri(url);
   HTTPClientSession session(uri.getHost());
   session.setTimeout(timeout);
-  string response; 
+  string response;
   try {
     SendRequest(uri, &session);
     response = ReceiveResponse(&session);
@@ -62,7 +62,7 @@ string HttpsGetRequest(const string& url, const int64_t timeout) {
   URI uri(url);
   HTTPSClientSession session(uri.getHost());
   session.setTimeout(timeout);
-  string response; 
+  string response;
   try {
     SendRequest(uri, &session);
     response = ReceiveResponse(&session);

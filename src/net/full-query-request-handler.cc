@@ -67,7 +67,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   string response_data = HttpsGetRequest(server_.SearchHost() +
                                          server_.SearchBase() + query_uri,
                                          timeout);
-  
+
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);

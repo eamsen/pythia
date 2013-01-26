@@ -1,11 +1,10 @@
 // Copyright 2012 Eugen Sawin <esawin@me73.com>
 #include "./tagger.h"
+#include <glog/logging.h>
 
 extern "C" {
 #include "../../deps/senna/SENNA_utils.h"
 }
-
-#include <glog/logging.h>
 
 using std::string;
 using std::vector;
@@ -15,7 +14,7 @@ namespace nlp {
 
 size_t Tagger::kMaxTextSize = 1024;
 size_t Tagger::kMaxTargetVbSize = 256;
-string Tagger::SennaPath = "deps/senna/";
+string Tagger::SennaPath = "deps/senna/";  // NOLINT
 
 Tagger::Tagger(uint8_t type)
     : type_(type) {
@@ -88,7 +87,7 @@ Tagger::~Tagger() {
 }
 
 Tagger& Tagger::operator=(const Tagger& rhs) {
-  type_ = rhs.type_;  
+  type_ = rhs.type_;
   return *this;
 }
 
@@ -106,8 +105,8 @@ vector<Tagger::Tag> Tagger::Tags(const string& text) const {
   // TODO(esawin): Is this thread-safe?
   if (type_ & kPos) {
     // Part-of-speech tagging.
-    int* pos_labels = SENNA_POS_forward(pos_, tokens->word_idx, tokens->caps_idx,
-        tokens->suff_idx, tokens->n);
+    int* pos_labels = SENNA_POS_forward(pos_, tokens->word_idx,
+        tokens->caps_idx, tokens->suff_idx, tokens->n);
     tags.reserve(tokens->n);
     for (int i = 0; i < tokens->n; ++i) {
       Offset offset = {tokens->start_offset[i],

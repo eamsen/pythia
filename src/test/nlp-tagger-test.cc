@@ -17,7 +17,7 @@ using ::testing::ElementsAre;
 using ::testing::Contains;
 using ::testing::Not;
 
-using namespace pyt::nlp;
+using namespace pyt::nlp;  // NOLINT
 
 class TaggerTest : public ::testing::Test {
  public:

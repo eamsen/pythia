@@ -48,7 +48,7 @@ class Query {
       words = split(query.substr(end, pos - end));
     }
   }
-    
+
   static std::vector<std::string> split(
       const std::string& content, const std::string& delims = "+") {
     std::vector<std::string> items;

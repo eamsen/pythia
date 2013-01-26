@@ -15,7 +15,7 @@ using ::testing::ElementsAre;
 using ::testing::Contains;
 using ::testing::Not;
 
-using namespace pyt::net;
+using namespace pyt::net;  // NOLINT
 
 class FullQueryRequestHandlerTest : public ::testing::Test {
  public:

@@ -18,7 +18,7 @@ struct Entity {
     kMiscType,
     kInvalidType
   };
-  
+
   static const std::string& TypeName(const Type type);
 
   bool operator==(const Entity& rhs) const {
@@ -42,7 +42,7 @@ class EntityIndex {
 
   class QueueComp {
    public:
-    QueueComp(const EntityIndex& index)
+    explicit QueueComp(const EntityIndex& index)
         : index_(index) {}
 
     bool operator()(const Entity& lhs, const Entity& rhs) const {
@@ -71,7 +71,7 @@ class EntityIndex {
   struct Item {
     Item() : score(0.0f) {}
 
-    Item(const float score) : score(score) {}
+    Item(const float score) : score(score) {}  // NOLINT
 
     bool operator==(const Item& rhs) const {
       return score == rhs.score;

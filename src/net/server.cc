@@ -65,7 +65,7 @@ Server::Server(const string& name, const string& version,
   // Construct ontology index.
   std::ifstream ontology_stream("data/ontology-is-a.txt");
   const int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
-      &ontology_index_); 
+      &ontology_index_);
   LOG(INFO) << "Indexed " << num_triples << " ontology triples.";
 }
 

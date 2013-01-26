@@ -21,7 +21,8 @@ vector<Tagger::Tag> NamedEntityExtractor::Extract(const string& text) const {
 
 vector<Tagger::Tag> NamedEntityExtractor::Extract(
     const string& text, EntityIndex* index) const {
-  // kNerO, kNerSLOC, kNerEPER, kNerBPER, kNerSORG, kNerEORG, kNerBORG, kNerSPER,
+  // kNerO, kNerSLOC, kNerEPER, kNerBPER, kNerSORG, kNerEORG, kNerBORG,
+  // kNerSPER,
   // kNerSMISC, kNerIORG, kNerELOC, kNerBLOC, kNerEMISC, kNerBMISC, kNerIPER,
   // kNerIMISC, kNerILOC, kNerPADDING, kNerUNAVAILABLE
 

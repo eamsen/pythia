@@ -13,9 +13,9 @@ class Server;
 
 class FullQueryRequestHandler: public RequestHandler {
  public:
-
   explicit FullQueryRequestHandler(const Poco::URI& uri);
   void Handle(Request* request, Response* response);
+
  private:
   Server& server_;
   Poco::URI uri_;

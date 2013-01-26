@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 #include <istream>
 #include <ostream>
 
@@ -15,7 +16,8 @@ class OntologyIndex {
  public:
   static const int kInvalidId = -1;
 
-  static int ParseFromCsv(std::istream& stream, OntologyIndex* index);
+  static int ParseFromCsv(std::istream& stream,  // NOLINT
+                          OntologyIndex* index);
 
   void AddTriple(const std::string& relation,
       const std::string& lhs, const std::string& rhs);
@@ -25,8 +27,8 @@ class OntologyIndex {
   int RhsNameId(const std::string& name) const;
   int NameId(const std::string& name) const;
   int RelationId(const std::string& name) const;
-  void Save(std::ostream& stream) const;
-  void Load(std::istream& stream);
+  void Save(std::ostream& stream) const;  // NOLINT
+  void Load(std::istream& stream);  // NOLINT
 
  private:
   std::unordered_map<std::string, int> lhs_ids_;

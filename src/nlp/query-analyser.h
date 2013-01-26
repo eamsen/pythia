@@ -12,9 +12,9 @@ class Tagger;
 
 class QueryAnalyser {
  public:
-  QueryAnalyser(const Tagger& tagger);
+  explicit QueryAnalyser(const Tagger& tagger);
   std::vector<std::string> TargetKeywords(const std::string& query) const;
-  
+
  private:
   const Tagger& tagger_;
 };

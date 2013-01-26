@@ -2,6 +2,9 @@
 #ifndef SRC_NLP_TAGGER_H_
 #define SRC_NLP_TAGGER_H_
 
+#include <string>
+#include <vector>
+
 extern "C" {
 #include "../../deps/senna/SENNA_Hash.h"
 #include "../../deps/senna/SENNA_Tokenizer.h"
@@ -13,9 +16,6 @@ extern "C" {
 #include "../../deps/senna/SENNA_SRL.h"
 #include "../../deps/senna/SENNA_PSG.h"
 }
-
-#include <string>
-#include <vector>
 
 namespace pyt {
 namespace nlp {

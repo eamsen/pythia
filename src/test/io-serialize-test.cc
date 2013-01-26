@@ -26,7 +26,7 @@ using ::testing::ElementsAre;
 using ::testing::Contains;
 using ::testing::Not;
 
-using namespace pyt::io;
+using namespace pyt::io;  // NOLINT
 
 TEST(SerializeTest, pod) {
   stringstream stream;
@@ -106,7 +106,7 @@ TEST(SerializeTest, vector) {
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
-  
+
     for (int i = 0; i < 99; ++i) {
       v = vector<int>(i, 12);
       Write(v, stream);
@@ -133,7 +133,7 @@ TEST(SerializeTest, unordered_map) {
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
-  
+
     for (int i = 0; i < 99; ++i) {
       v = {{i, 12}, {i + 1, 13}};
       Write(v, stream);
@@ -160,7 +160,7 @@ TEST(SerializeTest, map) {
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
-  
+
     for (int i = 0; i < 99; ++i) {
       v = {{i, 12}, {i + 1, 13}};
       Write(v, stream);
@@ -187,7 +187,7 @@ TEST(SerializeTest, unordered_set) {
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
-  
+
     for (int i = 0; i < 99; ++i) {
       v = {i, i + 1, i + 2};
       Write(v, stream);
@@ -214,7 +214,7 @@ TEST(SerializeTest, set) {
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
-  
+
     for (int i = 0; i < 99; ++i) {
       v = {i, i + 1, i + 2};
       Write(v, stream);

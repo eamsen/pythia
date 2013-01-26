@@ -4,13 +4,12 @@
 #include "../io/serialize.h"
 
 using std::string;
-using std::vector;
-using std::unordered_map;
 
 namespace pyt {
 namespace nlp {
 
-int OntologyIndex::ParseFromCsv(std::istream& stream, OntologyIndex* index) {
+int OntologyIndex::ParseFromCsv(std::istream& stream,  // NOLINT
+                                OntologyIndex* index) {
   static const string relation = ":r:is-a\t:e:entity:Entity\t:e:class:Class";
   LOG_IF(FATAL, !index) << "Null pointer passed as index.";
 
@@ -27,7 +26,7 @@ int OntologyIndex::ParseFromCsv(std::istream& stream, OntologyIndex* index) {
   };
 
   int num_triples = 0;
-  string line; 
+  string line;
   while (std::getline(stream, line)) {
     if (line.substr(0, relation.size()) == relation) {
       size_t pos = relation.size();
@@ -59,13 +58,13 @@ void OntologyIndex::AddTriple(const std::string& relation,
   if (rel_id == kInvalidId) {
     rel_id = AddRelation(relation);
   }
-  int lhs_id = NameId(lhs);  
+  int lhs_id = NameId(lhs);
   if (lhs_id == kInvalidId) {
     lhs_id = AddName(lhs);
     lhs_triples_.push_back({});
   }
   lhs_ids_[lhs] = lhs_id;
-  int rhs_id = NameId(rhs);  
+  int rhs_id = NameId(rhs);
   if (rhs_id == kInvalidId) {
     rhs_id = AddName(rhs);
     // TODO(esawin): Make that more memory-efficient.
@@ -121,7 +120,7 @@ int OntologyIndex::RelationId(const string& name) const {
   return it->second;
 }
 
-void OntologyIndex::Save(std::ostream& stream) const {
+void OntologyIndex::Save(std::ostream& stream) const {  // NOLINT
   using pyt::io::Write;
   Write(lhs_ids_, stream);
   Write(rhs_ids_, stream);
@@ -131,7 +130,7 @@ void OntologyIndex::Save(std::ostream& stream) const {
   Write(lhs_triples_, stream);
 }
 
-void OntologyIndex::Load(std::istream& stream) {
+void OntologyIndex::Load(std::istream& stream) {  // NOLINT
   using pyt::io::Read;
   Read(stream, &lhs_ids_);
   Read(stream, &rhs_ids_);
