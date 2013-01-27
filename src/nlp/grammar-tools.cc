@@ -21,7 +21,11 @@ vector<string> SingularForms(const string& noun) {
                  (noun[size-4] == 's' || noun[size-4] == 'c')) {
         sings.push_back(noun.substr(0, size-2));
       }
-      if (IsConsonant(noun[size-4])) {
+      if (noun[size-3] == 'v') {
+        // Trailing 'ves' may indicate ending with a f or fe.
+        sings.push_back(noun.substr(0, size-3) + "f");
+        sings.push_back(noun.substr(0, size-3) + "fe");
+      } else if (IsConsonant(noun[size-4])) {
         if (noun[size-3] == 'i') {
           // Trailing 'es' may also indicate ending with a consonant + y, where
           // the y is replaced by i.
@@ -41,11 +45,13 @@ bool IsConsonant(const char c) {
   static const std::vector<char> is = {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1,
                                        0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1};
   // TODO(esawin): How to handle 'y'.
-  return is[c - 'a'];
+  const char low_c = std::tolower(c);
+  return low_c >= 'a' && low_c <= 'z' && is[low_c - 'a'];
 }
 
 bool IsVowel(const char c) {
-  return !IsConsonant(c);
+  const char low_c = std::tolower(c);
+  return low_c >= 'a' && low_c <= 'z' && !IsConsonant(low_c);
 }
 
 }  // namespace nlp

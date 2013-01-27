@@ -138,4 +138,55 @@ TEST(GrammarToolsTest, SingularForms) {
   result_vec = SingularForms("echoes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
   EXPECT_TRUE(result.count(singular)); 
+
+  singular = "radio";
+  result_vec = SingularForms("radios");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "studio";
+  result_vec = SingularForms("studios");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "knife";
+  result_vec = SingularForms("knives");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "wolf";
+  result_vec = SingularForms("wolves");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "half";
+  result_vec = SingularForms("halves");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "life";
+  result_vec = SingularForms("lives");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "roof";
+  result_vec = SingularForms("roofs");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "cliff";
+  result_vec = SingularForms("cliffs");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "dwarf";
+  result_vec = SingularForms("dwarfs");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count("dwarf")); 
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "dwarf";
+  result_vec = SingularForms("dwarves");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
 }
