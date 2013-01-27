@@ -18,6 +18,7 @@ Nothing to see here yet.
 * POCO C++ Libraries (`make poco` or from <http://pocoproject.org>)
 * gflags (`make gflags` or from <http://code.google.com/p/gflags>)
 * glog (`make glog` or from <http://code.google.com/p/google-glog>)
+* Flow (`make flow` or from <https://github.com/eamsen/flow>)
 
 ### Optional
 * gtest *for testing* (<http://code.google.com/p/googletest>)
@@ -60,6 +61,11 @@ To get the required SENNA version, use:
 
 *This will download SENNA from the web (~200MB) and modify the source files, so
 that it compiles with `g++`. Downloading the files may take a while.*
+
+#### Building Flow
+To build the Flow submodule, use:
+
+    make flow
 
 ### Building Pythia
 To build Pythia use:

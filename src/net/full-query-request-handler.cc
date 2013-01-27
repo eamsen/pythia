@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <flow/clock.h>
 #include "./server.h"
 #include "./query-parser.h"
 #include "./http-request.h"
@@ -26,6 +27,8 @@ using pyt::nlp::EntityIndex;
 using pyt::nlp::Entity;
 using pyt::nlp::EditDistance;
 using pyt::nlp::PrefixEditDistance;
+using flow::ThreadClock;
+using flow::ClockDiff;
 
 namespace pyt {
 namespace net {
@@ -63,33 +66,45 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
+  ThreadClock clock;
   // Get Google search results.
   string response_data = HttpsGetRequest(server_.SearchHost() +
                                          server_.SearchBase() + query_uri,
                                          timeout);
-
+  LOG(INFO) << "Google search time [" << ThreadClock() - clock << "].";
+  clock = ThreadClock();
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_data);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
+  LOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
+  clock = ThreadClock();
 
+  ClockDiff http_get_time = 0;
+  ClockDiff ner_time = 0;
   // Get page contents and extract named entities.
   EntityIndex index;
   NamedEntityExtractor extractor;
   auto items = json_query.findArray("items");
   for (size_t end = items->size(), i = 0; i < end; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
-    LOG(INFO) << "Processing " << url;
+    // LOG(INFO) << "Processing " << url;
+    clock = ThreadClock();
     string content = HttpGetRequest(url, timeout);
+    http_get_time += ThreadClock() - clock;
     auto start = content.find("<body");
     if (start != string::npos) {
       auto end = content.find("</body", start + 5);
       content = content.substr(start, end - start);
+      clock = ThreadClock();
       extractor.Extract(content, &index);
+      ner_time += ThreadClock() - clock;
     }
   }
+  LOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
+  LOG(INFO) << "Total NER time [" << ner_time << "].";
 
   // Assemble the response.
   response->setChunkedTransferEncoding(true);
@@ -145,7 +160,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     entities.insert(entity.name);
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "],\"target_type\":\"target type\",";
+  response_stream << "],\"target_type\":\"target type\"";
   response_stream << "}";
 }
 

@@ -7,7 +7,8 @@ GTESTLIBS:=-lgtest -lgtest_main
 POCODIR:=deps/poco/install
 GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
-CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
+CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src\
+	-Ilibs/flow/include
 CFLAGS:=-Wall -O3
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	-lpythia-io -lpythia-net -lpythia-nlp\
@@ -47,7 +48,7 @@ opt: clean all
 debug: CFLAGS=-O0 -g
 debug: clean all
 
-depend: senna poco gflags glog cpplint
+depend: senna poco gflags glog cpplint flow
 	@echo "compiled all dependencies"
 
 makedirs:
@@ -89,6 +90,11 @@ glog:
 cpplint:
 	@git submodule init;
 	@git submodule update;
+
+flow:
+	@git submodule init;
+	@git submodule update;
+	@cd libs/flow; make;
 
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done

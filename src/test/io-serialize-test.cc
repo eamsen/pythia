@@ -37,28 +37,28 @@ TEST(SerializeTest, pod) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    v = 1112991;
+    v = 111291;
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    v = -1112991;
+    v = -111291;
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
     v = numeric_limits<int>::max();
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       Write(v--, stream);
     }
     v = numeric_limits<int>::max();
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       Read(stream, &r);
       ASSERT_EQ(v--, r);
     }
   }
   {
-    size_t v = 1112991;
+    size_t v = 111291;
     size_t r;
     Write(v, stream);
     Read(stream, &r);
@@ -80,14 +80,11 @@ TEST(SerializeTest, string) {
   Read(stream, &r);
   EXPECT_EQ(v, r);
 
-  v = "a";
-  for (int i = 0; i < 99; ++i) {
+  for (int i = 0; i < 9; ++i) {
     Write(v, stream);
   }
-  v = "";
-  r = "";
-  for (int i = 0; i < 99; ++i) {
-    v += "a";
+  for (int i = 0; i < 9; ++i) {
+    r = "";
     Read(stream, &r);
     ASSERT_EQ(v, r);
   }
@@ -107,11 +104,11 @@ TEST(SerializeTest, vector) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = vector<int>(i, 12);
       Write(v, stream);
     }
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = vector<int>(i, 12);
       r = {};
       Read(stream, &r);
@@ -134,12 +131,35 @@ TEST(SerializeTest, unordered_map) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {{i, 12}, {i + 1, 13}};
       Write(v, stream);
     }
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {{i, 12}, {i + 1, 13}};
+      r = {};
+      Read(stream, &r);
+      ASSERT_EQ(v, r);
+    }
+  }
+  {
+    unordered_map<string, int> v;
+    unordered_map<string, int> r;
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    v = {{"a", 1}, {"b", 2}, {"c", 3}};
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    for (int i = 0; i < 9; ++i) {
+      v = {{"a", i}, {"b", i + 1}, {"ccc", i + 2}};
+      Write(v, stream);
+    }
+    for (int i = 0; i < 9; ++i) {
+      v = {{"a", i}, {"b", i + 1}, {"ccc", i + 2}};
       r = {};
       Read(stream, &r);
       ASSERT_EQ(v, r);
@@ -157,15 +177,16 @@ TEST(SerializeTest, map) {
     EXPECT_EQ(v, r);
 
     v = {{0, 1}, {1, 2}, {2, 3}};
+    r = {};
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {{i, 12}, {i + 1, 13}};
       Write(v, stream);
     }
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {{i, 12}, {i + 1, 13}};
       r = {};
       Read(stream, &r);
@@ -188,11 +209,11 @@ TEST(SerializeTest, unordered_set) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {i, i + 1, i + 2};
       Write(v, stream);
     }
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {i, i + 1, i + 2};
       r = {};
       Read(stream, &r);
@@ -215,11 +236,11 @@ TEST(SerializeTest, set) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {i, i + 1, i + 2};
       Write(v, stream);
     }
-    for (int i = 0; i < 99; ++i) {
+    for (int i = 0; i < 9; ++i) {
       v = {i, i + 1, i + 2};
       r = {};
       Read(stream, &r);

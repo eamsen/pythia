@@ -31,12 +31,12 @@ class OntologyIndex {
   void Load(std::istream& stream);  // NOLINT
 
  private:
-  std::unordered_map<std::string, int> lhs_ids_;
-  std::unordered_map<std::string, int> rhs_ids_;
-  std::unordered_map<std::string, int> relation_ids_;
+  std::unordered_map<std::string, int32_t> lhs_ids_;
+  std::unordered_map<std::string, int32_t> rhs_ids_;
+  std::unordered_map<std::string, int32_t> relation_ids_;
   std::vector<std::string> names_;
   std::vector<std::string> relations_;
-  std::vector<std::vector<std::pair<int, int> > > lhs_triples_;
+  std::vector<std::vector<std::pair<int32_t, int32_t> > > lhs_triples_;
 };
 
 }  // namespace nlp

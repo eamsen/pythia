@@ -18,6 +18,7 @@
 #include <vector>
 #include <ostream>
 #include <fstream>
+#include <flow/clock.h>
 #include "./request-handler-factory.h"
 
 using std::string;
@@ -31,6 +32,7 @@ using Poco::Util::Application;
 using Poco::Util::Option;
 using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
+using flow::ThreadClock;
 using pyt::nlp::Tagger;
 
 namespace pyt {
@@ -62,11 +64,34 @@ Server::Server(const string& name, const string& version,
   search_base_ += "&cx=" + api_cx_;
   search_base_ += "&q=";
 
+  const string ontology_bin_path = "cache/ontology.bin";
   // Construct ontology index.
-  std::ifstream ontology_stream("data/ontology-is-a.txt");
-  const int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
-      &ontology_index_);
-  LOG(INFO) << "Indexed " << num_triples << " ontology triples.";
+  std::ifstream ontology_bin_stream(ontology_bin_path);
+  if (ontology_bin_stream) {
+    // Load ontology index from cached binary format.
+    ThreadClock begtime;
+    ontology_index_.Load(ontology_bin_stream);
+    LOG(INFO) << "Ontology index loaded from " << ontology_bin_path
+              << " [" << ThreadClock() - begtime << "].";
+  } else {
+    // Construct ontology from text file.
+    ThreadClock begtime;
+    std::ifstream ontology_stream("data/ontology-is-a.txt");
+    int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
+        &ontology_index_);
+    LOG(INFO) << "Indexed " << num_triples << " ontology triples"
+              << " [" << ThreadClock() - begtime << "].";
+    std::ofstream ontology_bin_stream(ontology_bin_path);
+    if (ontology_bin_stream) {
+      ThreadClock begtime;
+      // ontology_index_.Save(ontology_bin_stream);
+      LOG(INFO) << "Ontology index saved to " << ontology_bin_path
+                << " [" << ThreadClock() - begtime << "].";
+    } else {
+      LOG(ERROR) << "Could not save ontology index to " << ontology_bin_path
+                 << ".";
+    }
+  }
 }
 
 void Server::Run() {

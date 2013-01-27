@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Started.";
   pyt::net::Server server(kName, kVersion, FLAGS_doc_path, FLAGS_port,
                           FLAGS_threads, FLAGS_queue_size);
+  LOG(INFO) << "Listening.";
   server.Run();
   LOG(INFO) << "Shut down.";
 }
