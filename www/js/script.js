@@ -56,8 +56,15 @@ function callback(data, status, xhr) {
     }
     meta_result1 += element;
   }
-  meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> " +
-                  data.target_type + "</div>";
+  meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> ";
+  for (var i in data.target_types) {
+    var type = data.target_types[i];
+    if (i > 0) {
+      meta_result1 += ", ";
+    }
+    meta_result1 += type;
+  }
+  meta_result1 += "</div>";
   $("#meta-result-area1").replaceWith(meta_result1);
 
   var meta_result2 = "<div id=\"meta-result-area2\">";

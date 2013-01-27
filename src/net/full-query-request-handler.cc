@@ -28,6 +28,8 @@ using pyt::nlp::EntityIndex;
 using pyt::nlp::Entity;
 using pyt::nlp::EditDistance;
 using pyt::nlp::PrefixEditDistance;
+using pyt::nlp::OntologyIndex;
+using pyt::nlp::SingularForms;
 using flow::ThreadClock;
 using flow::ClockDiff;
 
@@ -162,11 +164,21 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
 
   // Find target type.
+  vector<string> target_types;
   for (const string& w: target_keywords) {
-
+    const vector<string> singulars = SingularForms(w);
+    for (const string& s: singulars) {
+      // Check if a singular form of a target keyword is an ontology class.
+      if (server_.OntologyIndex().RhsNameId(s) != OntologyIndex::kInvalidId) {
+        target_types.push_back(s);
+      }
+    }
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "],\"target_type\":\"unknown\"";
+  response_stream << "],\"target_types\":"
+                  << (target_types.size() ?
+                      JsonArray(target_types.begin(), target_types.end()) :
+                      "[\"unknown\"]");
   response_stream << "}";
 }
 

@@ -23,6 +23,7 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& SearchHost() const;
   const std::string& SearchBase() const;
   const pyt::nlp::Tagger& Tagger() const;
+  const pyt::nlp::OntologyIndex& OntologyIndex() const;
 
  private:
   void initialize(Poco::Util::Application& self);  // NOLINT

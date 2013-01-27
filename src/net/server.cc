@@ -123,6 +123,10 @@ const Tagger& Server::Tagger() const {
   return tagger_;
 }
 
+const nlp::OntologyIndex& Server::OntologyIndex() const {
+  return ontology_index_;
+}
+
 void Server::initialize(Application& self) {  // NOLINT
   ServerApplication::initialize(self);
   Poco::Net::SSLManager::instance().initializeClient(

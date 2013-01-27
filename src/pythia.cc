@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   vector<string> args(&argv[1], &argv[argc]);
-  LOG(INFO) << "Started.";
+  LOG(INFO) << "Initializing.";
   pyt::net::Server server(kName, kVersion, FLAGS_doc_path, FLAGS_port,
                           FLAGS_threads, FLAGS_queue_size);
   LOG(INFO) << "Listening.";

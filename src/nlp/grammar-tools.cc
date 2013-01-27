@@ -15,7 +15,7 @@ vector<string> SingularForms(const string& noun) {
       {{"men", "man"}, {"women", "woman"}, {"people", "person"},
        {"children", "child"}, {"brethren", "brother"}};
 
-  DLOG_IF(FATAL, !IsLowerCase(noun)) << "Lower case string expected.";
+  DLOG_IF(WARNING, !IsLowerCase(noun)) << "Lower case string expected.";
 
   const size_t size = noun.size();
   vector<string> sings = {noun};
@@ -58,8 +58,8 @@ bool IsConsonant(const char c) {
   static const std::vector<char> is = {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1,
                                        0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1};
   // TODO(esawin): How to handle 'y'.
-  DLOG_IF(FATAL, c < 'a' || c > 'z') << "Lower case characters expected.";
-  return is[c - 'a'];
+  DLOG_IF(WARNING, c < 'a' || c > 'z') << "Lower case characters expected.";
+  return c >= 'a' && c <= 'z' && is[c - 'a'];
 }
 
 bool IsVowel(const char c) {
