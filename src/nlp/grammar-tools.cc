@@ -1,15 +1,28 @@
 // Copyright 2013 Eugen Sawin <esawin@me73.com>
 #include "./grammar-tools.h"
+#include <glog/logging.h>
+#include <unordered_map>
 
 using std::vector;
+using std::unordered_map;
 using std::string;
 
 namespace pyt {
 namespace nlp {
 
 vector<string> SingularForms(const string& noun) {
+  static const unordered_map<string, string> special =
+      {{"men", "man"}, {"women", "woman"}, {"people", "person"},
+       {"children", "child"}, {"brethren", "brother"}};
+
+  DLOG_IF(FATAL, !IsLowerCase(noun)) << "Lower case string expected.";
+
   const size_t size = noun.size();
-  vector<string> sings;
+  vector<string> sings = {noun};
+  const auto it = special.find(noun);
+  if (it != special.end()) {
+    sings.push_back(it->second);
+  }
   if (size && noun[size-1] == 's') {
     // Remove trailing 's'.
     sings.push_back(noun.substr(0, size-1));
@@ -45,13 +58,21 @@ bool IsConsonant(const char c) {
   static const std::vector<char> is = {0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1,
                                        0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1};
   // TODO(esawin): How to handle 'y'.
-  const char low_c = std::tolower(c);
-  return low_c >= 'a' && low_c <= 'z' && is[low_c - 'a'];
+  DLOG_IF(FATAL, c < 'a' || c > 'z') << "Lower case characters expected.";
+  return is[c - 'a'];
 }
 
 bool IsVowel(const char c) {
-  const char low_c = std::tolower(c);
-  return low_c >= 'a' && low_c <= 'z' && !IsConsonant(low_c);
+  return !IsConsonant(c);
+}
+
+bool IsLowerCase(const std::string& word) {
+  for (const char c: word) {
+    if (c < 'a' || c > 'z') {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace nlp

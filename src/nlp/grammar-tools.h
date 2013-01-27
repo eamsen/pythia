@@ -11,6 +11,7 @@ namespace nlp {
 std::vector<std::string> SingularForms(const std::string& noun);
 bool IsConsonant(const char c);
 bool IsVowel(const char c);
+bool IsLowerCase(const std::string& word);
 
 }  // namespace nlp
 }  // namespace pyt

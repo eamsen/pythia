@@ -119,8 +119,8 @@ TEST(GrammarToolsTest, SingularForms) {
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
   EXPECT_TRUE(result.count(singular)); 
 
-  singular = "Kennedy";
-  result_vec = SingularForms("Kennedys");
+  singular = "kennedy";
+  result_vec = SingularForms("kennedys");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
   EXPECT_TRUE(result.count(singular)); 
 
@@ -187,6 +187,31 @@ TEST(GrammarToolsTest, SingularForms) {
 
   singular = "dwarf";
   result_vec = SingularForms("dwarves");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "man";
+  result_vec = SingularForms("men");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "woman";
+  result_vec = SingularForms("women");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "person";
+  result_vec = SingularForms("people");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "child";
+  result_vec = SingularForms("children");
+  result = unordered_set<string>(result_vec.begin(), result_vec.end());
+  EXPECT_TRUE(result.count(singular)); 
+
+  singular = "brother";
+  result_vec = SingularForms("brethren");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
   EXPECT_TRUE(result.count(singular)); 
 }
