@@ -50,19 +50,23 @@ function callback(data, status, xhr) {
   var meta_result1 = "<div id=\"meta-result-area1\">";
   for (var i in data.target_keywords) {
     var keyword = data.target_keywords[i];
-    var element = "<h2>" + keyword + "</h2>";
     if (i > 0) {
       meta_result1 += ", ";
     }
-    meta_result1 += element;
+    meta_result1 += keyword;
   }
   meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> ";
   for (var i in data.target_types) {
     var type = data.target_types[i];
     if (i > 0) {
       meta_result1 += ", ";
+    } else {
+      meta_result1 += "<h2>";
     }
     meta_result1 += type;
+    if (i == 0) {
+      meta_result1 += "</h2>";
+    }
   }
   meta_result1 += "</div>";
   $("#meta-result-area1").replaceWith(meta_result1);

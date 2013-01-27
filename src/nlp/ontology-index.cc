@@ -3,18 +3,22 @@
 #include <glog/logging.h>
 #include "../io/serialize.h"
 
+using std::vector;
+using std::unordered_set;
+using std::pair;
 using std::string;
 
 namespace pyt {
 namespace nlp {
 
 int OntologyIndex::ParseFromCsv(std::istream& stream,  // NOLINT
+                                const unordered_set<string>& filter,
                                 OntologyIndex* index) {
   static const string relation = ":r:is-a\t:e:entity:Entity\t:e:class:Class";
   LOG_IF(FATAL, !index) << "Null pointer passed as index.";
 
-  auto Filter = [](const string& name) {
-    if (name.size() < 3) {
+  auto Filter = [&filter](const string& name) {
+    if (name.size() < 3 || filter.count(name)) {
       return false;
     }
     for (const char c: name) {
@@ -71,13 +75,13 @@ void OntologyIndex::AddTriple(const std::string& relation,
     lhs_triples_.push_back({});
   }
   rhs_ids_[rhs] = rhs_id;
-  LOG_IF(FATAL, lhs_triples_.size() != names_.size())
-    << "Error in LHS triple indexing.";
+  DLOG_IF(FATAL, lhs_triples_.size() != names_.size())
+      << "Error in LHS triple indexing.";
   lhs_triples_[lhs_id].push_back({rel_id, rhs_id});
 }
 
 int OntologyIndex::AddRelation(const string& name) {
-  LOG_IF(WARNING, relation_ids_.count(name)) << "Redundant relation adding.";
+  DLOG_IF(WARNING, relation_ids_.count(name)) << "Redundant relation adding.";
   relation_ids_[name] = relations_.size();
   relations_.push_back(name);
   return relations_.size() - 1;
@@ -118,6 +122,28 @@ int OntologyIndex::RelationId(const string& name) const {
     return kInvalidId;
   }
   return it->second;
+}
+
+const string& OntologyIndex::Name(const int id) const {
+  DLOG_IF(FATAL, id < 0 || id >= static_cast<int>(names_.size()));
+  return names_[id];
+}
+
+const vector<pair<int32_t, int32_t> >& OntologyIndex::RelationsByLhs(
+    const string& lhs) const {
+  static const vector<pair<int32_t, int32_t> > empty;
+  const int lhs_id = LhsNameId(lhs);
+  if (lhs_id == kInvalidId) {
+    return empty;
+  }
+  return RelationsByLhs(lhs_id);
+}
+
+const vector<pair<int32_t, int32_t> >& OntologyIndex::RelationsByLhs(
+    const int lhs_id) const {
+  DLOG_IF(FATAL, lhs_id < 0 || lhs_id >= static_cast<int>(lhs_triples_.size()))
+      << "Index out of bounds";
+  return lhs_triples_[lhs_id];
 }
 
 void OntologyIndex::Save(std::ostream& stream) const {  // NOLINT

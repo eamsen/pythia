@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <istream>
 #include <ostream>
@@ -17,16 +18,22 @@ class OntologyIndex {
   static const int kInvalidId = -1;
 
   static int ParseFromCsv(std::istream& stream,  // NOLINT
+                          const std::unordered_set<std::string>& filter,
                           OntologyIndex* index);
 
-  void AddTriple(const std::string& relation,
-      const std::string& lhs, const std::string& rhs);
+  void AddTriple(const std::string& relation, const std::string& lhs,
+                 const std::string& rhs);
   int AddRelation(const std::string& name);
   int AddName(const std::string& name);
   int LhsNameId(const std::string& name) const;
   int RhsNameId(const std::string& name) const;
   int NameId(const std::string& name) const;
   int RelationId(const std::string& name) const;
+  const std::string& Name(const int id) const;
+  const std::vector<std::pair<int32_t, int32_t> >& RelationsByLhs(
+      const std::string& lhs) const;
+  const std::vector<std::pair<int32_t, int32_t> >& RelationsByLhs(
+      const int lhs_id) const;
   void Save(std::ostream& stream) const;  // NOLINT
   void Load(std::istream& stream);  // NOLINT
 

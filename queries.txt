@@ -3,7 +3,7 @@ $1 :r:is-a :e:astronaut:Astronaut;
 $1 :r:occurs-with apollo
 $1 :r:occurs-with walk* on the moon
 
-2 Arab states of the Persian Gulf
+2* Arab states of the Persian Gulf
 $1 :r:is-a :e:country:Country;
 $1 :r:occurs-with arab;
 $1 :r:occurs-with persian gulf
@@ -12,7 +12,7 @@ $1 :r:occurs-with persian gulf
 $1 :r:is-a :e:astronaut:Astronaut;
 $1 :r:occurs-with land* moon
 
-4 Axis powers of World War II
+4* Axis powers of World War II
 $1 :r:is-a :e:country:Country;
 $1 :r:occurs-with axis power*
 
@@ -24,29 +24,52 @@ $1 :r:occurs-with jewish canon
 $1 :r:is-a :e:borough:Borough;
 $1 :r:occurs-with new york city
 
-7 Branches of the US military
+7* Branches of the US military
 $1 :r:is-a :e:branchdivision:Branch_(Division);
 $1 :r:occurs-with us military
 
 8 continents in the world
-$1 :r:is-a :e:branchdivision:Branch_(Division);
-$1 :r:occurs-with us military
+$1 :r:is-a :e:continent:Continent
+$1 :r:occurs-with world
 
-9 degrees of Eastern Orthodox monasticism
+9* degrees of Eastern Orthodox monasticism
+???
 
-10 did nicole kidman have any siblings
+10* did nicole kidman have any siblings
+10 nicole kidman's siblings
+???
 
 11 dioceses of the church of ireland
 $1 :r:is-a :e:diocese:Diocese;
 $1 :r:occurs-with church of ireland
 
-12 first targets of the atomic bomb
-13 five great epics of Tamil literature
-14 gods who dwelt on Mount Olympus
-15 henry ii's brothers and sisters
-16 hijackers in the September 11 attacks
-17 houses of the Russian parliament
-18 john lennon, parents
+12* first targets of the atomic bomb
+$1 :r:is-a :e:location:Location;
+$1 :r:occurs-with first targets atomic bomb
+
+13* five great epics of Tamil literature
+???
+
+14* gods who dwelt on Mount Olympus
+$1 :r:is-a :e:goddess:Goddess;
+$1 :r:occurs-with mount olympus
+
+15* henry ii's brothers and sisters
+$1 :r:is-a :e:childoffspring:Child_(Offspring);
+$1 :r:occurs-with henry ii
+
+16* hijackers in the September 11 attacks
+$1 :r:equals :e:hijackersintheseptember11attacks:Hijackers_in_the_September_11_attacks;
+$1 :r:occurs-with :s:firstsentence
+
+17* houses of the Russian parliament
+???
+$1 :r:is-a :e:house:House;
+$1 :r:occurs-with russian parliament
+
+18* john lennon's parents
+???
+
 19 kenya's captain in cricket
 20 kublai khan siblings
 21 lilly allen parents
@@ -80,5 +103,11 @@ $1 :r:occurs-with church of ireland
 49 who invented the python programming language
 50 wonders of the ancient world
 
-51 german car manufacturers
-52 books by lewis carroll
+51- german car manufacturers
+$1 :r:is-a :e:carmanufacturer:Car_Manufacturer;
+$1 :r:occurs-with german
+
+52- books by lewis carroll
+52 lewis carroll's books
+$1 :r:is-a :e:book:Book;
+$1 :r:occurs-with lewis carroll

@@ -74,11 +74,13 @@ Server::Server(const string& name, const string& version,
     LOG(INFO) << "Ontology index loaded from " << ontology_bin_path
               << " [" << ThreadClock() - begtime << "].";
   } else {
+    static const std::unordered_set<string> ontology_filter =
+        {"entity", "abstraction", "object", "physicalentity"};
     // Construct ontology from text file.
     ThreadClock begtime;
     std::ifstream ontology_stream("data/ontology-is-a.txt");
     int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
-        &ontology_index_);
+        ontology_filter, &ontology_index_);
     LOG(INFO) << "Indexed " << num_triples << " ontology triples"
               << " [" << ThreadClock() - begtime << "].";
     std::ofstream ontology_bin_stream(ontology_bin_path);

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <flow/clock.h>
 #include "./server.h"
 #include "./query-parser.h"
@@ -163,22 +164,53 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     entities.insert(entity.name);
   }
 
-  // Find target type.
+  // Find target types.
+  const OntologyIndex& ontology = server_.OntologyIndex();
   vector<string> target_types;
   for (const string& w: target_keywords) {
+    // Add types occuring on the right-hand side of an is-a relation, which are
+    // singular forms of the target keywords.
     const vector<string> singulars = SingularForms(w);
     for (const string& s: singulars) {
       // Check if a singular form of a target keyword is an ontology class.
-      if (server_.OntologyIndex().RhsNameId(s) != OntologyIndex::kInvalidId) {
+      if (ontology.RhsNameId(s) != OntologyIndex::kInvalidId) {
         target_types.push_back(s);
       }
     }
   }
+  // TODO(esawin): Refactor this out of here.
+  // Here comes the target type guessing based on most frequent entity types.
+  const int is_a_relation_id = ontology.RelationId("is-a");
+  DLOG_IF(FATAL, is_a_relation_id == OntologyIndex::kInvalidId)
+      << "is-a relation is not not indexed.";
+  vector<int> rhs_freqs;
+  for (const string& e: entities) {
+    const auto relations = ontology.RelationsByLhs(e);
+    for (const auto& r: relations) {
+      if (r.first == is_a_relation_id) {
+        rhs_freqs.push_back(r.second);
+      }
+    }
+  }
+  std::sort(rhs_freqs.begin(), rhs_freqs.end());
+  vector<std::pair<int, int> > rhs_sorted;
+  for (const int rhs: rhs_freqs) {
+    if (rhs_sorted.size() && rhs_sorted.back().second == rhs) {
+      ++rhs_sorted.back().first;
+    } else {
+      rhs_sorted.push_back({1, rhs});
+    }
+  }
+  const size_t k = std::min(4u, rhs_sorted.size());
+  std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
+                    rhs_sorted.end(), std::greater<std::pair<int, int> >());
+  rhs_sorted.resize(k);
+  for (const auto& rhs: rhs_sorted) {
+    target_types.push_back(ontology.Name(rhs.second));
+  }
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"
-                  << (target_types.size() ?
-                      JsonArray(target_types.begin(), target_types.end()) :
-                      "[\"unknown\"]");
+                  << JsonArray(target_types.begin(), target_types.end());
   response_stream << "}";
 }
 
