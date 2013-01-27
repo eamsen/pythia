@@ -8,7 +8,7 @@ POCODIR:=deps/poco/install
 GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
 CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src\
-	-Ilibs/flow/include
+	-Ideps/flow/include
 CFLAGS:=-Wall -O3
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	-lpythia-io -lpythia-net -lpythia-nlp\
@@ -94,7 +94,7 @@ cpplint:
 flow:
 	@git submodule init;
 	@git submodule update;
-	@cd libs/flow; make;
+	@cd deps/flow; make;
 
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done

@@ -4,3 +4,6 @@
 [submodule "tools/cpplint"]
 	path = tools/cpplint
 	url = https://github.com/eamsen/cpplint
+[submodule "deps/flow"]
+	path = deps/flow
+	url = https://github.com/eamsen/flow
