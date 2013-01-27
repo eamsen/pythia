@@ -18,6 +18,7 @@
 #include "../nlp/entity-index.h"
 #include "../nlp/named-entity-extractor.h"
 #include "../nlp/edit-distance.h"
+#include "../nlp/grammar-tools.h"
 
 using std::string;
 using std::vector;
@@ -71,7 +72,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   string response_data = HttpsGetRequest(server_.SearchHost() +
                                          server_.SearchBase() + query_uri,
                                          timeout);
-  LOG(INFO) << "Google search time [" << ThreadClock() - clock << "].";
+  DLOG(INFO) << "Google search time [" << ThreadClock() - clock << "].";
   clock = ThreadClock();
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
@@ -79,7 +80,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   json_parser.parse(response_data);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
-  LOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
+  DLOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
   clock = ThreadClock();
 
   ClockDiff http_get_time = 0;
@@ -103,8 +104,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       ner_time += ThreadClock() - clock;
     }
   }
-  LOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
-  LOG(INFO) << "Total NER time [" << ner_time << "].";
+  DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
+  DLOG(INFO) << "Total NER time [" << ner_time << "].";
 
   // Assemble the response.
   response->setChunkedTransferEncoding(true);
@@ -146,7 +147,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
         IsBadName(entity.name)) {
-      // LOG(INFO) << "Filtered entity: " << entity.name;
+      // DLOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
     top_candidates += (top_candidates.size() ? ", ": "") + entity.name;
@@ -159,8 +160,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
                     << "\",\"score\":" << index.Frequency(entity) << "}";
     entities.insert(entity.name);
   }
+
+  // Find target type.
+  for (const string& w: target_keywords) {
+
+  }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "],\"target_type\":\"target type\"";
+  response_stream << "],\"target_type\":\"unknown\"";
   response_stream << "}";
 }
 
