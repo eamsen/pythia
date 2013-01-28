@@ -248,3 +248,30 @@ TEST(SerializeTest, set) {
     }
   }
 }
+
+TEST(SerializeTest, nested) {
+  stringstream stream;
+  {
+    vector<vector<int> > v;
+    vector<vector<int> > r;
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    v = {{0, 1,}, {2, 3}};
+    Write(v, stream);
+    Read(stream, &r);
+    EXPECT_EQ(v, r);
+
+    for (int i = 0; i < 9; ++i) {
+      v = {{i, i + 1}, {i + 2}};
+      Write(v, stream);
+    }
+    for (int i = 0; i < 9; ++i) {
+      v = {{i, i + 1}, {i + 2}};
+      r = {};
+      Read(stream, &r);
+      ASSERT_EQ(v, r);
+    }
+  }
+}

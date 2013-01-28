@@ -54,6 +54,7 @@ depend: senna poco gflags glog cpplint flow
 makedirs:
 	@mkdir -p libs
 	@mkdir -p bin/obj
+	@mkdir -p cache
 
 senna:
 	@if [ ! -d deps/senna ]; then \

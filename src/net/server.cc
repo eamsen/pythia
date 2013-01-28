@@ -86,7 +86,7 @@ Server::Server(const string& name, const string& version,
     std::ofstream ontology_bin_stream(ontology_bin_path);
     if (ontology_bin_stream) {
       ThreadClock begtime;
-      // ontology_index_.Save(ontology_bin_stream);
+      ontology_index_.Save(ontology_bin_stream);
       LOG(INFO) << "Ontology index saved to " << ontology_bin_path
                 << " [" << ThreadClock() - begtime << "].";
     } else {
