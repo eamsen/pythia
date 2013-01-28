@@ -44,7 +44,7 @@ void Read(std::istream& stream, T* target) {  // NOLINT
 
 void Read(std::istream& stream, std::string* target) {  // NOLINT
   uint64_t size;
-  Read(stream, &size); 
+  Read(stream, &size);
   // LOG(ERROR) << "read string " << size;
   if (size == 0) {
     return;
@@ -69,16 +69,16 @@ template<bool isMap, template<typename T, typename...> class Container,
          typename T, typename... Args>
 struct Reader {
   static void _Read(std::istream& stream,  // NOLINT
-                    Container<T, Args...>* target) { 
+                    Container<T, Args...>* target) {
     LOG(FATAL) << "Not implemented.";
   }
 };
 
 template<template<typename T, typename...> class Container,
-                  typename T, typename... Args>
+         typename T, typename... Args>
 struct Reader<false, Container, T, Args...> {
   static void _Read(std::istream& stream,  // NOLINT
-                    Container<T, Args...>* target) { 
+                    Container<T, Args...>* target) {
     uint64_t n;
     Read(stream, &n);
     // LOG(ERROR) << "read container " << n;
@@ -88,7 +88,7 @@ struct Reader<false, Container, T, Args...> {
     std::vector<T> vec;
     vec.reserve(n);
     while (n--) {
-      vec.push_back(T()); 
+      vec.push_back(T());
       Read(stream, &vec.back());
     }
     *target = Container<T, Args...>(vec.begin(), vec.end());
@@ -111,7 +111,7 @@ struct Reader<true, Container, T, Args...> {
     std::vector<std::pair<K, M> > vec;
     vec.reserve(n);
     while (n--) {
-      vec.push_back({}); 
+      vec.push_back({});
       Read(stream, &vec.back());
     }
     *target = Container<T, Args...>(vec.begin(), vec.end());

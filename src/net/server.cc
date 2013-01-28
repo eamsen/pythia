@@ -14,11 +14,11 @@
 #include <Poco/Util/OptionSet.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <flow/clock.h>
 #include <string>
 #include <vector>
 #include <ostream>
 #include <fstream>
-#include <flow/clock.h>
 #include "./request-handler-factory.h"
 
 using std::string;

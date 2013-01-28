@@ -77,141 +77,141 @@ TEST(GrammarToolsTest, SingularForms) {
   string singular = "book";
   vector<string> result_vec = SingularForms("books");
   unordered_set<string> result(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "bedroom";
   result_vec = SingularForms("bedrooms");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "bus";
   result_vec = SingularForms("buses");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "church";
   result_vec = SingularForms("churches");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "box";
   result_vec = SingularForms("boxes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "buzz";
   result_vec = SingularForms("buzzes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "city";
   result_vec = SingularForms("cities");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "baby";
   result_vec = SingularForms("babies");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "country";
   result_vec = SingularForms("countries");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "kennedy";
   result_vec = SingularForms("kennedys");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "potato";
   result_vec = SingularForms("potatoes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "hero";
   result_vec = SingularForms("heroes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "echo";
   result_vec = SingularForms("echoes");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "radio";
   result_vec = SingularForms("radios");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "studio";
   result_vec = SingularForms("studios");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "knife";
   result_vec = SingularForms("knives");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "wolf";
   result_vec = SingularForms("wolves");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "half";
   result_vec = SingularForms("halves");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "life";
   result_vec = SingularForms("lives");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "roof";
   result_vec = SingularForms("roofs");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "cliff";
   result_vec = SingularForms("cliffs");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "dwarf";
   result_vec = SingularForms("dwarfs");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count("dwarf")); 
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count("dwarf"));
+  EXPECT_TRUE(result.count(singular));
 
   singular = "dwarf";
   result_vec = SingularForms("dwarves");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "man";
   result_vec = SingularForms("men");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "woman";
   result_vec = SingularForms("women");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "person";
   result_vec = SingularForms("people");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "child";
   result_vec = SingularForms("children");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 
   singular = "brother";
   result_vec = SingularForms("brethren");
   result = unordered_set<string>(result_vec.begin(), result_vec.end());
-  EXPECT_TRUE(result.count(singular)); 
+  EXPECT_TRUE(result.count(singular));
 }

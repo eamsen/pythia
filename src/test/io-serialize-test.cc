@@ -258,7 +258,7 @@ TEST(SerializeTest, nested) {
     Read(stream, &r);
     EXPECT_EQ(v, r);
 
-    v = {{0, 1,}, {2, 3}};
+    v = {{0, 1}, {2, 3}};
     Write(v, stream);
     Read(stream, &r);
     EXPECT_EQ(v, r);

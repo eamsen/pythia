@@ -5,6 +5,7 @@
 #include <Poco/JSON/DefaultHandler.h>
 #include <Poco/JSON/Query.h>
 #include <glog/logging.h>
+#include <flow/clock.h>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -12,7 +13,6 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
-#include <flow/clock.h>
 #include "./server.h"
 #include "./query-parser.h"
 #include "./http-request.h"
