@@ -107,18 +107,19 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   auto items = json_query.findArray("items");
   NamedEntityExtractor extractor;
   vector<vector<std::pair<string, Entity::Type> > > extracted(items->size());
-  // #pragma omp parallel for
+  #pragma omp parallel for
   for (size_t i = 0; i < items->size(); ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     // LOG(INFO) << "Processing " << url;
     ThreadClock clock2;
     string content = StripHtml(HttpGetRequest(url, timeout));
-    // #pragma omp critical
+    #pragma omp critical
     http_get_time += ThreadClock() - clock2;
     clock2 = ThreadClock();
     // extractor.Extract(content, &index);
+    #pragma omp critical
     extractor.Extract(content, &extracted[i]);
-    // #pragma omp critical
+    #pragma omp critical
     ner_time += ThreadClock() - clock2;
   }
   for (const auto& vec: extracted) {
