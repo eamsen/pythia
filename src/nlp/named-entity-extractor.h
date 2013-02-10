@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "./tagger.h"
+#include "./entity-index.h"
 
 namespace pyt {
 namespace nlp {
@@ -16,6 +17,8 @@ class NamedEntityExtractor: public Tagger {
   NamedEntityExtractor();
   std::vector<Tag> Extract(const std::string& text) const;
   std::vector<Tag> Extract(const std::string& text, EntityIndex* index) const;
+  std::vector<Tag> Extract(const std::string& text,
+      std::vector<std::pair<std::string, Entity::Type> >* index) const;
 };
 
 }  // namespace nlp

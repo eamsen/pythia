@@ -13,6 +13,7 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <regex>
 #include "./server.h"
 #include "./query-parser.h"
 #include "./http-request.h"
@@ -53,6 +54,19 @@ string JsonArray(It begin, It end) {
   return ss.str();
 }
 
+string StripHtml(const string& content) {
+  std::stringstream ss;
+  size_t pos = content.find("<body");
+  while (pos != string::npos && content.substr(pos, 6) != "</body") {
+    const size_t beg = content.find(">", pos) + 1;
+    pos = content.find("<", beg);
+    if (beg != string::npos) {
+      ss << content.substr(beg, pos - beg);
+    }
+  }
+  return ss.str();
+}
+
 FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
     : server_(static_cast<Server&>(Poco::Util::Application::instance())),
       uri_(uri),
@@ -90,21 +104,26 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   ClockDiff ner_time = 0;
   // Get page contents and extract named entities.
   EntityIndex index;
-  NamedEntityExtractor extractor;
   auto items = json_query.findArray("items");
-  for (size_t end = items->size(), i = 0; i < end; ++i) {
+  NamedEntityExtractor extractor;
+  vector<vector<std::pair<string, Entity::Type> > > extracted(items->size());
+  // #pragma omp parallel for
+  for (size_t i = 0; i < items->size(); ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     // LOG(INFO) << "Processing " << url;
-    clock = ThreadClock();
-    string content = HttpGetRequest(url, timeout);
-    http_get_time += ThreadClock() - clock;
-    auto start = content.find("<body");
-    if (start != string::npos) {
-      auto end = content.find("</body", start + 5);
-      content = content.substr(start, end - start);
-      clock = ThreadClock();
-      extractor.Extract(content, &index);
-      ner_time += ThreadClock() - clock;
+    ThreadClock clock2;
+    string content = StripHtml(HttpGetRequest(url, timeout));
+    // #pragma omp critical
+    http_get_time += ThreadClock() - clock2;
+    clock2 = ThreadClock();
+    // extractor.Extract(content, &index);
+    extractor.Extract(content, &extracted[i]);
+    // #pragma omp critical
+    ner_time += ThreadClock() - clock2;
+  }
+  for (const auto& vec: extracted) {
+    for (const auto& e: vec) {
+      index.Add(e.first, e.second);
     }
   }
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";

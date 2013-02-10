@@ -9,7 +9,7 @@ GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
 CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src\
 	-Ideps/flow/include
-CFLAGS:=-Wall -O3
+CFLAGS:=-Wall -O3 -fopenmp
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	-lpythia-io -lpythia-net -lpythia-nlp\
 	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
