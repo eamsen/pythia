@@ -56,6 +56,9 @@ int OntologyIndex::ParseFromCsv(std::istream& stream,  // NOLINT
   return num_triples;
 }
 
+OntologyIndex::OntologyIndex()
+    : num_lhs_triples_(0) {}
+
 void OntologyIndex::AddTriple(const std::string& relation,
     const std::string& lhs, const std::string& rhs) {
   int rel_id = RelationId(relation);
@@ -74,10 +77,12 @@ void OntologyIndex::AddTriple(const std::string& relation,
     // TODO(esawin): Make that more memory-efficient.
     lhs_triples_.push_back({});
   }
+  ++rhs_freqs_[rhs_id];
   rhs_ids_[rhs] = rhs_id;
   DLOG_IF(FATAL, lhs_triples_.size() != names_.size())
       << "Error in LHS triple indexing.";
   lhs_triples_[lhs_id].push_back({rel_id, rhs_id});
+  ++num_lhs_triples_;
 }
 
 int OntologyIndex::AddRelation(const string& name) {
@@ -89,6 +94,7 @@ int OntologyIndex::AddRelation(const string& name) {
 
 int OntologyIndex::AddName(const string& name) {
   names_.push_back(name);
+  rhs_freqs_.push_back(0);
   return names_.size() - 1;
 }
 
@@ -145,6 +151,16 @@ const vector<pair<int32_t, int32_t> >& OntologyIndex::RelationsByLhs(
       << "Index out of bounds";
   return lhs_triples_[lhs_id];
 }
+  
+int OntologyIndex::NumTriples() const {
+  return num_lhs_triples_;
+}
+
+int OntologyIndex::RhsFreq(const int rhs_id) const {
+  DLOG_IF(FATAL, rhs_id < 0 || rhs_id >= static_cast<int>(rhs_freqs_.size()))
+      << "Index out of bounds";
+  return rhs_freqs_[rhs_id];
+}
 
 void OntologyIndex::Save(std::ostream& stream) const {  // NOLINT
   using pyt::io::Write;
@@ -154,6 +170,8 @@ void OntologyIndex::Save(std::ostream& stream) const {  // NOLINT
   Write(names_, stream);
   Write(relations_, stream);
   Write(lhs_triples_, stream);
+  Write(num_lhs_triples_, stream);
+  Write(rhs_freqs_, stream);
 }
 
 void OntologyIndex::Load(std::istream& stream) {  // NOLINT
@@ -164,6 +182,8 @@ void OntologyIndex::Load(std::istream& stream) {  // NOLINT
   Read(stream, &names_);
   Read(stream, &relations_);
   Read(stream, &lhs_triples_);
+  Read(stream, &num_lhs_triples_);
+  Read(stream, &rhs_freqs_);
 }
 
 }  // namespace nlp

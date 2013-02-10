@@ -144,7 +144,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   // Find the top candidates.
   size_t num_top = 30;
-  std::unordered_set<string> entities;
+  std::unordered_map<string, int> entities;
   string top_candidates;
   while (num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
@@ -161,7 +161,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     response_stream << "{\"name\":\"" << entity.name
                     << "\",\"type\":\"" << Entity::TypeName(entity.type)
                     << "\",\"score\":" << index.Frequency(entity) << "}";
-    entities.insert(entity.name);
+    entities.insert({entity.name, index.Frequency(entity)});
   }
 
   // Find target types.
@@ -183,30 +183,36 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   const int is_a_relation_id = ontology.RelationId("is-a");
   DLOG_IF(FATAL, is_a_relation_id == OntologyIndex::kInvalidId)
       << "is-a relation is not not indexed.";
-  vector<int> rhs_freqs;
-  for (const string& e: entities) {
-    const auto relations = ontology.RelationsByLhs(e);
+  vector<std::pair<int, float> > rhs_freqs;
+  for (const auto& e: entities) {
+    const auto relations = ontology.RelationsByLhs(e.first);
     for (const auto& r: relations) {
       if (r.first == is_a_relation_id) {
-        rhs_freqs.push_back(r.second);
+        rhs_freqs.push_back({r.second, e.second});
       }
     }
   }
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
-  vector<std::pair<int, int> > rhs_sorted;
-  for (const int rhs: rhs_freqs) {
-    if (rhs_sorted.size() && rhs_sorted.back().second == rhs) {
-      ++rhs_sorted.back().first;
+  vector<std::pair<float, int> > rhs_sorted;
+  const float log_num_triples = std::log2(ontology.NumTriples());
+  LOG(INFO) << "Number of triples: " << ontology.NumTriples()
+            << " (" << log_num_triples << ").";
+  for (const auto& rhs: rhs_freqs) {
+    const float idf = log_num_triples - std::log2(ontology.RhsFreq(rhs.first));
+    const float score = idf * rhs.second;
+    if (rhs_sorted.size() && rhs_sorted.back().second == rhs.first) {
+        rhs_sorted.back().first += score;
     } else {
-      rhs_sorted.push_back({1, rhs});
+      rhs_sorted.push_back({score, rhs.first});
     }
   }
   const size_t k = std::min(4u, rhs_sorted.size());
   std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
-                    rhs_sorted.end(), std::greater<std::pair<int, int> >());
+                    rhs_sorted.end(), std::greater<std::pair<float, int> >());
   rhs_sorted.resize(k);
   for (const auto& rhs: rhs_sorted) {
     target_types.push_back(ontology.Name(rhs.second));
+    LOG(INFO) << rhs.second << ": " << rhs.first;
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"

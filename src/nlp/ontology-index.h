@@ -21,6 +21,7 @@ class OntologyIndex {
                           const std::unordered_set<std::string>& filter,
                           OntologyIndex* index);
 
+  OntologyIndex();
   void AddTriple(const std::string& relation, const std::string& lhs,
                  const std::string& rhs);
   int AddRelation(const std::string& name);
@@ -29,6 +30,8 @@ class OntologyIndex {
   int RhsNameId(const std::string& name) const;
   int NameId(const std::string& name) const;
   int RelationId(const std::string& name) const;
+  int NumTriples() const;
+  int RhsFreq(const int rhs_id) const;
   const std::string& Name(const int id) const;
   const std::vector<std::pair<int32_t, int32_t> >& RelationsByLhs(
       const std::string& lhs) const;
@@ -44,6 +47,8 @@ class OntologyIndex {
   std::vector<std::string> names_;
   std::vector<std::string> relations_;
   std::vector<std::vector<std::pair<int32_t, int32_t> > > lhs_triples_;
+  int32_t num_lhs_triples_;
+  std::vector<int32_t> rhs_freqs_;
 };
 
 }  // namespace nlp
