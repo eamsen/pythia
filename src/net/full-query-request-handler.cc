@@ -142,6 +142,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return word.size() < 2 || word.size() > 40;
   };
 
+  const OntologyIndex& ontology = server_.OntologyIndex();
   // Find the top candidates.
   size_t num_top = 30;
   std::unordered_map<string, int> entities;
@@ -149,7 +150,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   while (num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
-        IsBadName(entity.name)) {
+        IsBadName(entity.name) ||
+        ontology.LhsNameId(entity.name) == OntologyIndex::kInvalidId) {
       // DLOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
@@ -165,7 +167,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
 
   // Find target types.
-  const OntologyIndex& ontology = server_.OntologyIndex();
   vector<string> target_types;
   for (const string& w: target_keywords) {
     // Add types occuring on the right-hand side of an is-a relation, which are
