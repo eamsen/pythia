@@ -19,7 +19,7 @@ LIBS:=-Llibs -L$(POCODIR)/lib\
 TSTFLAGS:=-O0 -Wall -g
 TSTLIBS:=$(GTESTLIBS) $(LIBS)
 BINS:=pythia
-INTLIBS:=$(addprefix libpythia-, $(SRCSUBDIRS))
+INTLIBS:=$(addprefix libpythia-, $(filter-out test, $(SRCSUBDIRS)))
 
 TSTBINS:=$(notdir $(basename $(wildcard $(TSTDIR)/*.cc)))
 TSTOBJS:=$(addsuffix .o, $(notdir $(basename $(wildcard $(TSTDIR)/*.cc))))
