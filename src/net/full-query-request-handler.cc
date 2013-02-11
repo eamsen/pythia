@@ -72,6 +72,7 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
       uri_(uri),
       query_analyser_(server_.Tagger()) {}
 
+// TODO(esawin): This need heavy refactoring.
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   static const int64_t timeout = 3 * 1e6;  // Microseconds.
   const Query query(uri_.getQuery());
@@ -84,17 +85,22 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
+  auto& web_cache = server_.WebCache();
   ThreadClock clock;
   // Get Google search results.
-  string response_data = HttpsGetRequest(server_.SearchHost() +
-                                         server_.SearchBase() + query_uri,
-                                         timeout);
+  const string search_url = server_.SearchHost() + server_.SearchBase() +
+      query_uri;
+  auto response_it = web_cache.find(search_url);
+  if (response_it == web_cache.end()) {
+    response_it = web_cache.insert({search_url,
+        HttpsGetRequest(search_url, timeout)}).first;
+  }
   DLOG(INFO) << "Google search time [" << ThreadClock() - clock << "].";
   clock = ThreadClock();
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
-  json_parser.parse(response_data);
+  json_parser.parse(response_it->second);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
   DLOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
@@ -110,15 +116,22 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   #pragma omp parallel for
   for (size_t i = 0; i < items->size(); ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
-    // LOG(INFO) << "Processing " << url;
     ThreadClock clock2;
-    string content = StripHtml(HttpGetRequest(url, timeout));
+    auto content_it = web_cache.find(url);
+    if (content_it == web_cache.end()) {
+      #pragma omp critical
+      content_it = web_cache.insert({url,
+          StripHtml(HttpGetRequest(url, timeout))}).first;
+      DLOG(INFO) << "Cached content for " << url << ".";
+    } else {
+      DLOG(INFO) << "Loaded content for " << url << " from cache.";
+    }
     #pragma omp critical
     http_get_time += ThreadClock() - clock2;
     clock2 = ThreadClock();
     // extractor.Extract(content, &index);
     #pragma omp critical
-    extractor.Extract(content, &extracted[i]);
+    extractor.Extract(content_it->second, &extracted[i]);
     #pragma omp critical
     ner_time += ThreadClock() - clock2;
   }
@@ -216,8 +229,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
   vector<std::pair<float, int> > rhs_sorted;
   const float log_num_triples = std::log2(ontology.NumTriples());
-  LOG(INFO) << "Number of triples: " << ontology.NumTriples()
-            << " (" << log_num_triples << ").";
   for (const auto& rhs: rhs_freqs) {
     const float idf = log_num_triples - std::log2(ontology.RhsFreq(rhs.first));
     const float score = idf * rhs.second;

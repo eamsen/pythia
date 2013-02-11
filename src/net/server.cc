@@ -20,6 +20,7 @@
 #include <ostream>
 #include <fstream>
 #include "./request-handler-factory.h"
+#include "../io/serialize.h"
 
 using std::string;
 using std::vector;
@@ -39,6 +40,8 @@ namespace pyt {
 namespace net {
 
 DEFINE_string(api, "api.txt", "Google API key + CX file.");
+DEFINE_string(webcache, "cache/web.bin", "HTML-content cache.");
+DEFINE_string(ontologycache, "cache/ontology.bin", "Ontology index cache.");
 
 Server::Server(const string& name, const string& version,
                const string& doc_path, const uint16_t port,
@@ -64,14 +67,18 @@ Server::Server(const string& name, const string& version,
   search_base_ += "&cx=" + api_cx_;
   search_base_ += "&q=";
 
-  const string ontology_bin_path = "cache/ontology.bin";
+  // Load web cache.
+  std::ifstream web_cache_stream(FLAGS_webcache);
+  if (web_cache_stream) {
+    io::Read(web_cache_stream, &web_cache_);
+  }
   // Construct ontology index.
-  std::ifstream ontology_bin_stream(ontology_bin_path);
+  std::ifstream ontology_bin_stream(FLAGS_ontologycache);
   if (ontology_bin_stream) {
     // Load ontology index from cached binary format.
     ThreadClock begtime;
     ontology_index_.Load(ontology_bin_stream);
-    LOG(INFO) << "Ontology index loaded from " << ontology_bin_path
+    LOG(INFO) << "Ontology index loaded from " << FLAGS_ontologycache
               << " [" << ThreadClock() - begtime << "].";
   } else {
     static const std::unordered_set<string> ontology_filter = {};
@@ -83,16 +90,25 @@ Server::Server(const string& name, const string& version,
         ontology_filter, &ontology_index_);
     LOG(INFO) << "Indexed " << num_triples << " ontology triples"
               << " [" << ThreadClock() - begtime << "].";
-    std::ofstream ontology_bin_stream(ontology_bin_path);
+    std::ofstream ontology_bin_stream(FLAGS_ontologycache);
     if (ontology_bin_stream) {
       ThreadClock begtime;
       ontology_index_.Save(ontology_bin_stream);
-      LOG(INFO) << "Ontology index saved to " << ontology_bin_path
+      LOG(INFO) << "Ontology index saved to " << FLAGS_ontologycache
                 << " [" << ThreadClock() - begtime << "].";
     } else {
-      LOG(ERROR) << "Could not save ontology index to " << ontology_bin_path
+      LOG(ERROR) << "Could not save ontology index to " << FLAGS_ontologycache
                  << ".";
     }
+  }
+}
+
+Server::~Server() {
+  std::ofstream web_cache_stream(FLAGS_webcache);
+  if (web_cache_stream) {
+    io::Write(web_cache_, web_cache_stream);
+  } else {
+    LOG(ERROR) << "Could not save web cache to " << FLAGS_webcache << ".";
   }
 }
 
@@ -127,6 +143,10 @@ const Tagger& Server::Tagger() const {
 
 const nlp::OntologyIndex& Server::OntologyIndex() const {
   return ontology_index_;
+}
+
+std::unordered_map<string, string>& Server::WebCache() {
+  return web_cache_;
 }
 
 void Server::initialize(Application& self) {  // NOLINT

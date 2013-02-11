@@ -10,7 +10,7 @@
 namespace pyt {
 namespace io {
 
-bool IsLittleEndian() {
+inline bool IsLittleEndian() {
   uint16_t i = 1;
   return *reinterpret_cast<uint8_t*>(&i);
 }
@@ -42,7 +42,7 @@ void Read(std::istream& stream, T* target) {  // NOLINT
   *target = FromNetworkFormat(*target);
 }
 
-void Read(std::istream& stream, std::string* target) {  // NOLINT
+inline void Read(std::istream& stream, std::string* target) {  // NOLINT
   uint64_t size;
   Read(stream, &size);
   // LOG(ERROR) << "read string " << size;
@@ -142,7 +142,7 @@ void Write(const T& target, std::ostream& stream) {  // NOLINT
   stream.write(reinterpret_cast<const char*>(&net_target), sizeof(T));
 }
 
-void Write(const std::string& target, std::ostream& stream) {  // NOLINT
+inline void Write(const std::string& target, std::ostream& stream) {  // NOLINT
   uint64_t size = target.size();
   // LOG(ERROR) << "write string " << size;
   Write(size, stream);
