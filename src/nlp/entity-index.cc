@@ -20,15 +20,16 @@ const string& Entity::TypeName(const Type type) {
 EntityIndex::EntityIndex()
     : queue_(QueueComp(*this)) {}
 
-void EntityIndex::Add(const string& _entity, Entity::Type type) {
+void EntityIndex::Add(const string& _entity, Entity::Type type,
+    const float score) {
   Entity entity({_entity, type});
   std::transform(entity.name.begin(), entity.name.end(), entity.name.begin(),
                  ::tolower);
   auto it = index_.find(entity);
   if (it == index_.end()) {
-    index_[entity].push_back({1.0f});
+    index_[entity].push_back({score});
   } else {
-    it->second.push_back({it->second.back().score + 1.0f});
+    it->second.push_back({it->second.back().score + score});
   }
   queue_.push(entity);
 }

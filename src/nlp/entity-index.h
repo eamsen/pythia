@@ -81,7 +81,7 @@ class EntityIndex {
   };
 
   EntityIndex();
-  void Add(const std::string& entity, Entity::Type type);
+  void Add(const std::string& entity, Entity::Type type, const float score);
   Entity PopTop();
   size_t QueueSize() const;
   size_t Frequency(const Entity& entity) const;

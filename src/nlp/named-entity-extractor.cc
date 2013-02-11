@@ -55,7 +55,7 @@ vector<Tagger::Tag> NamedEntityExtractor::Extract(
       if (_is_single_word[tag.label]) {
         // Single-word entity.
         index->Add(text.substr(tag.offset.begin, tag.offset.size),
-                   _entity_types[tag.label]);
+                   _entity_types[tag.label], 1.0f);
       } else if (_is_entity_end[tag.label]) {
         // Multi-word entity.
         const int end_index = entities.size();
@@ -70,7 +70,7 @@ vector<Tagger::Tag> NamedEntityExtractor::Extract(
           entity += " " + text.substr(entities[i].offset.begin,
                                       entities[i].offset.size);
         }
-        index->Add(entity, _entity_types[tag.label]);
+        index->Add(entity, _entity_types[tag.label], 1.0f);
       }
     }
   }

@@ -90,6 +90,9 @@ Server::Server(const string& name, const string& version,
         ontology_filter, &ontology_index_);
     LOG(INFO) << "Indexed " << num_triples << " ontology triples"
               << " [" << ThreadClock() - begtime << "].";
+    std::ifstream ontology_scores_stream("data/ontology.entity-scores.txt");
+    pyt::nlp::OntologyIndex::ParseScoresFromCsv(ontology_scores_stream,
+        &ontology_index_);
     std::ofstream ontology_bin_stream(FLAGS_ontologycache);
     if (ontology_bin_stream) {
       ThreadClock begtime;

@@ -109,6 +109,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   ClockDiff http_get_time = 0;
   ClockDiff ner_time = 0;
   // Get page contents and extract named entities.
+  const OntologyIndex& ontology = server_.OntologyIndex();
   EntityIndex index;
   auto items = json_query.findArray("items");
   NamedEntityExtractor extractor;
@@ -122,9 +123,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       #pragma omp critical
       content_it = web_cache.insert({url,
           StripHtml(HttpGetRequest(url, timeout))}).first;
-      DLOG(INFO) << "Cached content for " << url << ".";
-    } else {
-      DLOG(INFO) << "Loaded content for " << url << " from cache.";
     }
     #pragma omp critical
     http_get_time += ThreadClock() - clock2;
@@ -136,8 +134,17 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     ner_time += ThreadClock() - clock2;
   }
   for (const auto& vec: extracted) {
-    for (const auto& e: vec) {
-      index.Add(e.first, e.second);
+    for (auto e: vec) {
+      std::transform(e.first.begin(), e.first.end(), e.first.begin(),
+          ::tolower);
+      const int ontology_id = ontology.LhsNameId(e.first);
+      if (ontology_id == OntologyIndex::kInvalidId) {
+        // Ignore unkown entities.
+        continue;
+      }
+      const float idf = std::log2(ontology.SumLhsFrequencies()) -
+          std::log2(ontology.LhsFrequency(ontology_id));
+      index.Add(e.first, e.second, idf);
     }
   }
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
@@ -175,7 +182,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return word.size() < 2 || word.size() > 40;
   };
 
-  const OntologyIndex& ontology = server_.OntologyIndex();
   // Find the top candidates.
   size_t num_top = 30;
   std::unordered_map<string, int> entities;
@@ -183,8 +189,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   while (num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
-        IsBadName(entity.name) ||
-        ontology.LhsNameId(entity.name) == OntologyIndex::kInvalidId) {
+        IsBadName(entity.name)) {
       // DLOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
@@ -230,7 +235,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<std::pair<float, int> > rhs_sorted;
   const float log_num_triples = std::log2(ontology.NumTriples());
   for (const auto& rhs: rhs_freqs) {
-    const float idf = log_num_triples - std::log2(ontology.RhsFreq(rhs.first));
+    const float idf = log_num_triples -
+        std::log2(ontology.RhsFrequency(rhs.first));
     const float score = idf * rhs.second;
     if (rhs_sorted.size() && rhs_sorted.back().second == rhs.first) {
         rhs_sorted.back().first += score;
@@ -244,7 +250,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   rhs_sorted.resize(k);
   for (const auto& rhs: rhs_sorted) {
     target_types.push_back(ontology.Name(rhs.second));
-    LOG(INFO) << rhs.second << ": " << rhs.first;
+    // LOG(INFO) << rhs.second << ": " << rhs.first;
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"

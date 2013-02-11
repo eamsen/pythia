@@ -21,6 +21,9 @@ class OntologyIndex {
                           const std::unordered_set<std::string>& filter,
                           OntologyIndex* index);
 
+  static int ParseScoresFromCsv(std::istream& stream,  // NOLINT
+                                OntologyIndex* index);
+
   OntologyIndex();
   void AddTriple(const std::string& relation, const std::string& lhs,
                  const std::string& rhs);
@@ -30,8 +33,11 @@ class OntologyIndex {
   int RhsNameId(const std::string& name) const;
   int NameId(const std::string& name) const;
   int RelationId(const std::string& name) const;
+  int SumLhsFrequencies() const;
   int NumTriples() const;
-  int RhsFreq(const int rhs_id) const;
+  void LhsFrequency(const int lhs_id, const int freq);
+  int LhsFrequency(const int lhs_id) const;
+  int RhsFrequency(const int rhs_id) const;
   const std::string& Name(const int id) const;
   const std::vector<std::pair<int32_t, int32_t> >& RelationsByLhs(
       const std::string& lhs) const;
@@ -48,6 +54,8 @@ class OntologyIndex {
   std::vector<std::string> relations_;
   std::vector<std::vector<std::pair<int32_t, int32_t> > > lhs_triples_;
   int32_t num_lhs_triples_;
+  int32_t sum_lhs_freq_;
+  std::vector<int32_t> lhs_freqs_;
   std::vector<int32_t> rhs_freqs_;
 };
 

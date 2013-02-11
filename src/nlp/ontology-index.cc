@@ -1,6 +1,7 @@
 // Copyright 2013 Eugen Sawin <esawin@me73.com>
 #include "./ontology-index.h"
 #include <glog/logging.h>
+#include <sstream>
 #include "../io/serialize.h"
 
 using std::vector;
@@ -56,8 +57,33 @@ int OntologyIndex::ParseFromCsv(std::istream& stream,  // NOLINT
   return num_triples;
 }
 
+int OntologyIndex::ParseScoresFromCsv(std::istream& stream,  // NOLINT
+                                      OntologyIndex* index) {
+  LOG_IF(FATAL, !index) << "Null pointer passed as index.";
+  string line;
+  while (std::getline(stream, line)) {
+    if (line.substr(0, 3) == ":e:") {
+      size_t pos = line.find(":", 3);
+      LOG_IF(FATAL, pos == string::npos) << "Scores stream is malformed.";
+      const string entity_name = line.substr(3, pos - 3);
+      const size_t begin = line.find("\t", pos);
+      LOG_IF(FATAL, begin == string::npos) << "Scores stream is malformed.";
+      pos = line.find("\t", begin + 1);
+      LOG_IF(FATAL, pos == string::npos) << "Scores stream is malformed.";
+      int score = 0;
+      std::stringstream(line.substr(begin + 1, pos - begin - 1)) >> score;
+      const int entity_id = index->LhsNameId(entity_name);
+      if (entity_id != OntologyIndex::kInvalidId) {
+        index->LhsFrequency(entity_id, score);
+      }
+    }
+  }
+  return index->SumLhsFrequencies();
+}
+
 OntologyIndex::OntologyIndex()
-    : num_lhs_triples_(0) {}
+    : num_lhs_triples_(0),
+      sum_lhs_freq_(0) {}
 
 void OntologyIndex::AddTriple(const std::string& relation,
     const std::string& lhs, const std::string& rhs) {
@@ -95,6 +121,7 @@ int OntologyIndex::AddRelation(const string& name) {
 int OntologyIndex::AddName(const string& name) {
   names_.push_back(name);
   rhs_freqs_.push_back(0);
+  lhs_freqs_.push_back(0);
   return names_.size() - 1;
 }
 
@@ -156,7 +183,24 @@ int OntologyIndex::NumTriples() const {
   return num_lhs_triples_;
 }
 
-int OntologyIndex::RhsFreq(const int rhs_id) const {
+int OntologyIndex::SumLhsFrequencies() const {
+  return sum_lhs_freq_;
+}
+
+void OntologyIndex::LhsFrequency(const int lhs_id, const int freq) {
+  DLOG_IF(FATAL, lhs_id < 0 || lhs_id >= static_cast<int>(lhs_freqs_.size()))
+      << "Index out of bounds";
+  sum_lhs_freq_ += freq - lhs_freqs_[lhs_id];
+  lhs_freqs_[lhs_id] = freq;
+}
+
+int OntologyIndex::LhsFrequency(const int lhs_id) const {
+  DLOG_IF(FATAL, lhs_id < 0 || lhs_id >= static_cast<int>(lhs_freqs_.size()))
+      << "Index out of bounds";
+  return lhs_freqs_[lhs_id];
+}
+
+int OntologyIndex::RhsFrequency(const int rhs_id) const {
   DLOG_IF(FATAL, rhs_id < 0 || rhs_id >= static_cast<int>(rhs_freqs_.size()))
       << "Index out of bounds";
   return rhs_freqs_[rhs_id];
@@ -171,6 +215,8 @@ void OntologyIndex::Save(std::ostream& stream) const {  // NOLINT
   Write(relations_, stream);
   Write(lhs_triples_, stream);
   Write(num_lhs_triples_, stream);
+  Write(sum_lhs_freq_, stream);
+  Write(lhs_freqs_, stream);
   Write(rhs_freqs_, stream);
 }
 
@@ -183,6 +229,8 @@ void OntologyIndex::Load(std::istream& stream) {  // NOLINT
   Read(stream, &relations_);
   Read(stream, &lhs_triples_);
   Read(stream, &num_lhs_triples_);
+  Read(stream, &sum_lhs_freq_);
+  Read(stream, &lhs_freqs_);
   Read(stream, &rhs_freqs_);
 }
 
