@@ -3,7 +3,12 @@
 By Eugen Sawin <esawin@me73.com>.
 
 ## Version
-Nothing to see here yet.
+Currently, this is used as an experimental platform to convert keyword queries
+to structured queries suitable for semantic search engines. Essentially, it
+is an entity retrieval system with suprisingly good results for some queries.
+To support agile
+development and high flexibility, the pipeline is kept simple and mostly
+undocumented until certain features, that have proved valuable, have stabilized.
 
 ## Requirements
 * POSIX.1b-compliant operating system (support for librt)
