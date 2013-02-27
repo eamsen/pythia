@@ -21,8 +21,8 @@ namespace pyt {
 namespace nlp {
 
 struct Offset {
-  size_t begin;
-  size_t size;
+  int begin;
+  int size;
   bool operator==(const Offset& rhs) const {
     return begin == rhs.begin && size == rhs.size;
   }

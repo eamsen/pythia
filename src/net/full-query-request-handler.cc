@@ -32,8 +32,8 @@ using pyt::nlp::EditDistance;
 using pyt::nlp::PrefixEditDistance;
 using pyt::nlp::OntologyIndex;
 using pyt::nlp::SingularForms;
-using flow::ThreadClock;
-using flow::ClockDiff;
+using flow::time::ThreadClock;
+using flow::time::ClockDiff;
 
 namespace pyt {
 namespace net {
@@ -244,7 +244,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       rhs_sorted.push_back({score, rhs.first});
     }
   }
-  const size_t k = std::min(4u, rhs_sorted.size());
+  const size_t k = std::min(4ul, rhs_sorted.size());
   std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
                     rhs_sorted.end(), std::greater<std::pair<float, int> >());
   rhs_sorted.resize(k);

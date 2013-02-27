@@ -33,7 +33,7 @@ using Poco::Util::Application;
 using Poco::Util::Option;
 using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
-using flow::ThreadClock;
+using flow::time::ThreadClock;
 using pyt::nlp::Tagger;
 
 namespace pyt {

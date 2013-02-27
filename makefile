@@ -49,6 +49,8 @@ debug: CFLAGS=-O0 -g
 debug: clean all
 
 depend: senna poco gflags glog cpplint flow
+	@git submodule init >/dev/null;
+	@git submodule update;
 	@echo "compiled all dependencies"
 
 makedirs:
@@ -70,8 +72,6 @@ senna:
 	@cd $(OBJDIR); gcc -c -O3 -ffast-math ../../deps/senna/*.c;
 
 poco:
-	@git submodule init;
-	@git submodule update;
 	@cd deps/poco/;\
 		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
 		--no-samples --static;\
@@ -89,12 +89,9 @@ glog:
 	@echo "compiled glog"
 
 cpplint:
-	@git submodule init;
-	@git submodule update;
+	# nothing to do
 
 flow:
-	@git submodule init;
-	@git submodule update;
 	@cd deps/flow; make;
 
 check: makedirs $(TSTBINS)
