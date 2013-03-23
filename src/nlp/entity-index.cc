@@ -21,15 +21,18 @@ EntityIndex::EntityIndex()
     : queue_(QueueComp(*this)) {}
 
 void EntityIndex::Add(const string& _entity, Entity::Type type,
-    const float score) {
-  Entity entity({_entity, type});
+    const int doc_id, const float score) {
+  Entity entity({_entity, type, score});
   std::transform(entity.name.begin(), entity.name.end(), entity.name.begin(),
                  ::tolower);
   auto it = index_.find(entity);
   if (it == index_.end()) {
-    index_[entity].push_back({score});
+    index_[entity].push_back({doc_id, score});
   } else {
-    it->second.push_back({it->second.back().score + score});
+    it->second.push_back({doc_id,
+        (it->second.back().doc_id == doc_id ? 1.0f : 1.5f) *
+        it->second.back().score + score});
+    entity.score = it->second.back().score;
   }
   queue_.push(entity);
 }

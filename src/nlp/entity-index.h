@@ -27,6 +27,7 @@ struct Entity {
 
   std::string name;
   Type type;
+  float score;
 };
 
 struct EntityHash {
@@ -46,6 +47,8 @@ class EntityIndex {
         : index_(index) {}
 
     bool operator()(const Entity& lhs, const Entity& rhs) const {
+      return lhs.score < rhs.score;
+      // TODO(esawin): Revert if results unsatisfactory.
       auto StrLess = [](const std::string& l, const std::string& r) {
         if (l.size() != r.size()) {
           return l.size() < r.size();
@@ -69,19 +72,23 @@ class EntityIndex {
   };
 
   struct Item {
-    Item() : score(0.0f) {}
+    Item() : doc_id(kInvalidId), score(0.0f) {}
 
-    Item(const float score) : score(score) {}  // NOLINT
+    Item(const int doc_id, const float score)
+        : doc_id(doc_id),
+          score(score) {}
 
     bool operator==(const Item& rhs) const {
-      return score == rhs.score;
+      return doc_id == rhs.doc_id && score == rhs.score;
     }
 
+    int doc_id;
     float score;
   };
 
   EntityIndex();
-  void Add(const std::string& entity, Entity::Type type, const float score);
+  void Add(const std::string& entity, Entity::Type type, const int doc_id,
+      const float score);
   Entity PopTop();
   size_t QueueSize() const;
   size_t Frequency(const Entity& entity) const;

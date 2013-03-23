@@ -6,6 +6,7 @@
 #include <Poco/JSON/Query.h>
 #include <glog/logging.h>
 #include <flow/clock.h>
+#include <flow/string.h>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -56,8 +57,9 @@ string JsonArray(It begin, It end) {
 
 string StripHtml(const string& content) {
   std::stringstream ss;
+  const size_t end = content.find("</body");
   size_t pos = content.find("<body");
-  while (pos != string::npos && content.substr(pos, 6) != "</body") {
+  while (pos != string::npos && pos < end) {
     const size_t beg = content.find(">", pos) + 1;
     pos = content.find("<", beg);
     if (beg != string::npos) {
@@ -106,45 +108,67 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   DLOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
   clock = ThreadClock();
 
+  // Get page contents and extract named entities.
   ClockDiff http_get_time = 0;
   ClockDiff ner_time = 0;
-  // Get page contents and extract named entities.
   const OntologyIndex& ontology = server_.OntologyIndex();
   EntityIndex index;
   auto items = json_query.findArray("items");
   NamedEntityExtractor extractor;
-  vector<vector<std::pair<string, Entity::Type> > > extracted(items->size());
+  const size_t num_items = items->size();
+  vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
+  vector<vector<std::pair<string, Entity::Type>>> extracted_snippets(num_items);
   #pragma omp parallel for
-  for (size_t i = 0; i < items->size(); ++i) {
+  for (size_t i = 0; i < num_items; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     ThreadClock clock2;
     auto content_it = web_cache.find(url);
+    auto snippet_it = web_cache.find("snippet/" + url);
     if (content_it == web_cache.end()) {
       #pragma omp critical
       content_it = web_cache.insert({url,
           StripHtml(HttpGetRequest(url, timeout))}).first;
+      const string& snippet = items->getObject(i)->getValue<string>("snippet");
+      #pragma omp critical
+      snippet_it = web_cache.insert({"snippet/" + url, snippet}).first;
     }
     #pragma omp critical
-    http_get_time += ThreadClock() - clock2;
-    clock2 = ThreadClock();
-    // extractor.Extract(content, &index);
-    #pragma omp critical
-    extractor.Extract(content_it->second, &extracted[i]);
-    #pragma omp critical
-    ner_time += ThreadClock() - clock2;
+    {
+      http_get_time += ThreadClock() - clock2;
+      clock2 = ThreadClock();
+      extractor.Extract(content_it->second, &extracted_content[i]);
+      extractor.Extract(snippet_it->second, &extracted_snippets[i]);
+      ner_time += ThreadClock() - clock2;
+    }
   }
-  for (const auto& vec: extracted) {
-    for (auto e: vec) {
+  for (size_t i = 0; i < num_items; ++i) {
+    for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
-      const int ontology_id = ontology.LhsNameId(e.first);
+      string space_free = e.first;
+      flow::string::Replace(" ", "", &space_free);
+      const int ontology_id = ontology.LhsNameId(space_free);
       if (ontology_id == OntologyIndex::kInvalidId) {
         // Ignore unkown entities.
         continue;
       }
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
-          std::log2(ontology.LhsFrequency(ontology_id));
-      index.Add(e.first, e.second, idf);
+          std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+      index.Add(e.first, e.second, i, (num_items - i) * idf);
+    }
+    for (auto e: extracted_snippets[i]) {
+      std::transform(e.first.begin(), e.first.end(), e.first.begin(),
+          ::tolower);
+      string space_free = e.first;
+      flow::string::Replace(" ", "", &space_free);
+      const int ontology_id = ontology.LhsNameId(space_free);
+      if (ontology_id == OntologyIndex::kInvalidId) {
+        // Ignore unkown entities.
+        continue;
+      }
+      const float idf = std::log2(ontology.SumLhsFrequencies()) -
+          std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+      index.Add(e.first, e.second, i + num_items, 10.0f * (num_items - i) * idf);
     }
   }
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
@@ -198,10 +222,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     if (entities.size()) {
       response_stream << ",";
     }
+    auto entity_it = entities.insert({entity.name, entity.score}).first;
     response_stream << "{\"name\":\"" << entity.name
                     << "\",\"type\":\"" << Entity::TypeName(entity.type)
-                    << "\",\"score\":" << index.Frequency(entity) << "}";
-    entities.insert({entity.name, index.Frequency(entity)});
+                    << "\",\"score\":" << entity_it->second << "}";
   }
 
   // Find target types.
@@ -221,10 +245,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // Here comes the target type guessing based on most frequent entity types.
   const int is_a_relation_id = ontology.RelationId("is-a");
   DLOG_IF(FATAL, is_a_relation_id == OntologyIndex::kInvalidId)
-      << "is-a relation is not not indexed.";
+      << "is-a relation is not indexed.";
   vector<std::pair<int, float> > rhs_freqs;
   for (const auto& e: entities) {
-    const auto relations = ontology.RelationsByLhs(e.first);
+    const auto& relations = ontology.RelationsByLhs(e.first);
     for (const auto& r: relations) {
       if (r.first == is_a_relation_id) {
         rhs_freqs.push_back({r.second, e.second});
