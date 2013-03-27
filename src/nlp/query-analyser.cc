@@ -17,15 +17,6 @@ vector<string> QueryAnalyser::TargetKeywords(const string& query) const {
            label == Tagger::kPosNNS || label == Tagger::kPosNNPS;
   };
 
-  auto Singular = [](const string& word, const int label) {
-    // We don't convert to singular form yet.
-    // if ((label == Tagger::kPosNNS || label == Tagger::kPosNNPS) &&
-    //     word[word.size() - 1] == 's') {
-    //   return word.substr(0, word.size() - 1);
-    // }
-    return word;
-  };
-
   vector<string> keywords;
   vector<Tagger::Tag> tags = tagger_.Tags(query);
   for (auto beg = tags.cbegin(), end = tags.cend(), it = beg; it != end; ++it) {
@@ -35,12 +26,11 @@ vector<string> QueryAnalyser::TargetKeywords(const string& query) const {
           (it - beg > 1 && (it - 1)->label == Tagger::kPosCC &&
            IsNN((it - 2)->label))) {
         // Simple NN or NN conjunction.
-        keywords.push_back(
-            Singular(query.substr(it->offset.begin, it->offset.size), label));
+        keywords.push_back(query.substr(it->offset.begin, it->offset.size));
       } else if (it != beg && IsNN((it - 1)->label)) {
         // Multi-word NN.
         keywords.back() += " " +
-          Singular(query.substr(it->offset.begin, it->offset.size), label);
+            query.substr(it->offset.begin, it->offset.size);
       } else if (keywords.size()) {
         // Found all relevant target keywords.
         break;
@@ -48,6 +38,36 @@ vector<string> QueryAnalyser::TargetKeywords(const string& query) const {
     } else if (label == Tagger::kPosPOS && keywords.size()) {
       // Possesive ending, target NN is following.
       keywords.pop_back();
+    }
+  }
+  return keywords;
+}
+
+vector<string> QueryAnalyser::Keywords(const string& query,
+    const vector<string>& target_keywords) const {
+  auto IsNN = [](const int label) {
+    return label == Tagger::kPosNN || label == Tagger::kPosNNP ||
+           label == Tagger::kPosNNS || label == Tagger::kPosNNPS;
+  };
+
+  auto IsJJ = [](const int label) {
+    return label == Tagger::kPosJJ || label == Tagger::kPosJJR ||
+           label == Tagger::kPosJJS;
+  };
+
+  size_t pos = 0;
+  vector<string> keywords;
+  vector<Tagger::Tag> tags = tagger_.Tags(query);
+  for (auto beg = tags.cbegin(), end = tags.cend(), it = beg; it != end; ++it) {
+    const int label = it->label;
+    if (IsNN(label) || IsJJ(label)) {
+      keywords.push_back(query.substr(it->offset.begin, it->offset.size));
+      if (pos < target_keywords.size() &&
+          target_keywords[pos].find(keywords.back()) != string::npos) {
+        // Ignore target keywords.
+        keywords.pop_back();
+        ++pos;
+      }
     }
   }
   return keywords;

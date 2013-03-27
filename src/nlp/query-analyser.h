@@ -14,6 +14,8 @@ class QueryAnalyser {
  public:
   explicit QueryAnalyser(const Tagger& tagger);
   std::vector<std::string> TargetKeywords(const std::string& query) const;
+  std::vector<std::string> Keywords(const std::string& query,
+      const std::vector<std::string>& target_keywords) const;
 
  private:
   const Tagger& tagger_;

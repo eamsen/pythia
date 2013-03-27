@@ -86,6 +86,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   // Get the target keywords.
   vector<string> target_keywords = query_analyser_.TargetKeywords(query_text);
+  vector<string> keywords = query_analyser_.Keywords(query_text,
+      target_keywords);
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
 
@@ -281,6 +283,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"
                   << JsonArray(target_types.begin(), target_types.end());
+
+  // Construct the Broccoli query.
+  response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]
+                  << "; $1 :r:occurs-with "
+                  << flow::io::Str(keywords, " ", "", "", "")
+                  << "\"";
   response_stream << "}";
 }
 

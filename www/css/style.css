@@ -139,7 +139,7 @@ body {
 #broccoli-query-area {
   font-weight: bold;
   margin-top: 30px;
-  min-height: 1.1em;
+  min-height: 1.0em;
   width: 730px;
   padding: 1px 9px 5px;
   text-align: left;
@@ -154,7 +154,7 @@ body {
 
 #meta-result-area1 {
   font-weight: bold;
-  margin-top: 15px;
+  margin-top: 5px;
   min-height: 1.1em;
   width: 730px;
   padding: 1px 9px 5px;

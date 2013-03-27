@@ -47,6 +47,11 @@ function callback(data, status, xhr) {
   }
   $("#view-left").html(view_left);
 
+  var broccoli_query = "<div id=\"broccoli-query-area\">";
+  broccoli_query += data.broccoli_query;
+  broccoli_query += "</div>";
+  $("#broccoli-query-area").replaceWith(broccoli_query);
+
   var meta_result1 = "<div id=\"meta-result-area1\">";
   for (var i in data.target_keywords) {
     var keyword = data.target_keywords[i];
