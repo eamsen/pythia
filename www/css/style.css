@@ -139,9 +139,9 @@ body {
 #meta-result-area1 {
   font-weight: bold;
   margin-top: 30px;
-  min-height: 1.2em;
+  min-height: 1.1em;
   width: 730px;
-  padding: 0px 9px 0px;
+  padding: 1px 9px 9px;
   text-align: left;
   color: #666;
   font-size: 1.4em;
