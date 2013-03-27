@@ -136,12 +136,28 @@ body {
   color: #cc9511;
 }
 
-#meta-result-area1 {
+#broccoli-query-area {
   font-weight: bold;
   margin-top: 30px;
   min-height: 1.1em;
   width: 730px;
-  padding: 1px 9px 9px;
+  padding: 1px 9px 5px;
+  text-align: left;
+  color: #c55;
+  font-size: 1.4em;
+  font-variant: small-caps;
+  background-color: #2c2c2c;
+  -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
+  -moz-box-shadow: inset 0px -1px 2px #3f3f3f;
+  box-shadow: inset 0px -1px 2px #3f3f3f;
+}
+
+#meta-result-area1 {
+  font-weight: bold;
+  margin-top: 15px;
+  min-height: 1.1em;
+  width: 730px;
+  padding: 1px 9px 5px;
   text-align: left;
   color: #666;
   font-size: 1.4em;
@@ -166,9 +182,9 @@ body {
 
 #meta-result-area2 {
   font-weight: bold;
-  margin: 15px 0px 0px;
+  margin: 5px 0px 0px;
   width: 730px;
-  padding: 1px 9px 9px;
+  padding: 1px 9px 5px;
   text-align: left;
   color: #666;
   font-size: 0.9em;
@@ -193,7 +209,7 @@ body {
   font-style: italic;
   width: 730px;
   margin: 15px 0px 0px;
-  padding: 1px 9px 9px;
+  padding: 1px 9px 5px;
   white-space: normal;
   background-color: #2c2c2c;
   -webkit-box-shadow: inset 0px -1px 2px #3f3f3f;
