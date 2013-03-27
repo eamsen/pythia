@@ -7,6 +7,7 @@
 #include <glog/logging.h>
 #include <flow/clock.h>
 #include <flow/string.h>
+#include <flow/stringify.h>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -14,6 +15,7 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <regex>
 #include "./server.h"
 #include "./query-parser.h"
@@ -149,7 +151,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
       if (ontology_id == OntologyIndex::kInvalidId) {
-        // Ignore unkown entities.
+        // Ignore unkown entities. 
         continue;
       }
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
@@ -168,7 +170,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       }
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
           std::log2(1.0f + ontology.LhsFrequency(ontology_id));
-      index.Add(e.first, e.second, i + num_items, 10.0f * (num_items - i) * idf);
+      index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
@@ -179,8 +181,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
   response_stream << "{\"results\":";
-  // items->stringify(response_stream, 0);
-  response_stream << "[]";
+  items->stringify(response_stream, 0);
+  // response_stream << "[]";
   response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
