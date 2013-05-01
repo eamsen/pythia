@@ -42,6 +42,7 @@ namespace net {
 DEFINE_string(api, "api.txt", "Google API key + CX file.");
 DEFINE_string(webcache, "cache/web.bin", "HTML-content cache.");
 DEFINE_string(ontologycache, "cache/ontology.bin", "Ontology index cache.");
+DEFINE_string(keywordcache, "cache/keywords.bin", "Full text index cache.");
 
 Server::Server(const string& name, const string& version,
                const string& doc_path, const uint16_t port,
@@ -71,6 +72,26 @@ Server::Server(const string& name, const string& version,
   std::ifstream web_cache_stream(FLAGS_webcache);
   if (web_cache_stream) {
     io::Read(web_cache_stream, &web_cache_);
+  }
+  // Load keyword frequencies.
+  std::ifstream keyword_bin_stream(FLAGS_keywordcache);
+  if (keyword_bin_stream) {
+    // Load keyword frequencies from cached binary format.
+    io::Read(keyword_bin_stream, &keyword_freqs_);
+    LOG(INFO) << "Keyword index loaded from " << FLAGS_keywordcache << ".";
+  } else {
+    // Load keyword frequencies from text file.
+    std::ifstream keyword_stream("data/word-frequencies.txt");
+    string line;
+    while (getline(keyword_stream, line)) {
+      std::stringstream ss(line);
+      string word;
+      ss >> word;
+      std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+      uint32_t freq;
+      ss >> freq;
+      keyword_freqs_[word] += freq;
+    }
   }
   // Construct ontology index.
   std::ifstream ontology_bin_stream(FLAGS_ontologycache);

@@ -75,7 +75,7 @@ poco:
 	@cd deps/poco/;\
 		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
 		--no-samples --static;\
-		make; make install;
+		make all; make install;
 	@echo "compiled poco"
 
 gflags:

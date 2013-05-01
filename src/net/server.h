@@ -46,6 +46,7 @@ class Server: public Poco::Util::ServerApplication {
   pyt::nlp::Tagger tagger_;
   pyt::nlp::OntologyIndex ontology_index_;
   std::unordered_map<std::string, std::string> web_cache_;
+  std::unordered_map<std::string, uint32_t> keyword_freqs_;
 };
 
 }  // namespace net
