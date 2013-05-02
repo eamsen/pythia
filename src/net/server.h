@@ -26,6 +26,8 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& SearchBase() const;
   const pyt::nlp::Tagger& Tagger() const;
   const pyt::nlp::OntologyIndex& OntologyIndex() const;
+  const uint32_t SumKeywordFreqs() const;
+  const std::unordered_map<std::string, uint32_t> KeywordFreqs() const;
   std::unordered_map<std::string, std::string>& WebCache();
 
  private:
@@ -47,6 +49,7 @@ class Server: public Poco::Util::ServerApplication {
   pyt::nlp::OntologyIndex ontology_index_;
   std::unordered_map<std::string, std::string> web_cache_;
   std::unordered_map<std::string, uint32_t> keyword_freqs_;
+  uint32_t sum_keyword_freqs_;
 };
 
 }  // namespace net

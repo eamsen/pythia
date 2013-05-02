@@ -77,10 +77,12 @@ Server::Server(const string& name, const string& version,
   std::ifstream keyword_bin_stream(FLAGS_keywordcache);
   if (keyword_bin_stream) {
     // Load keyword frequencies from cached binary format.
+    io::Read(keyword_bin_stream, &sum_keyword_freqs_);
     io::Read(keyword_bin_stream, &keyword_freqs_);
     LOG(INFO) << "Keyword index loaded from " << FLAGS_keywordcache << ".";
   } else {
     // Load keyword frequencies from text file.
+    sum_keyword_freqs_ = 0;
     std::ifstream keyword_stream("data/word-frequencies.txt");
     string line;
     while (getline(keyword_stream, line)) {
@@ -91,6 +93,19 @@ Server::Server(const string& name, const string& version,
       uint32_t freq;
       ss >> freq;
       keyword_freqs_[word] += freq;
+      sum_keyword_freqs_ += freq;
+    }
+    std::ofstream keyword_bin_stream(FLAGS_keywordcache);
+    if (keyword_bin_stream) {
+      ThreadClock begtime;
+      io::Write(sum_keyword_freqs_, keyword_bin_stream);
+      io::Write(keyword_freqs_, keyword_bin_stream);
+      LOG(INFO) << "Keyword frequencies ("
+                << keyword_freqs_.size() << "/" << sum_keyword_freqs_
+                << ") saved to " << FLAGS_keywordcache << ".";
+    } else {
+      LOG(ERROR) << "Could not save ontology index to " << FLAGS_keywordcache
+                 << ".";
     }
   }
   // Construct ontology index.
@@ -167,6 +182,14 @@ const Tagger& Server::Tagger() const {
 
 const nlp::OntologyIndex& Server::OntologyIndex() const {
   return ontology_index_;
+}
+
+const uint32_t Server::SumKeywordFreqs() const {
+  return sum_keyword_freqs_;
+}
+
+const std::unordered_map<std::string, uint32_t> Server::KeywordFreqs() const {
+  return keyword_freqs_;
 }
 
 std::unordered_map<string, string>& Server::WebCache() {

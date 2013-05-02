@@ -145,6 +145,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       ner_time += ThreadClock() - clock2;
     }
   }
+  // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -158,6 +159,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       }
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
           std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+      // float log_keyword_freq = log_sum_keywords - 1.0;
+      // auto it = server_.KeywordFreqs().find(space_free);
+      // if (it != server_.KeywordFreqs().end()) {
+        // log_keyword_freq = log2(it->second);
+      // }
+      // const float ikf = log_sum_keywords - log_keyword_freq;
       index.Add(e.first, e.second, i, (num_items - i) * idf);
     }
     for (auto e: extracted_snippets[i]) {
@@ -172,6 +179,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       }
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
           std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+      // float log_keyword_freq = log_sum_keywords - 1.0;
+      // auto it = server_.KeywordFreqs().find(space_free);
+      // if (it != server_.KeywordFreqs().end()) {
+        // log_keyword_freq = log2(it->second);
+      // }
+      // const float ikf = log_sum_keywords - log_keyword_freq;
       index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
