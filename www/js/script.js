@@ -66,11 +66,11 @@ function callback(data, status, xhr) {
     if (i > 0) {
       meta_result1 += ", ";
     } else {
-      meta_result1 += "<h2>";
+      // meta_result1 += "<h2>";
     }
     meta_result1 += type;
     if (i == 0) {
-      meta_result1 += "</h2>";
+      // meta_result1 += "</h2>";
     }
   }
   meta_result1 += "</div>";
@@ -81,7 +81,8 @@ function callback(data, status, xhr) {
     var name = data.entities[i]["name"];
     var type = data.entities[i]["type"];
     var rank = data.entities[i]["score"];
-    var element = "<h2>" + name + "</h2>:" + type + ":" + rank + "   ";
+    // var element = "<h2>" + name + "</h2>:" + type + ":" + rank + "   ";
+    var element = name + ":" + type + ":" + rank + " ";
     meta_result2 += element;
   }
   if (data.entities.length == 0) {
@@ -107,6 +108,7 @@ $(document).keypress (
     if (event.which == 13) {
       event.preventDefault();
       urlQuery(urlFormat(userQuery()));
+    } else if (event.charCode == 58) {
     }
   }
 );
