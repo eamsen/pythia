@@ -31,14 +31,44 @@ function search() {
 }
 
 function callback(data, status, xhr) {
+  var target_keywords = {};
+  for (var i in data.query_analysis.target_keywords) { 
+    var keyword = data.query_analysis.target_keywords[i];
+    target_keywords[keyword] = true;
+  }
+  var keywords = {};
+  for (var i in data.query_analysis.keywords) { 
+    var keyword = data.query_analysis.keywords[i];
+    keywords[keyword] = true;
+  }
+  var query_analysis = "";
+  for (var i in data.query_analysis.query) {
+    var word = data.query_analysis.query[i];
+    if (word in target_keywords) {
+      query_analysis += "<a href=\"#\" data-placement=\"top\" " +
+        "data-toggle=\"tooltip\" title=\"target keyword\">" +
+        "<span class=\"label label-info\">" + word + "</span></a>";
+    } else if (word in keywords) {
+      query_analysis += "<a href=\"#\" data-placement=\"top\" " +
+        "data-toggle=\"tooltip\" title=\"keyword\">" +
+        "<span class=\"label label-success\">" + word + "</span></a>";
+    } else {
+      query_analysis += "<a href=\"#\" data-placement=\"top\" " +
+        "data-toggle=\"tooltip\" title=\"no keyword\">" +
+        "<span class=\"label\">" + word + "</span></a>";
+    }
+    query_analysis += " ";
+  } 
+  $("#query-analysis-area").html(query_analysis);
+
   var view_left = "";
   for (var i in data.results) {
     var title = data.results[i]["htmlTitle"];
     var snippet = data.results[i]["snippet"];
     var link = data.results[i]["link"];
     var link_name = data.results[i]["displayLink"]
-    var element = "<p>" + "<a href=\"" + link + "\"><h2>" + title  + "</a></h2>"
-        + snippet + "<br />"
+    var element = "<p>" + "<a href=\"" + link + "\"><h8>" + title  + "</h8></a>"
+        + "<br><span class=\"document-snippet\">" + snippet + "</span><br>"
         + "<a href=\"" + link + "\">" + link_name + "</a></p>";
     view_left += element;
   }
@@ -53,7 +83,7 @@ function callback(data, status, xhr) {
   $("#broccoli-query-area").replaceWith(broccoli_query);
 
   var meta_result1 = "<div id=\"meta-result-area1\">";
-  for (var i in data.target_keywords) {
+  for (var i in data.query_analysis.target_keywords) {
     var keyword = data.target_keywords[i];
     if (i > 0) {
       meta_result1 += ", ";

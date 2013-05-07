@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <title>Pythia / Web Oracle</title>
-    <meta name="description" content="Semantic Web Oracle" />
-    <meta name="keywords" content="search engine, semantic web" />
-    <meta name="author" content="Eugen Sawin <esawin@me73.com>" />
+    <meta name="description" content="Semantic Web Oracle">
+    <meta name="keywords" content="search engine, semantic web">
+    <meta name="author" content="Eugen Sawin <esawin@me73.com>">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="flat-ui/css/bootstrap.css" rel="stylesheet">
@@ -12,7 +12,7 @@
     
     <script src="js/jquery.js" type="text/javascript"></script>
     <script src="js/script.js" type="text/javascript"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="css/style.css" /> -->
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
     <div class="container">
@@ -27,6 +27,26 @@
         <input class="span12" type="search" placeholder="command" value=""
          name="command" id="command"></input>
        </div> -->
+      <div class="row">
+        <div class="span12">
+          <h5>Query Analysis</h5>
+          <div id="query-analysis-area">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <h5>Retrieved Documents</h5>
+          <div id="result-area">
+            <div id="view-left"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span12">
+          <h5>End of Good</h5>
+        </div>
+      </div>
       <div class="row">
         <div class="span12">
           <div id="broccoli-query-area">
@@ -45,13 +65,6 @@
         <div class="span12">
           <div id="meta-result-area2">
             entity:type:score
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span12">
-          <div id="result-area">
-            <div id="view-left"></div>
           </div>
         </div>
       </div>

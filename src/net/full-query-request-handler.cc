@@ -90,6 +90,17 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       target_keywords);
   LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
                                                 target_keywords.end());
+  // Assemble the response.
+  response->setChunkedTransferEncoding(true);
+  response->setContentType("text/plain");
+  std::ostream& response_stream = response->send();
+  response_stream << "{\"query_analysis\":{";
+  response_stream << "\"query\":"
+      << JsonArray(query.Words("qf").begin(), query.Words("qf").end()) << ",";
+  response_stream << "\"keywords\":"
+      << JsonArray(keywords.begin(), keywords.end()) << ",";
+  response_stream << "\"target_keywords\":"
+      << JsonArray(target_keywords.begin(), target_keywords.end()) << "},";
 
   auto& web_cache = server_.WebCache();
   ThreadClock clock;
@@ -191,13 +202,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
 
-  // Assemble the response.
-  response->setChunkedTransferEncoding(true);
-  response->setContentType("text/plain");
-  std::ostream& response_stream = response->send();
-  response_stream << "{\"results\":";
+  response_stream << "\"results\":";
   items->stringify(response_stream, 0);
-  // response_stream << "[]";
   response_stream << ","
       << "\"target_keywords\":"
       << JsonArray(target_keywords.begin(), target_keywords.end()) << ","

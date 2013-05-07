@@ -48,9 +48,11 @@ opt: clean all
 debug: CFLAGS=-O0 -g
 debug: clean all
 
-depend: senna poco gflags glog cpplint flow
+subprep:
 	@git submodule init >/dev/null;
 	@git submodule update;
+
+depend: subprep senna poco gflags glog cpplint flow
 	@echo "compiled all dependencies"
 
 makedirs:
