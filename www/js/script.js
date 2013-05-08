@@ -77,12 +77,15 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(view_left);
 
-  var entity_table = "<thead><tr><th>Entity</th><th>Frequency</th></tr></thead>" +
+  var entity_table = "<thead><tr><th>Entity</th><th>Content Frequency</th>" +
+    "<th>Snippet Frequency</th></tr></thead>" +
       "<tbody>";
   for (var i in data.entity_extraction) {
     var entity = data.entity_extraction[i][0];
-    var freq = data.entity_extraction[i][1];
-    entity_table += "<tr><td>" + entity + "</td><td>" + freq + "</td></tr>";
+    var content_freq = data.entity_extraction[i][1];
+    var snippet_freq = data.entity_extraction[i][2];
+    entity_table += "<tr><td>" + entity + "</td><td>" +
+      content_freq + "</td><td>" + snippet_freq + "</td></tr>";
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
