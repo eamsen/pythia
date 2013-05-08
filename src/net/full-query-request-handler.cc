@@ -51,7 +51,9 @@ string JsonArray(It begin, It end) {
     if (it != begin) {
       ss << ",";
     }
-    ss << "\"" << *it << "\"";
+    string item = *it;
+    flow::string::Replace("\"", "", &item);
+    ss << "\"" << item << "\"";
     ++it;
   }
   ss << "]";
@@ -67,7 +69,9 @@ void JsonArray(typename std::unordered_map<string, pair<int, int>>::iterator beg
     if (it != begin) {
       stream << ",";
     }
-    stream << "[\"" << it->first << "\"," << it->second.first << ","
+    string key = it->first;
+    flow::string::Replace("\"", "", &key);
+    stream << "[\"" << key << "\"," << it->second.first << ","
            << it->second.second << "]";
     ++it;
   }
@@ -185,7 +189,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       float idf = 0.0f;
       if (ontology_id == OntologyIndex::kInvalidId) {
         // Ignore unkown entities. 
-        continue;
+        // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
@@ -208,7 +212,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       float idf = 0.0f;
       if (ontology_id == OntologyIndex::kInvalidId) {
         // Ignore unkown entities.
-        continue;
+        // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
