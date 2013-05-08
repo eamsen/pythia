@@ -109,19 +109,22 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<string> target_keywords = query_analyser_.TargetKeywords(query_text);
   vector<string> keywords = query_analyser_.Keywords(query_text,
       target_keywords);
-  LOG(INFO) << "Target keywords: " << JsonArray(target_keywords.begin(),
-                                                target_keywords.end());
+  LOG(INFO) << "Target keywords: " << flow::io::Str(target_keywords);
+
   // Assemble the response.
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
   response_stream << "{\"query_analysis\":{";
   response_stream << "\"query\":"
-      << JsonArray(query.Words("qf").begin(), query.Words("qf").end()) << ",";
+      << flow::io::Str(query.Words("qf"), ",", "[", "]", "", "", "", "\"")
+      << ",";
   response_stream << "\"keywords\":"
-      << JsonArray(keywords.begin(), keywords.end()) << ",";
+      << flow::io::Str(keywords, ",", "[", "]", "", "", "", "\"")
+      << ",";
   response_stream << "\"target_keywords\":"
-      << JsonArray(target_keywords.begin(), target_keywords.end()) << "},";
+      << flow::io::Str(target_keywords, ",", "[", "]", "", "", "", "\"")
+      << "},";
 
   auto& web_cache = server_.WebCache();
   ThreadClock clock;
@@ -183,12 +186,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
+      flow::string::Replace("\"", "", &e.first);
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
       float idf = 0.0f;
       if (ontology_id == OntologyIndex::kInvalidId) {
-        // Ignore unkown entities. 
+        // Ignore unkown entities.
         // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
@@ -206,6 +210,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     for (auto e: extracted_snippets[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
+      flow::string::Replace("\"", "", &e.first);
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
@@ -228,7 +233,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   response_stream << "\"entity_extraction\":";
-  JsonArray(content_entities.begin(), content_entities.end(), response_stream);
+  response_stream << flow::io::Str(content_entities, ",", "[", "]", ",",
+                                   "[", "]", "\"");
   response_stream << ",";
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
@@ -237,7 +243,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   items->stringify(response_stream, 0);
   response_stream << ","
       << "\"target_keywords\":"
-      << JsonArray(target_keywords.begin(), target_keywords.end()) << ","
+      << flow::io::Str(target_keywords, ",", "[", "]", "", "", "", "\"") << ","
       << "\"entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
@@ -332,7 +338,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"
-                  << JsonArray(target_types.begin(), target_types.end());
+                  << flow::io::Str(target_types, ",", "[", "]", "", "", "", "\"");
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]

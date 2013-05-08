@@ -7,8 +7,7 @@ GTESTLIBS:=-lgtest -lgtest_main
 POCODIR:=deps/poco/install
 GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
-CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src\
-	-Ideps/flow/include
+CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
 CFLAGS:=-Wall -O3 -fopenmp
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	-lpythia-io -lpythia-net -lpythia-nlp\
@@ -94,7 +93,7 @@ cpplint:
 	# nothing to do
 
 flow:
-	@cd deps/flow; make;
+	@cd deps/flow; make; make install;
 
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done
