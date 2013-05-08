@@ -8,6 +8,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="flat-ui/css/bootstrap.css" rel="stylesheet">
+    <link href="flat-ui/css/bootstrap-sortable.css" rel="stylesheet">
     <link href="flat-ui/css/flat-ui.css" rel="stylesheet">
     
     <link rel="stylesheet" href="css/style.css">
@@ -26,12 +27,26 @@
          name="command" id="command"></input>
        </div> -->
       <div class="row">
-        <div class="span6">
+        <div class="span12">
           <a class="accordion-toggle" data-toggle="collapse"
             data-target="#query-analysis-area">
             <h5>Query Analysis</h5>
           </a>
           <div id="query-analysis-area" class="collapse in">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+      </div>
+      <div class="row">
+        <div class="span6">
+          <a class="accordion-toggle" data-toggle="collapse"
+            data-target="#entity-extraction-area">
+            <h5>Entity Frequencies</h5>
+          </a>
+          <div id="entity-extraction-area" class="collapse">
+            <table id="entity-table"
+              class="sortable table table-bordered table-condensed"></table>
           </div>
         </div>
         <div class="span6">
@@ -40,15 +55,7 @@
             <h5>Retrieved Documents</h5>
           </a>
           <div id="result-area" class="collapse">
-            <div id="view-left"></div>
           </div>
-        </div>
-      </div>
-      <div class="row">
-      </div>
-      <div class="row">
-        <div class="span12">
-          <h5>End of Good</h5>
         </div>
       </div>
       <div class="row">
@@ -83,6 +90,7 @@
     <script src="flat-ui/js/jquery.tagsinput.js"></script>
     <script src="flat-ui/js/bootstrap-tooltip.js"></script>
     <script src="flat-ui/js/bootstrap-collapse.js"></script>
+    <script src="flat-ui/js/bootstrap-sortable.js"></script>
     <script src="flat-ui/js/jquery.placeholder.js"></script>
     <script src="http://vjs.zencdn.net/c/video.js"></script>
     <script src="flat-ui/js/application.js"></script>

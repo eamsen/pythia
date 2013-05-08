@@ -57,6 +57,22 @@ string JsonArray(It begin, It end) {
   return ss.str();
 }
 
+string JsonArray(typename std::unordered_map<string, int>::iterator begin,
+    typename std::unordered_map<string, int>::iterator end) {
+  std::stringstream ss;
+  ss << "[";
+  auto it = begin;
+  while (it != end) {
+    if (it != begin) {
+      ss << ",";
+    }
+    ss << "[\"" << it->first << "\"," << it->second << "]";
+    ++it;
+  }
+  ss << "]";
+  return ss.str();
+}
+
 string StripHtml(const string& content) {
   std::stringstream ss;
   const size_t end = content.find("</body");
@@ -157,6 +173,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
+  std::unordered_map<string, int> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -168,6 +185,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // Ignore unkown entities. 
         continue;
       }
+      content_entities[e.first] += 1;
       const float idf = std::log2(ontology.SumLhsFrequencies()) -
           std::log2(1.0f + ontology.LhsFrequency(ontology_id));
       // float log_keyword_freq = log_sum_keywords - 1.0;
@@ -199,6 +217,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
+  response_stream << "\"entity_extraction\":"
+      << JsonArray(content_entities.begin(), content_entities.end()) << ",";
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
 

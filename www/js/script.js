@@ -75,7 +75,18 @@ function callback(data, status, xhr) {
   if (data.results.length == 0) {
     // view_left += "<h2>no results</h2>";
   }
-  $("#view-left").html(view_left);
+  $("#result-area").html(view_left);
+
+  var entity_table = "<thead><tr><th>Entity</th><th>Frequency</th></tr></thead>" +
+      "<tbody>";
+  for (var i in data.entity_extraction) {
+    var entity = data.entity_extraction[i][0];
+    var freq = data.entity_extraction[i][1];
+    entity_table += "<tr><td>" + entity + "</td><td>" + freq + "</td></tr>";
+  }
+  entity_table += "</tbody>";
+  $("#entity-table").html(entity_table);
+  ApplySortability();
 
   var broccoli_query = "<div id=\"broccoli-query-area\">";
   broccoli_query += data.broccoli_query;

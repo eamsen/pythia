@@ -112,6 +112,11 @@
   color: #a6a8a8;
 }
 
+.table-bordered {
+  border-color: #f3f7f6;
+  border-radius: 0px 0px 0px 0px;
+}
+
 h8 {
   font-size: 13px;
   font-weight: 500;
