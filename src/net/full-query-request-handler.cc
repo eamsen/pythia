@@ -117,14 +117,11 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   std::ostream& response_stream = response->send();
   response_stream << "{\"query_analysis\":{";
   response_stream << "\"query\":"
-      << flow::io::Str(query.Words("qf"), ",", "[", "]", "", "", "", "\"")
-      << ",";
+      << flow::io::JsonArray(query.Words("qf")) << ",";
   response_stream << "\"keywords\":"
-      << flow::io::Str(keywords, ",", "[", "]", "", "", "", "\"")
-      << ",";
+      << flow::io::JsonArray(keywords) << ",";
   response_stream << "\"target_keywords\":"
-      << flow::io::Str(target_keywords, ",", "[", "]", "", "", "", "\"")
-      << "},";
+      << flow::io::JsonArray(target_keywords) << "},";
 
   auto& web_cache = server_.WebCache();
   ThreadClock clock;
@@ -233,9 +230,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   response_stream << "\"entity_extraction\":";
-  response_stream << flow::io::Str(content_entities, ",", "[", "]", ",",
-                                   "[", "]", "\"");
-  response_stream << ",";
+  response_stream << flow::io::JsonArray(content_entities) << ",";
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
 
@@ -243,7 +238,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   items->stringify(response_stream, 0);
   response_stream << ","
       << "\"target_keywords\":"
-      << flow::io::Str(target_keywords, ",", "[", "]", "", "", "", "\"") << ","
+      << flow::io::JsonArray(target_keywords) << ","
       << "\"entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
@@ -338,12 +333,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << "],\"target_types\":"
-                  << flow::io::Str(target_types, ",", "[", "]", "", "", "", "\"");
+                  << flow::io::JsonArray(target_types);
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]
                   << "; $1 :r:occurs-with "
-                  << flow::io::Str(keywords, " ", "", "", "")
+                  << flow::io::Str(keywords, " ", "", "", "", "", "", "")
                   << "\"";
   response_stream << "}";
 }

@@ -31,6 +31,7 @@ function search() {
 }
 
 function callback(data, status, xhr) {
+  console.log(data);
   var target_keywords = {};
   for (var i in data.query_analysis.target_keywords) { 
     var keyword = data.query_analysis.target_keywords[i];
@@ -82,8 +83,8 @@ function callback(data, status, xhr) {
       "<tbody>";
   for (var i in data.entity_extraction) {
     var entity = data.entity_extraction[i][0];
-    var content_freq = data.entity_extraction[i][1];
-    var snippet_freq = data.entity_extraction[i][2];
+    var content_freq = data.entity_extraction[i][1][0];
+    var snippet_freq = data.entity_extraction[i][1][1];
     entity_table += "<tr><td>" + entity + "</td><td>" +
       content_freq + "</td><td>" + snippet_freq + "</td></tr>";
   }

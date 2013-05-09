@@ -14,7 +14,7 @@
 
 		// sort direction
 		var nr = $(this).attr('sortKey');
-		bsSort[nr] = bsSort[nr] == 'asc' ? 'desc' : 'asc';
+		bsSort[nr] = bsSort[nr] == 'desc' ? 'asc' : 'desc';
 		if (bsSort[nr] == 'desc') { $(this).find('span.arrow').addClass('up'); }
 
 		// sort rows
@@ -41,7 +41,7 @@ function ApplySortability() {
 
 		// sort direction
 		var nr = $(this).attr('sortKey');
-		bsSort[nr] = bsSort[nr] == 'asc' ? 'desc' : 'asc';
+		bsSort[nr] = bsSort[nr] == 'desc' ? 'asc' : 'desc';
 		if (bsSort[nr] == 'desc') { $(this).find('span.arrow').addClass('up'); }
 
 		// sort rows
