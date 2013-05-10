@@ -78,15 +78,22 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(view_left);
 
-  var entity_table = "<thead><tr><th>Entity</th><th>Content Frequency</th>" +
-    "<th>Snippet Frequency</th></tr></thead>" +
-      "<tbody>";
+  var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
+    "<th>Content Frequency</th><th>Snippet Frequency</th></tr></thead><tbody>";
   for (var i in data.entity_extraction) {
-    var entity = data.entity_extraction[i][0];
+    var entity = data.entity_extraction[i][0].split(":");
     var content_freq = data.entity_extraction[i][1][0];
     var snippet_freq = data.entity_extraction[i][1][1];
-    entity_table += "<tr><td>" + entity + "</td><td>" +
-      content_freq + "</td><td>" + snippet_freq + "</td></tr>";
+    var in_ontology = data.entity_extraction[i][1][2];
+    if (in_ontology) {
+      entity_table += "<tr>";
+    } else {
+      entity_table += "<tr class=\"error\">";
+    }
+    entity_table += "<td>" + entity[0] + "</td>" +
+      "<td>" + entity[1] + "</td>" +
+      "<td>" + content_freq + "</td>" +
+      "<td>" + snippet_freq + "</td></tr>";
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);

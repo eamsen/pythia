@@ -16,6 +16,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <unordered_set>
+#include <tuple>
 #include <regex>
 #include "./server.h"
 #include "./query-parser.h"
@@ -28,6 +29,8 @@
 using std::string;
 using std::vector;
 using std::pair;
+using std::tuple;
+using std::get;
 using pyt::nlp::Tagger;
 using pyt::nlp::NamedEntityExtractor;
 using pyt::nlp::EntityIndex;
@@ -38,45 +41,10 @@ using pyt::nlp::OntologyIndex;
 using pyt::nlp::SingularForms;
 using flow::time::ThreadClock;
 using flow::time::ClockDiff;
+using flow::io::JsonArray;
 
 namespace pyt {
 namespace net {
-
-template<typename It>
-string JsonArray(It begin, It end) {
-  std::stringstream ss;
-  ss << "[";
-  It it = begin;
-  while (it != end) {
-    if (it != begin) {
-      ss << ",";
-    }
-    string item = *it;
-    flow::string::Replace("\"", "", &item);
-    ss << "\"" << item << "\"";
-    ++it;
-  }
-  ss << "]";
-  return ss.str();
-}
-
-void JsonArray(typename std::unordered_map<string, pair<int, int>>::iterator begin,
-    typename std::unordered_map<string, pair<int, int>>::iterator end,
-    std::ostream& stream) {
-  stream << "[";
-  auto it = begin;
-  while (it != end) {
-    if (it != begin) {
-      stream << ",";
-    }
-    string key = it->first;
-    flow::string::Replace("\"", "", &key);
-    stream << "[\"" << key << "\"," << it->second.first << ","
-           << it->second.second << "]";
-    ++it;
-  }
-  stream << "]";
-}
 
 string StripHtml(const string& content) {
   std::stringstream ss;
@@ -100,6 +68,11 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
 // TODO(esawin): This need heavy refactoring.
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   static const int64_t timeout = 3 * 1e6;  // Microseconds.
+  // Prepare response stream.
+  response->setChunkedTransferEncoding(true);
+  response->setContentType("text/plain");
+  std::ostream& response_stream = response->send();
+
   const Query query(uri_.getQuery());
   const string& query_text = query.Text("qf");
   const string& query_uri = query.Uri("qf");
@@ -109,19 +82,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<string> target_keywords = query_analyser_.TargetKeywords(query_text);
   vector<string> keywords = query_analyser_.Keywords(query_text,
       target_keywords);
-  LOG(INFO) << "Target keywords: " << flow::io::Str(target_keywords);
+  LOG(INFO) << "Target keywords: " << target_keywords;
 
-  // Assemble the response.
-  response->setChunkedTransferEncoding(true);
-  response->setContentType("text/plain");
-  std::ostream& response_stream = response->send();
   response_stream << "{\"query_analysis\":{";
-  response_stream << "\"query\":"
-      << flow::io::JsonArray(query.Words("qf")) << ",";
-  response_stream << "\"keywords\":"
-      << flow::io::JsonArray(keywords) << ",";
+  response_stream << "\"query\":" << JsonArray(query.Words("qf")) << ",";
+  response_stream << "\"keywords\":" << JsonArray(keywords) << ",";
   response_stream << "\"target_keywords\":"
-      << flow::io::JsonArray(target_keywords) << "},";
+      << JsonArray(target_keywords) << "},";
 
   auto& web_cache = server_.WebCache();
   ThreadClock clock;
@@ -178,7 +145,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
-  std::unordered_map<string, pair<int, int>> content_entities;
+  // "keyword:coarse-type" -> (content-freq, snippet-freq, in-ontology).
+  std::unordered_map<string, tuple<int, int, int>> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -187,15 +155,18 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
+      const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
       if (ontology_id == OntologyIndex::kInvalidId) {
         // Ignore unkown entities.
+        get<2>(content_entities[entity_key]) = false;
         // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+        get<2>(content_entities[entity_key]) = true;
       }
-      content_entities[e.first].first += 1;
+      get<0>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
       // auto it = server_.KeywordFreqs().find(space_free);
       // if (it != server_.KeywordFreqs().end()) {
@@ -211,15 +182,18 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
+      const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
       if (ontology_id == OntologyIndex::kInvalidId) {
         // Ignore unkown entities.
+        get<2>(content_entities[entity_key]) = false;
         // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
+        get<2>(content_entities[entity_key]) = true;
       }
-      content_entities[e.first].second += 1;
+      get<1>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
       // auto it = server_.KeywordFreqs().find(space_free);
       // if (it != server_.KeywordFreqs().end()) {
@@ -229,16 +203,15 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
-  response_stream << "\"entity_extraction\":";
-  response_stream << flow::io::JsonArray(content_entities) << ",";
+  response_stream << "\"entity_extraction\":"
+      << JsonArray(content_entities) << ",";
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
 
   response_stream << "\"results\":";
   items->stringify(response_stream, 0);
   response_stream << ","
-      << "\"target_keywords\":"
-      << flow::io::JsonArray(target_keywords) << ","
+      << "\"target_keywords\":" << JsonArray(target_keywords) << ","
       << "\"entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
@@ -332,8 +305,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     // LOG(INFO) << rhs.second << ": " << rhs.first;
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "],\"target_types\":"
-                  << flow::io::JsonArray(target_types);
+  response_stream << "],\"target_types\":" << JsonArray(target_types);
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]

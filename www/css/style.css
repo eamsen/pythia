@@ -82,6 +82,10 @@
   color: #51bab6;
 }
 
+.inactive {
+  color: #a6a8a8;
+}
+
 .label {
   background-color: transparent;
   border: 1px solid #a6a8a8;
@@ -94,6 +98,7 @@
 
 .label-info {
   border-color: #51bab6;
+  border-color: #c93a3e;
 }
 
 .label-info:hover {
@@ -102,6 +107,7 @@
 
 .label-success {
   border-color: #3c7369;
+  border-color: #51bab6;
 }
 
 .label-success:hover {
@@ -115,6 +121,10 @@
 .table-bordered {
   border-color: #f3f7f6;
   border-radius: 0px 0px 0px 0px;
+}
+
+.table tbody tr.error td {
+  background-color: #c93a3e;
 }
 
 h8 {
