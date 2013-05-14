@@ -22,12 +22,8 @@
            name="query" id="query"></input>
         </div>
       </div>
-      <!-- <div class="navbar navbar-fixed-bottom">
-        <input class="span12" type="search" placeholder="command" value=""
-         name="command" id="command"></input>
-       </div> -->
       <div class="row">
-        <div class="span12">
+        <div class="span4">
           <a class="accordion-toggle" data-toggle="collapse"
             data-target="#query-analysis-area">
             <h5>Query Analysis</h5>
@@ -35,14 +31,20 @@
           <div id="query-analysis-area" class="collapse in">
           </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="span12">
+        <div class="span4">
           <a class="accordion-toggle" data-toggle="collapse"
-            data-target="#result-area">
-            <h5>Retrieved Documents</h5>
+            data-target="#semantic-analysis-area">
+            <h5>Target Types</h5>
           </a>
-          <div id="result-area" class="collapse">
+          <div id="semantic-analysis-area" class="collapse in">
+          </div>
+        </div>
+        <div class="span4">
+          <a class="accordion-toggle" data-toggle="collapse"
+            data-target="#broccoli-query-area">
+            <h5>Semantic Query</h5>
+          </a>
+          <div id="broccoli-query-area" class="collapse in">
           </div>
         </div>
       </div>
@@ -60,22 +62,11 @@
       </div>
       <div class="row">
         <div class="span12">
-          <div id="broccoli-query-area">
-            broccoli query
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span12">
-          <div id="meta-result-area1">
-            target keywords / target types
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span12">
-          <div id="meta-result-area2">
-            entity:type:score
+          <a class="accordion-toggle" data-toggle="collapse"
+            data-target="#result-area">
+            <h5>Retrieved Documents</h5>
+          </a>
+          <div id="result-area" class="collapse">
           </div>
         </div>
       </div>

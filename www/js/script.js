@@ -99,49 +99,19 @@ function callback(data, status, xhr) {
   $("#entity-table").html(entity_table);
   ApplySortability();
 
-  var broccoli_query = "<div id=\"broccoli-query-area\">";
+  var broccoli_query = "";
   broccoli_query += data.broccoli_query;
-  broccoli_query += "</div>";
-  $("#broccoli-query-area").replaceWith(broccoli_query);
+  $("#broccoli-query-area").html(broccoli_query);
 
-  var meta_result1 = "<div id=\"meta-result-area1\">";
-  for (var i in data.query_analysis.target_keywords) {
-    var keyword = data.target_keywords[i];
-    if (i > 0) {
-      meta_result1 += ", ";
-    }
-    meta_result1 += keyword;
-  }
-  meta_result1 += " <span style=\"font-size: 0.61em;\">/</span> ";
+  var semantic_analysis = "";
   for (var i in data.target_types) {
     var type = data.target_types[i];
     if (i > 0) {
-      meta_result1 += ", ";
-    } else {
-      // meta_result1 += "<h2>";
+      semantic_analysis += ", ";
     }
-    meta_result1 += type;
-    if (i == 0) {
-      // meta_result1 += "</h2>";
-    }
+    semantic_analysis += "<span class=\"label\">" + type + "</span>";
   }
-  meta_result1 += "</div>";
-  $("#meta-result-area1").replaceWith(meta_result1);
-
-  var meta_result2 = "<div id=\"meta-result-area2\">";
-  for (var i in data.entities) {
-    var name = data.entities[i]["name"];
-    var type = data.entities[i]["type"];
-    var rank = data.entities[i]["score"];
-    // var element = "<h2>" + name + "</h2>:" + type + ":" + rank + "   ";
-    var element = name + ":" + type + ":" + rank + " ";
-    meta_result2 += element;
-  }
-  if (data.entities.length == 0) {
-    meta_result2 += "no entities found";
-  }
-  meta_result2 += "</div>";
-  $("#meta-result-area2").replaceWith(meta_result2);
+  $("#semantic-analysis-area").html(semantic_analysis);
 }
 
 $(document).ready (
