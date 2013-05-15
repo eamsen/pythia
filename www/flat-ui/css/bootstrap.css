@@ -227,10 +227,7 @@ body {
   font-size: 14px;
   line-height: 20px;
   color: #333333;
-  color: #f4f8f7;
   background-color: #ffffff;
-  background-color: #0f1c1f;
-  background-color: #111e21;
 }
 
 a {
@@ -1113,7 +1110,6 @@ input[type="tel"],
 input[type="color"],
 .uneditable-input {
   background-color: #ffffff;
-  background-color: #0f1c1f;
   border: 1px solid #cccccc;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
      -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);

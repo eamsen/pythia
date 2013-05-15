@@ -74,6 +74,46 @@
        url("../fonts/cousine-bold-italic.svg#svgFontName") format("svg");
 }
 
+body {
+  color: #f4f8f7;
+  background-color: #111e21;
+  font: 14px/1.231 "Lato", sans-serif;
+}
+
+a {
+  color: #f4f8f7;
+  text-decoration: none;
+  -webkit-transition: 0.25s;
+  -moz-transition: 0.25s;
+  -o-transition: 0.25s;
+  transition: 0.25s;
+  -webkit-backface-visibility: hidden;
+}
+
+a:hover {
+  color: #51bab6;
+  text-decoration: none;
+}
+
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"],
+.uneditable-input {
+  background-color: #0f1c1f;
+}
+
 .keyword {
   color: #d0d6aa;
 }
@@ -103,6 +143,7 @@
 
 .label-info:hover {
   background-color: #51bab6;
+  background-color: #c93a3e;
 }
 
 .label-success {
@@ -112,6 +153,7 @@
 
 .label-success:hover {
   background-color: #3c7369;
+  background-color: #51bab6;
 }
 
 .document-snippet {

@@ -78,6 +78,7 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(view_left);
 
+  var max_content_freq = 0;
   var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
     "<th>Content Frequency</th><th>Snippet Frequency</th></tr></thead><tbody>";
   for (var i in data.entity_extraction) {
@@ -94,6 +95,7 @@ function callback(data, status, xhr) {
       "<td>" + entity[1] + "</td>" +
       "<td>" + content_freq + "</td>" +
       "<td>" + snippet_freq + "</td></tr>";
+    max_content_freq = Math.max(max_content_freq, content_freq);
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
@@ -112,6 +114,39 @@ function callback(data, status, xhr) {
     semantic_analysis += "<span class=\"label\">" + type + "</span>";
   }
   $("#semantic-analysis-area").html(semantic_analysis);
+  drawChart(data, max_content_freq);
+}
+
+function drawChart(data, max_content_freq) {
+  var array = new Array(new Array("Entity", "Content Frequency",
+        "Snippet Frequency", "Base Score", "Score"));
+  for (var i in data.entity_extraction) {
+    var entity = data.entity_extraction[i][0].split(":");
+    var content_freq = data.entity_extraction[i][1][0];
+    var snippet_freq = data.entity_extraction[i][1][1];
+    var in_ontology = data.entity_extraction[i][1][2];
+    var base_score = 200;
+    var score = 100;
+    if (content_freq > max_content_freq * 0.2) {
+      array.push(new Array(entity[0], content_freq, snippet_freq, base_score,
+            score)); 
+    }
+  }
+  var data = google.visualization.arrayToDataTable(array);
+
+  var options = {
+    backgroundColor: "transparent",
+    colors: ["#f4f8f7", "#d0d6aa", "#51bab6", "#c93a3e"],
+    fontName: "Lato",
+    chartArea: {left:120, top:0, height:"95%"},
+    legend: {textStyle: {color: "#f4f8f7"}},
+    vAxis: {textStyle: {color: "#f4f8f7"}},
+    hAxis: {textStyle: {color: "#f4f8f7"}}
+  };
+
+  var chart = new google.visualization.BarChart(
+      document.getElementById("entity-graph"));
+  chart.draw(data, options);
 }
 
 $(document).ready (
@@ -134,3 +169,4 @@ $(document).keypress (
     }
   }
 );
+google.load("visualization", "1", {packages:["corechart"]});

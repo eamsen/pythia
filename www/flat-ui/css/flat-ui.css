@@ -177,8 +177,6 @@
 
 body {
   color: #34495e;
-  color: #04bfbf;
-  color: #f4f8f7;
   font: 14px/1.231 "Lato", sans-serif; }
 
 a {
@@ -193,8 +191,6 @@ a {
   -webkit-backface-visibility: hidden; }
   a:hover {
     color: #2ecc71;
-    color: #f4f8f7;
-    color: #51bab6;
     text-decoration: none; }
 
 h1 {
