@@ -146,7 +146,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   // "keyword:coarse-type" -> (content-freq, snippet-freq, in-ontology, score).
-  std::unordered_map<string, tuple<int, int, int, int>> content_entities;
+  std::unordered_map<string, tuple<int, int, int, int, int>> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -165,6 +165,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
         get<2>(content_entities[entity_key]) = true;
+        get<4>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<0>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
@@ -192,6 +193,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         idf = std::log2(ontology.SumLhsFrequencies()) -
             std::log2(1.0f + ontology.LhsFrequency(ontology_id));
         get<2>(content_entities[entity_key]) = true;
+        get<4>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<1>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
