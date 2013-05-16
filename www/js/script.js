@@ -135,10 +135,10 @@ function drawChart(data, max_content_freq) {
   var data = google.visualization.arrayToDataTable(array);
 
   var options = {
-    backgroundColor: "transparent",
+    backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},
     colors: ["#f4f8f7", "#d0d6aa", "#51bab6", "#c93a3e"],
     fontName: "Lato",
-    chartArea: {left:120, top:0, height:"95%"},
+    chartArea: {left:120, top:"2%", height:"92%"},
     legend: {textStyle: {color: "#f4f8f7"}},
     vAxis: {textStyle: {color: "#f4f8f7"}},
     hAxis: {textStyle: {color: "#f4f8f7"}}
