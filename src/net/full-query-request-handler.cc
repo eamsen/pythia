@@ -144,14 +144,28 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       ner_time += ThreadClock() - clock2;
     }
   }
+
+  auto IsBadName = [](const string& word) {
+    for (const char c: word) {
+      if (!std::isalpha(c) && c != ' ' && c != '-' && c != '\'') {
+        return true;
+      }
+    }
+    return word.size() < 2 || word.size() > 40;
+  };
+
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
-  // "keyword:coarse-type" -> (content-freq, snippet-freq, in-ontology, score).
+  // "keyword:coarse-type" ->
+  // (content-freq, snippet-freq, in-ontology, score, total-frequency).
   std::unordered_map<string, tuple<int, int, int, int, int>> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
       flow::string::Replace("\"", "", &e.first);
+      if (IsBadName(e.first)) {
+        continue;
+      }
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
@@ -180,6 +194,9 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
       flow::string::Replace("\"", "", &e.first);
+      if (IsBadName(e.first)) {
+        continue;
+      }
       string space_free = e.first;
       flow::string::Replace(" ", "", &space_free);
       const int ontology_id = ontology.LhsNameId(space_free);
@@ -210,7 +227,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   response_stream << "\"results\":";
   items->stringify(response_stream, 0);
-  response_stream << ",\"top_entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
   auto IsSimilarToQuery = [&query_words](const string& word) {
@@ -223,20 +239,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return false;
   };
 
-  auto IsBadName = [](const string& word) {
-    for (const char c: word) {
-      if (!std::isalpha(c) && c != ' ' && c != '-' && c != '\'') {
-        return true;
-      }
-    }
-    return word.size() < 2 || word.size() > 40;
-  };
-
+  response_stream << ",\"top_entities\":[";
   // Find the top candidates.
-  size_t num_top = 30;
+  const size_t num_top = 10;
+  size_t current_num = 0;
   std::unordered_map<string, int> entities;
   string top_candidates;
-  while (num_top && index.QueueSize()) {
+  while (current_num < num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
         IsBadName(entity.name)) {
@@ -244,16 +253,20 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       continue;
     }
     top_candidates += (top_candidates.size() ? ", ": "") + entity.name;
-    --num_top;
-    if (entities.size()) {
+    if (current_num) {
       response_stream << ",";
     }
-    auto entity_it = entities.insert({entity.name, entity.score}).first;
-    response_stream << "{\"name\":\"" << entity.name
-                    << "\",\"type\":\"" << Entity::TypeName(entity.type)
-                    << "\",\"score\":" << entity_it->second << "}";
+    ++current_num;
+    entities.insert({entity.name, entity.score});
     const string entity_key = entity.name + ":" + Entity::TypeName(entity.type);
-    get<3>(content_entities[entity_key]) = entity.score;
+    const auto it = content_entities.find(entity_key);
+    LOG_IF(FATAL, it == content_entities.end()) << "Unkown entity top scored";
+    response_stream << "[\"" << entity.name
+                    << "\"," << get<0>(it->second)
+                    << "," << get<1>(it->second)
+                    << "," << entity.score
+                    << "," << get<4>(it->second) << "]";
+    get<3>(it->second) = entity.score;
   }
 
   response_stream << "],\"entities\":" << JsonArray(content_entities) << ",";

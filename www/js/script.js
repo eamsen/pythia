@@ -30,15 +30,13 @@ function search() {
     success: callback});
 }
 
-var kFac = 0.2;
+var kFac = 0.15;
 
 function callback(data, status, xhr) {
-  console.log(data);
   var target_keywords = {};
   for (var i in data.query_analysis.target_keywords) { 
     var keywords = data.query_analysis.target_keywords[i].split(" ");
     for (var j in keywords) {
-      console.log(keywords[j]);
       target_keywords[keywords[j]] = true;
     }
   }
@@ -53,15 +51,15 @@ function callback(data, status, xhr) {
     if (word in target_keywords) {
       query_analysis += "<a href=\"#\" data-placement=\"top\" " +
         "data-toggle=\"tooltip\" title=\"target keyword\">" +
-        "<span class=\"label label-info\">" + word + "</span></a>";
+        "<span class=\"label label-info\">" + word.toUpperCase() + "</span></a>";
     } else if (word in keywords) {
       query_analysis += "<a href=\"#\" data-placement=\"top\" " +
         "data-toggle=\"tooltip\" title=\"keyword\">" +
-        "<span class=\"label label-success\">" + word + "</span></a>";
+        "<span class=\"label label-success\">" + word.toUpperCase()+ "</span></a>";
     } else {
       query_analysis += "<a href=\"#\" data-placement=\"top\" " +
         "data-toggle=\"tooltip\" title=\"no keyword\">" +
-        "<span class=\"label\">" + word + "</span></a>";
+        "<span class=\"label\">" + word.toUpperCase()+ "</span></a>";
     }
     query_analysis += " ";
   } 
@@ -104,7 +102,7 @@ function callback(data, status, xhr) {
     } else {
       entity_table += "<tr class=\"error\">";
     }
-    entity_table += "<td>" + entity[0] + "</td>" +
+    entity_table += "<td>" + entity[0].toUpperCase() + "</td>" +
       "<td>" + entity[1] + "</td>" +
       "<td>" + content_freq + "</td>" +
       "<td>" + snippet_freq + "</td>" +
@@ -112,17 +110,14 @@ function callback(data, status, xhr) {
       "<td>" + score + "</td></tr>";
     max_score = Math.max(max_score, score);
   }
-  for (var i in data.entities) {
-    var entity = data.entities[i][0].split(":");
-    var content_freq = data.entities[i][1][0];
-    var snippet_freq = data.entities[i][1][1];
-    var in_ontology = data.entities[i][1][2];
-    var score = data.entities[i][1][3];
-    var entity_freq = data.entities[i][1][4];
-    if (score > max_score * kFac) {
-      max_content_freq = Math.max(max_content_freq, content_freq);
-      max_entity_freq = Math.max(max_entity_freq, entity_freq);
-    }
+  for (var i in data.top_entities) {
+    var entity = data.top_entities[i][0];
+    var content_freq = data.top_entities[i][1];
+    var snippet_freq = data.top_entities[i][2];
+    var score = data.top_entities[i][3];
+    var entity_freq = data.top_entities[i][4];
+    max_content_freq = Math.max(max_content_freq, content_freq);
+    max_entity_freq = Math.max(max_entity_freq, entity_freq);
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
@@ -138,7 +133,7 @@ function callback(data, status, xhr) {
     if (i > 0) {
       semantic_analysis += ", ";
     }
-    semantic_analysis += "<span class=\"label\">" + type + "</span>";
+    semantic_analysis += "<span class=\"label\">" + type.toUpperCase() + "</span>";
   }
   $("#semantic-analysis-area").html(semantic_analysis);
   drawChart(data, max_score, max_entity_freq, max_content_freq);
@@ -149,18 +144,15 @@ function drawChart(data, max_score, max_entity_freq, max_content_freq) {
         "Snippet Frequency", "Entity Frequency (relative)", "Score (relative)"));
   var score_div = max_content_freq / max_score;
   var freq_div = max_content_freq / max_entity_freq;
-  for (var i in data.entities) {
-    var entity = data.entities[i][0].split(":");
-    var content_freq = data.entities[i][1][0];
-    var snippet_freq = data.entities[i][1][1];
-    var in_ontology = data.entities[i][1][2];
-    var score = data.entities[i][1][3];
-    var entity_freq = data.entities[i][1][4];
-    if (score > max_score * kFac) {
-      array.push(new Array(entity[0], content_freq, snippet_freq,
+  for (var i in data.top_entities) {
+    var entity = data.top_entities[i][0];
+    var content_freq = data.top_entities[i][1];
+    var snippet_freq = data.top_entities[i][2];
+    var score = data.top_entities[i][3];
+    var entity_freq = data.top_entities[i][4];
+    array.push(new Array(entity.toUpperCase(), content_freq, snippet_freq,
             entity_freq * freq_div,
             score * score_div)); 
-    }
   }
   var data = google.visualization.arrayToDataTable(array);
   var options = {
