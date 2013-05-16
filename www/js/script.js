@@ -78,14 +78,19 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(view_left);
 
-  var max_content_freq = 0;
+  var max_score = 0;
+  var max_freq = 0;
   var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
-    "<th>Content Frequency</th><th>Snippet Frequency</th></tr></thead><tbody>";
-  for (var i in data.entity_extraction) {
-    var entity = data.entity_extraction[i][0].split(":");
-    var content_freq = data.entity_extraction[i][1][0];
-    var snippet_freq = data.entity_extraction[i][1][1];
-    var in_ontology = data.entity_extraction[i][1][2];
+    "<th>Content Frequency</th>" +
+    "<th>Snippet Frequency</th>" +
+    "<th>Score</th>" +
+    "</tr></thead><tbody>";
+  for (var i in data.entities) {
+    var entity = data.entities[i][0].split(":");
+    var content_freq = data.entities[i][1][0];
+    var snippet_freq = data.entities[i][1][1];
+    var in_ontology = data.entities[i][1][2];
+    var score = data.entities[i][1][3];
     if (in_ontology) {
       entity_table += "<tr>";
     } else {
@@ -94,8 +99,10 @@ function callback(data, status, xhr) {
     entity_table += "<td>" + entity[0] + "</td>" +
       "<td>" + entity[1] + "</td>" +
       "<td>" + content_freq + "</td>" +
-      "<td>" + snippet_freq + "</td></tr>";
-    max_content_freq = Math.max(max_content_freq, content_freq);
+      "<td>" + snippet_freq + "</td>" +
+      "<td>" + score + "</td></tr>";
+    max_score = Math.max(max_score, score);
+    max_freq = Math.max(max_freq, content_freq);
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
@@ -114,22 +121,23 @@ function callback(data, status, xhr) {
     semantic_analysis += "<span class=\"label\">" + type + "</span>";
   }
   $("#semantic-analysis-area").html(semantic_analysis);
-  drawChart(data, max_content_freq);
+  drawChart(data, max_score, max_freq);
 }
 
-function drawChart(data, max_content_freq) {
+function drawChart(data, max_score, max_freq) {
   var array = new Array(new Array("Entity", "Content Frequency",
         "Snippet Frequency", "Base Score", "Score"));
-  for (var i in data.entity_extraction) {
-    var entity = data.entity_extraction[i][0].split(":");
-    var content_freq = data.entity_extraction[i][1][0];
-    var snippet_freq = data.entity_extraction[i][1][1];
-    var in_ontology = data.entity_extraction[i][1][2];
-    var base_score = 200;
-    var score = 100;
-    if (content_freq > max_content_freq * 0.2) {
+  var score_div = max_freq / max_score;
+  for (var i in data.entities) {
+    var entity = data.entities[i][0].split(":");
+    var content_freq = data.entities[i][1][0];
+    var snippet_freq = data.entities[i][1][1];
+    var in_ontology = data.entities[i][1][2];
+    var score = data.entities[i][1][3];
+    var base_score = 10;
+    if (score > max_score * 0.1) {
       array.push(new Array(entity[0], content_freq, snippet_freq, base_score,
-            score)); 
+            score * score_div)); 
     }
   }
   var data = google.visualization.arrayToDataTable(array);

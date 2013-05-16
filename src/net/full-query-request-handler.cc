@@ -145,8 +145,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
-  // "keyword:coarse-type" -> (content-freq, snippet-freq, in-ontology).
-  std::unordered_map<string, tuple<int, int, int>> content_entities;
+  // "keyword:coarse-type" -> (content-freq, snippet-freq, in-ontology, score).
+  std::unordered_map<string, tuple<int, int, int, int>> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -203,16 +203,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
-  response_stream << "\"entity_extraction\":"
-      << JsonArray(content_entities) << ",";
   DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
   DLOG(INFO) << "Total NER time [" << ner_time << "].";
 
   response_stream << "\"results\":";
   items->stringify(response_stream, 0);
-  response_stream << ","
-      << "\"target_keywords\":" << JsonArray(target_keywords) << ","
-      << "\"entities\":[";
+  response_stream << ",\"top_entities\":[";
   const vector<string>& query_words = query.Words("qf");
 
   auto IsSimilarToQuery = [&query_words](const string& word) {
@@ -254,8 +250,11 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     response_stream << "{\"name\":\"" << entity.name
                     << "\",\"type\":\"" << Entity::TypeName(entity.type)
                     << "\",\"score\":" << entity_it->second << "}";
+    const string entity_key = entity.name + ":" + Entity::TypeName(entity.type);
+    get<3>(content_entities[entity_key]) = entity.score;
   }
 
+  response_stream << "],\"entities\":" << JsonArray(content_entities) << ",";
   // Find target types.
   vector<string> target_types;
   for (const string& w: target_keywords) {
@@ -305,7 +304,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     // LOG(INFO) << rhs.second << ": " << rhs.first;
   }
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "],\"target_types\":" << JsonArray(target_types);
+  response_stream << "\"target_types\":" << JsonArray(target_types);
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]

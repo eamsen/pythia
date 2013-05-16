@@ -95,6 +95,13 @@ a:hover {
   text-decoration: none;
 }
 
+.page-header {
+  padding-bottom: 0px;
+  margin: 10px 0px 10px;
+  border-bottom: 0px;
+  text-align: left;
+}
+
 textarea,
 input[type="text"],
 input[type="password"],
@@ -158,6 +165,10 @@ input[type="color"],
 
 .document-snippet {
   color: #a6a8a8;
+}
+
+table.sortable thead th:hover {
+  background-color: #51bab6;
 }
 
 .table-bordered {
