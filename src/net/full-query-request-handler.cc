@@ -156,8 +156,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   // "keyword:coarse-type" ->
-  // (content-freq, snippet-freq, in-ontology, score, total-frequency).
-  std::unordered_map<string, tuple<int, int, int, int, int>> content_entities;
+  // (content-freq, snippet-freq, score, total-frequency).
+  std::unordered_map<string, tuple<int, int, int, int>> content_entities;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -171,15 +171,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       const int ontology_id = ontology.LhsNameId(space_free);
       const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
-      if (ontology_id == OntologyIndex::kInvalidId) {
+      if (ontology_id == OntologyIndex::kInvalidId ||
+          ontology.LhsFrequency(ontology_id) == 0) {
         // Ignore unkown entities.
-        get<2>(content_entities[entity_key]) = false;
         // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
-            std::log2(1.0f + ontology.LhsFrequency(ontology_id));
-        get<2>(content_entities[entity_key]) = true;
-        get<4>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
+            std::log2(ontology.LhsFrequency(ontology_id));
+        get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<0>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
@@ -202,15 +201,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       const int ontology_id = ontology.LhsNameId(space_free);
       const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
-      if (ontology_id == OntologyIndex::kInvalidId) {
+      if (ontology_id == OntologyIndex::kInvalidId ||
+          ontology.LhsFrequency(ontology_id) == 0) {
         // Ignore unkown entities.
-        get<2>(content_entities[entity_key]) = false;
         // continue;
       } else {
         idf = std::log2(ontology.SumLhsFrequencies()) -
-            std::log2(1.0f + ontology.LhsFrequency(ontology_id));
-        get<2>(content_entities[entity_key]) = true;
-        get<4>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
+            std::log2(ontology.LhsFrequency(ontology_id));
+        get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<1>(content_entities[entity_key]) += 1;
       // float log_keyword_freq = log_sum_keywords - 1.0;
@@ -241,7 +239,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   response_stream << ",\"top_entities\":[";
   // Find the top candidates.
-  const size_t num_top = 10;
+  const size_t num_top = 20;
   size_t current_num = 0;
   std::unordered_map<string, int> entities;
   string top_candidates;
@@ -265,8 +263,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
                     << "\"," << get<0>(it->second)
                     << "," << get<1>(it->second)
                     << "," << entity.score
-                    << "," << get<4>(it->second) << "]";
-    get<3>(it->second) = entity.score;
+                    << "," << get<3>(it->second) << "]";
+    get<2>(it->second) = entity.score;
   }
 
   response_stream << "],\"entities\":" << JsonArray(content_entities) << ",";

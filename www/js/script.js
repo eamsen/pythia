@@ -30,8 +30,6 @@ function search() {
     success: callback});
 }
 
-var kFac = 0.15;
-
 function callback(data, status, xhr) {
   var target_keywords = {};
   for (var i in data.query_analysis.target_keywords) { 
@@ -94,10 +92,9 @@ function callback(data, status, xhr) {
     var entity = data.entities[i][0].split(":");
     var content_freq = data.entities[i][1][0];
     var snippet_freq = data.entities[i][1][1];
-    var in_ontology = data.entities[i][1][2];
-    var score = data.entities[i][1][3];
-    var entity_freq = data.entities[i][1][4];
-    if (in_ontology) {
+    var score = data.entities[i][1][2];
+    var entity_freq = data.entities[i][1][3];
+    if (entity_freq > 0) {
       entity_table += "<tr>";
     } else {
       entity_table += "<tr class=\"error\">";
@@ -150,6 +147,9 @@ function drawChart(data, max_score, max_entity_freq, max_content_freq) {
     var snippet_freq = data.top_entities[i][2];
     var score = data.top_entities[i][3];
     var entity_freq = data.top_entities[i][4];
+    if (score < max_score * 0.1) {
+      continue;
+    }
     array.push(new Array(entity.toUpperCase(), content_freq, snippet_freq,
             entity_freq * freq_div,
             score * score_div)); 
@@ -159,7 +159,7 @@ function drawChart(data, max_score, max_entity_freq, max_content_freq) {
     backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},
     colors: ["#f4f8f7", "#d0d6aa", "#51bab6", "#c93a3e"],
     fontName: "Lato",
-    chartArea: {left:120, top:"2%", height:"92%"},
+    chartArea: {left:160, top:20, height:"88%"},
     legend: {textStyle: {color: "#f4f8f7"}},
     vAxis: {textStyle: {color: "#f4f8f7"}},
     hAxis: {textStyle: {color: "#f4f8f7"}}
