@@ -31,6 +31,14 @@ function search() {
 }
 
 function callback(data, status, xhr) {
+  var durations = [["Procedure", "Duration [ms]"],
+      // ["Total", data.duration / 1000],
+      ["Query Analysis", data.query_analysis.duration / 1000],
+      ["Document Retrieval", data.document_retrieval.duration / 1000],
+      ["Entity Extraction", data.entity_extraction.duration / 1000],
+      ["Entity Ranking", data.entity_ranking.duration / 1000],
+      ["Semantic Query Construction", data.semantic_query_construction.duration / 1000]];
+  drawPerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
   for (var i in data.query_analysis.target_keywords) { 
     var keywords = data.query_analysis.target_keywords[i].split(" ");
@@ -63,21 +71,18 @@ function callback(data, status, xhr) {
   } 
   $("#query-analysis-area").html(query_analysis);
 
-  var view_left = "";
-  for (var i in data.results) {
-    var title = data.results[i]["htmlTitle"];
-    var snippet = data.results[i]["snippet"];
-    var link = data.results[i]["link"];
-    var link_name = data.results[i]["displayLink"]
+  var documents = "";
+  for (var i in data.document_retrieval.documents) {
+    var title = data.document_retrieval.documents[i]["htmlTitle"];
+    var snippet = data.document_retrieval.documents[i]["snippet"];
+    var link = data.document_retrieval.documents[i]["link"];
+    var link_name = data.document_retrieval.documents[i]["displayLink"]
     var element = "<p>" + "<a href=\"" + link + "\"><h8>" + title  + "</h8></a>"
         + "<br><span class=\"document-snippet\">" + snippet + "</span><br>"
         + "<a href=\"" + link + "\">" + link_name + "</a></p>";
-    view_left += element;
+    documents += element;
   }
-  if (data.results.length == 0) {
-    // view_left += "<h2>no results</h2>";
-  }
-  $("#result-area").html(view_left);
+  $("#result-area").html(documents);
 
   var max_score = 0;
   var max_content_freq = 0;
@@ -133,12 +138,43 @@ function callback(data, status, xhr) {
     semantic_analysis += "<span class=\"label\">" + type.toUpperCase() + "</span>";
   }
   $("#semantic-analysis-area").html(semantic_analysis);
-  drawChart(data, max_score, max_entity_freq, max_content_freq);
+  drawEntityChart(data, max_score, max_entity_freq, max_content_freq);
 }
 
-function drawChart(data, max_score, max_entity_freq, max_content_freq) {
-  var array = new Array(new Array("Entity", "Content Frequency",
-        "Snippet Frequency", "Entity Frequency (relative)", "Score (relative)"));
+function drawPerformanceChart(durations, total) {
+  var data = google.visualization.arrayToDataTable(durations);
+  var options = {
+    backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},
+    colors: ["#f4f8f7", "#d0d6aa", "#c93a3e", "#51bab6"],
+    fontName: "Lato",
+    chartArea: {left:40, top:20, height:"86%", width:"82%"},
+    legend: {textStyle: {color: "#f4f8f7"}},
+    vAxis: {textStyle: {color: "#f4f8f7"}},
+    hAxis: {textStyle: {color: "#f4f8f7"}}
+  };
+  var chart = new google.visualization.PieChart(
+      document.getElementById("performance-chart2"));
+  chart.draw(data, options);
+  durations.push(["Total", total]); 
+  data = google.visualization.arrayToDataTable(durations);
+  chart = new google.visualization.BarChart(
+      document.getElementById("performance-chart1"));
+  options = {
+    backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},
+    colors: ["#f4f8f7", "#d0d6aa", "#c93a3e", "#51bab6"],
+    fontName: "Lato",
+    chartArea: {left:120, top:20, height:"78%", width:"62%"},
+    legend: {textStyle: {color: "#f4f8f7"}},
+    vAxis: {textStyle: {color: "#f4f8f7"}},
+    hAxis: {textStyle: {color: "#f4f8f7"}}
+  };
+  chart.draw(data, options);
+}
+
+function drawEntityChart(data, max_score, max_entity_freq, max_content_freq) {
+  var array = [["Entity", "Content Frequency",
+        "Snippet Frequency", "Entity Frequency (relative)",
+        "Score (relative)"]];
   var score_div = max_content_freq / max_score;
   var freq_div = max_content_freq / max_entity_freq;
   for (var i in data.top_entities) {
@@ -150,9 +186,9 @@ function drawChart(data, max_score, max_entity_freq, max_content_freq) {
     if (score < max_score * 0.1) {
       continue;
     }
-    array.push(new Array(entity.toUpperCase(), content_freq, snippet_freq,
+    array.push([entity.toUpperCase(), content_freq, snippet_freq,
             entity_freq * freq_div,
-            score * score_div)); 
+            score * score_div]); 
   }
   var data = google.visualization.arrayToDataTable(array);
   var options = {
@@ -166,7 +202,7 @@ function drawChart(data, max_score, max_entity_freq, max_content_freq) {
   };
 
   var chart = new google.visualization.BarChart(
-      document.getElementById("entity-graph"));
+      document.getElementById("entity-chart"));
   chart.draw(data, options);
 }
 

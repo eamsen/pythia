@@ -40,6 +40,7 @@ using pyt::nlp::PrefixEditDistance;
 using pyt::nlp::OntologyIndex;
 using pyt::nlp::SingularForms;
 using flow::time::ThreadClock;
+using flow::time::Clock;
 using flow::time::ClockDiff;
 using flow::io::JsonArray;
 
@@ -68,6 +69,10 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
 // TODO(esawin): This need heavy refactoring.
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   static const int64_t timeout = 3 * 1e6;  // Microseconds.
+
+  Clock request_start_time;
+  Clock start_time;
+  Clock end_time;
   // Prepare response stream.
   response->setChunkedTransferEncoding(true);
   response->setContentType("text/plain");
@@ -84,14 +89,17 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       target_keywords);
   LOG(INFO) << "Target keywords: " << target_keywords;
 
-  response_stream << "{\"query_analysis\":{";
-  response_stream << "\"query\":" << JsonArray(query.Words("qf")) << ",";
-  response_stream << "\"keywords\":" << JsonArray(keywords) << ",";
-  response_stream << "\"target_keywords\":"
-      << JsonArray(target_keywords) << "},";
+  end_time = Clock();
+
+  response_stream << "{\"query_analysis\":{"
+      << "\"duration\":" << (end_time - start_time).Value() << ","
+      << "\"query\":" << JsonArray(query.Words("qf")) << ","
+      << "\"keywords\":" << JsonArray(keywords) << ","
+      << "\"target_keywords\":" << JsonArray(target_keywords) << "}";
+
+  start_time = end_time;
 
   auto& web_cache = server_.WebCache();
-  ThreadClock clock;
   // Get Google search results.
   const string search_url = server_.SearchHost() + server_.SearchBase() +
       query_uri;
@@ -100,23 +108,28 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     response_it = web_cache.insert({search_url,
         HttpsGetRequest(search_url, timeout)}).first;
   }
-  DLOG(INFO) << "Google search time [" << ThreadClock() - clock << "].";
-  clock = ThreadClock();
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_it->second);
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
-  DLOG(INFO) << "POCO JSON parse time [" << ThreadClock() - clock << "].";
-  clock = ThreadClock();
 
   // Get page contents and extract named entities.
-  ClockDiff http_get_time = 0;
-  ClockDiff ner_time = 0;
   const OntologyIndex& ontology = server_.OntologyIndex();
   EntityIndex index;
   auto items = json_query.findArray("items");
+  
+  end_time = Clock();
+
+  response_stream << ",\"document_retrieval\":{"
+      << "\"duration\":" << (end_time - start_time).Value()
+      << ",\"documents\":";
+  items->stringify(response_stream, 0);
+  response_stream << "}";
+
+  start_time = end_time;
+
   NamedEntityExtractor extractor;
   const size_t num_items = items->size();
   vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
@@ -137,11 +150,9 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
     #pragma omp critical
     {
-      http_get_time += ThreadClock() - clock2;
       clock2 = ThreadClock();
       extractor.Extract(content_it->second, &extracted_content[i]);
       extractor.Extract(snippet_it->second, &extracted_snippets[i]);
-      ner_time += ThreadClock() - clock2;
     }
   }
 
@@ -153,6 +164,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
     return word.size() < 2 || word.size() > 40;
   };
+
+  end_time = Clock();
+
+  response_stream << ",\"entity_extraction\":{"
+      << "\"duration\":" << (end_time - start_time).Value() << "}";
+
+  start_time = end_time;
 
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   // "keyword:coarse-type" ->
@@ -220,11 +238,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
     }
   }
-  DLOG(INFO) << "Total HTTP-Get time [" << http_get_time << "].";
-  DLOG(INFO) << "Total NER time [" << ner_time << "].";
-
-  response_stream << "\"results\":";
-  items->stringify(response_stream, 0);
   const vector<string>& query_words = query.Words("qf");
 
   auto IsSimilarToQuery = [&query_words](const string& word) {
@@ -266,8 +279,15 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
                     << "," << get<3>(it->second) << "]";
     get<2>(it->second) = entity.score;
   }
+  response_stream << "],\"entities\":" << JsonArray(content_entities);
 
-  response_stream << "],\"entities\":" << JsonArray(content_entities) << ",";
+  end_time = Clock();
+
+  response_stream << ",\"entity_ranking\":{"
+      << "\"duration\":" << (end_time - start_time).Value() << "}";
+
+  start_time = end_time;
+
   // Find target types.
   vector<string> target_types;
   for (const string& w: target_keywords) {
@@ -316,15 +336,25 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     target_types.push_back(ontology.Name(rhs.second));
     // LOG(INFO) << rhs.second << ": " << rhs.first;
   }
+  end_time = Clock();
+
+  response_stream << ",\"semantic_query_construction\":{"
+      << "\"duration\":" << (end_time - start_time).Value() << "}";
+
+  start_time = end_time;
+
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << "\"target_types\":" << JsonArray(target_types);
+  response_stream << ",\"target_types\":" << JsonArray(target_types);
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]
                   << "; $1 :r:occurs-with "
                   << flow::io::Str(keywords, " ", "", "", "", "", "", "")
                   << "\"";
-  response_stream << "}";
+
+  end_time = Clock();
+  response_stream << ",\"duration\":"
+      << (end_time - request_start_time).Value() << "}";
 }
 
 }  // namespace net
