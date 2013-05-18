@@ -137,7 +137,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   #pragma omp parallel for
   for (size_t i = 0; i < num_items; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
-    ThreadClock clock2;
     auto content_it = web_cache.find(url);
     auto snippet_it = web_cache.find("snippet/" + url);
     if (content_it == web_cache.end()) {
@@ -150,7 +149,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
     #pragma omp critical
     {
-      clock2 = ThreadClock();
       extractor.Extract(content_it->second, &extracted_content[i]);
       extractor.Extract(snippet_it->second, &extracted_snippets[i]);
     }
@@ -176,6 +174,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // "keyword:coarse-type" ->
   // (content-freq, snippet-freq, score, total-frequency).
   std::unordered_map<string, tuple<int, int, int, int>> content_entities;
+  static const float max_log_lhs_freq = 23.0f;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -194,8 +193,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = std::log2(ontology.SumLhsFrequencies()) -
-            std::log2(ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<0>(content_entities[entity_key]) += 1;
@@ -224,8 +222,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = std::log2(ontology.SumLhsFrequencies()) -
-            std::log2(ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<1>(content_entities[entity_key]) += 1;
@@ -297,7 +294,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     for (const string& s: singulars) {
       // Check if a singular form of a target keyword is an ontology class.
       if (ontology.RhsNameId(s) != OntologyIndex::kInvalidId) {
-        target_types.push_back(s);
+        target_types.push_back(s + "*");
       }
     }
   }
@@ -317,7 +314,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
   vector<std::pair<float, int> > rhs_sorted;
-  const float log_num_triples = std::log2(ontology.NumTriples());
+  const float log_num_triples = 23;  // std::log2(ontology.NumTriples());
   for (const auto& rhs: rhs_freqs) {
     const float idf = log_num_triples -
         std::log2(ontology.RhsFrequency(rhs.first));
