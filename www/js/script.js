@@ -230,3 +230,13 @@ $(document).keypress (
   }
 );
 google.load("visualization", "1", {packages:["corechart"]});
+$.serverObserver.enable({
+  url: server + "/index.html?" + (+new Date()),
+  frequency: 2000,
+  onServerOnline: function() {
+    $("#status-area").css({"background-color": "#111e21"}); 
+  },
+  onServerOffline: function() {
+    $("#status-area").css({"background-color": "#c93a3e"}); 
+  }
+});

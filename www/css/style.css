@@ -102,6 +102,12 @@ a:hover {
   text-align: center;
 }
 
+.status {
+  width: 30px;
+  height: 3px;
+  margin: -10px 0px;
+}
+
 textarea,
 input[type="text"],
 input[type="password"],
