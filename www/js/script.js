@@ -37,7 +37,7 @@ function callback(data, status, xhr) {
       ["Document Retrieval", data.document_retrieval.duration / 1000],
       ["Entity Extraction", data.entity_extraction.duration / 1000],
       ["Entity Ranking", data.entity_ranking.duration / 1000],
-      ["Semantic Query Construction", data.semantic_query_construction.duration / 1000]];
+      ["Semantic Query Construction", data.semantic_query.duration / 1000]];
   drawPerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
   for (var i in data.query_analysis.target_keywords) { 
@@ -126,12 +126,15 @@ function callback(data, status, xhr) {
   ApplySortability();
 
   var broccoli_query = "";
-  broccoli_query += data.broccoli_query;
+  broccoli_query += data.semantic_query.broccoli_query;
   $("#broccoli-query-area").html(broccoli_query);
 
   var semantic_analysis = "";
-  for (var i in data.target_types) {
-    var type = data.target_types[i];
+  for (var i in data.semantic_query.target_types) {
+    var type = data.semantic_query.target_types[i][0];
+    var score = data.semantic_query.target_types[i][1];
+    var total_freq = data.semantic_query.target_types[i][2];
+    console.log(type + ": " + score + " " + total_freq);
     if (i > 0) {
       semantic_analysis += ", ";
     }

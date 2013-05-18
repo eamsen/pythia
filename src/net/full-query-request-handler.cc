@@ -30,6 +30,7 @@ using std::string;
 using std::vector;
 using std::pair;
 using std::tuple;
+using std::make_tuple;
 using std::get;
 using pyt::nlp::Tagger;
 using pyt::nlp::NamedEntityExtractor;
@@ -286,7 +287,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   start_time = end_time;
 
   // Find target types.
-  vector<string> target_types;
+  vector<tuple<string, int, int>> target_types;
   for (const string& w: target_keywords) {
     // Add types occuring on the right-hand side of an is-a relation, which are
     // singular forms of the target keywords.
@@ -294,7 +295,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     for (const string& s: singulars) {
       // Check if a singular form of a target keyword is an ontology class.
       if (ontology.RhsNameId(s) != OntologyIndex::kInvalidId) {
-        target_types.push_back(s + "*");
+        // target_types.push_back(s + "*");
       }
     }
   }
@@ -308,46 +309,47 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     const auto& relations = ontology.RelationsByLhs(e.first);
     for (const auto& r: relations) {
       if (r.first == is_a_relation_id) {
-        rhs_freqs.push_back({r.second, e.second});
+        rhs_freqs.push_back({r.second, std::log2(e.second)});
       }
     }
   }
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
-  vector<std::pair<float, int> > rhs_sorted;
-  const float log_num_triples = 23;  // std::log2(ontology.NumTriples());
+  vector<std::pair<float, tuple<int, int>> > rhs_sorted;
+  // Higher values increase score for more abstract types.
+  const float log_num_triples = 23.0f;
   for (const auto& rhs: rhs_freqs) {
     const float idf = log_num_triples -
         std::log2(ontology.RhsFrequency(rhs.first));
     const float score = idf * rhs.second;
-    if (rhs_sorted.size() && rhs_sorted.back().second == rhs.first) {
+    if (rhs_sorted.size() && get<0>(rhs_sorted.back().second) == rhs.first) {
         rhs_sorted.back().first += score;
     } else {
-      rhs_sorted.push_back({score, rhs.first});
+      rhs_sorted.push_back({score,
+          make_tuple(rhs.first, ontology.RhsFrequency(rhs.first))});
     }
   }
   const size_t k = std::min(4ul, rhs_sorted.size());
   std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
-                    rhs_sorted.end(), std::greater<std::pair<float, int> >());
+                    rhs_sorted.end(), std::greater<std::pair<float, tuple<int, int>> >());
   rhs_sorted.resize(k);
   for (const auto& rhs: rhs_sorted) {
-    target_types.push_back(ontology.Name(rhs.second));
+    target_types.push_back(make_tuple(ontology.Name(get<0>(rhs.second)),
+                                      rhs.first, get<1>(rhs.second)));
     // LOG(INFO) << rhs.second << ": " << rhs.first;
   }
   end_time = Clock();
 
-  response_stream << ",\"semantic_query_construction\":{"
-      << "\"duration\":" << (end_time - start_time).Value() << "}";
-
-  start_time = end_time;
-
   LOG(INFO) << "Top candidates: " << top_candidates;
-  response_stream << ",\"target_types\":" << JsonArray(target_types);
+  response_stream << ",\"semantic_query\":{"
+      << "\"duration\":" << (end_time - start_time).Value()
+      << ",\"target_types\":" << JsonArray(target_types);
 
   // Construct the Broccoli query.
-  response_stream << ",\"broccoli_query\":\"$1 :r:is-a " << target_types[0]
-                  << "; $1 :r:occurs-with "
-                  << flow::io::Str(keywords, " ", "", "", "", "", "", "")
-                  << "\"";
+  response_stream << ",\"broccoli_query\":\"$1 :r:is-a "
+      << get<0>(target_types[0])
+      << "; $1 :r:occurs-with "
+      << flow::io::Str(keywords, " ", "", "", "", "", "", "")
+      << "\"}";
 
   end_time = Clock();
   response_stream << ",\"duration\":"
