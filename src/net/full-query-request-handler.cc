@@ -316,19 +316,19 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
   vector<std::pair<float, tuple<int, int>> > rhs_sorted;
   // Higher values increase score for more abstract types.
-  const float log_num_triples = 23.0f;
+  const float log_num_triples = 23.3f;
   for (const auto& rhs: rhs_freqs) {
     const float idf = log_num_triples -
         std::log2(ontology.RhsFrequency(rhs.first));
     const float score = idf * rhs.second;
     if (rhs_sorted.size() && get<0>(rhs_sorted.back().second) == rhs.first) {
-        rhs_sorted.back().first += score;
+        rhs_sorted.back().first += score * 2.0f;
     } else {
       rhs_sorted.push_back({score,
           make_tuple(rhs.first, ontology.RhsFrequency(rhs.first))});
     }
   }
-  const size_t k = std::min(4ul, rhs_sorted.size());
+  const size_t k = std::min(3ul, rhs_sorted.size());
   std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
                     rhs_sorted.end(), std::greater<std::pair<float, tuple<int, int>> >());
   rhs_sorted.resize(k);
