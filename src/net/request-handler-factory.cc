@@ -24,13 +24,9 @@ Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(
   if (query.find("qf=") != string::npos) {
     // Full query request.
     return new FullQueryRequestHandler(uri);
-  } else {
-    // Document request.
-    return new DocumentRequestHandler();
   }
-  LOG(WARNING) << "Unknown request type for URI " << uri.toString() << ".";
-  google::FlushLogFiles(google::INFO);
-  return 0;
+  // Document request.
+  return new DocumentRequestHandler();
 }
 
 }  // namespace net

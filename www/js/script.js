@@ -229,10 +229,11 @@ $(document).keypress (
     }
   }
 );
+
 google.load("visualization", "1", {packages:["corechart"]});
 $.serverObserver.enable({
   url: server + "/index.html?" + (+new Date()),
-  frequency: 2000,
+  frequency: 3000,
   onServerOnline: function() {
     $("#status-area").css({"background-color": "#111e21"}); 
   },

@@ -27,7 +27,7 @@ class Server: public Poco::Util::ServerApplication {
   const pyt::nlp::Tagger& Tagger() const;
   const pyt::nlp::OntologyIndex& OntologyIndex() const;
   const uint32_t SumKeywordFreqs() const;
-  const std::unordered_map<std::string, uint32_t> KeywordFreqs() const;
+  uint32_t KeywordFreq(const std::string& name) const;
   std::unordered_map<std::string, std::string>& WebCache();
 
  private:

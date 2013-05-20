@@ -91,8 +91,8 @@ void DocumentRequestHandler::Handle(Request* request, Response* response) {
   Server& server = static_cast<Server&>(Poco::Util::Application::instance());
   const Poco::URI uri(request->getURI());
   ContentType type(uri.getPath());
-  DLOG(INFO) << "Content type for " << uri.getPath()
-             << ": " << type.FullType() << ".";
+  // DLOG(INFO) << "Content type for " << uri.getPath()
+  //            << ": " << type.FullType() << ".";
   response->setChunkedTransferEncoding(true);
   try {
     string file_path = server.DocumentPath() + "/";

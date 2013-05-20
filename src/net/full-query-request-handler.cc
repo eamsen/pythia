@@ -198,14 +198,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<0>(content_entities[entity_key]) += 1;
-      // float log_keyword_freq = log_sum_keywords - 1.0;
-      // auto it = server_.KeywordFreqs().find(space_free);
-      // if (it != server_.KeywordFreqs().end()) {
-        // log_keyword_freq = log2(it->second);
+      // float ikf = idf;
+      // const int keyword_freq = server_.KeywordFreq(space_free);
+      // if (keyword_freq > 0) {
+        // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
-      // const float ikf = log_sum_keywords - log_keyword_freq;
       index.Add(e.first, e.second, i, (num_items - i) * idf);
     }
+    const float kSnippetMult = 10.0f;
     for (auto e: extracted_snippets[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
@@ -227,13 +227,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
       }
       get<1>(content_entities[entity_key]) += 1;
-      // float log_keyword_freq = log_sum_keywords - 1.0;
-      // auto it = server_.KeywordFreqs().find(space_free);
-      // if (it != server_.KeywordFreqs().end()) {
-        // log_keyword_freq = log2(it->second);
+      // float ikf = idf;
+      // const int keyword_freq = server_.KeywordFreq(space_free);
+      // if (keyword_freq > 0) {
+        // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
-      // const float ikf = log_sum_keywords - log_keyword_freq;
-      index.Add(e.first, e.second, i + num_items, 9.0f * (num_items - i) * idf);
+      index.Add(e.first, e.second, i + num_items,
+          kSnippetMult * (num_items - i) * idf);
     }
   }
   const vector<string>& query_words = query.Words("qf");

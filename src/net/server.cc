@@ -92,6 +92,7 @@ Server::Server(const string& name, const string& version,
       std::transform(word.begin(), word.end(), word.begin(), ::tolower);
       uint32_t freq;
       ss >> freq;
+      LOG(INFO) << freq;
       keyword_freqs_[word] += freq;
       sum_keyword_freqs_ += freq;
     }
@@ -188,8 +189,12 @@ const uint32_t Server::SumKeywordFreqs() const {
   return sum_keyword_freqs_;
 }
 
-const std::unordered_map<std::string, uint32_t> Server::KeywordFreqs() const {
-  return keyword_freqs_;
+uint32_t Server::KeywordFreq(const std::string& name) const {
+  const auto it = keyword_freqs_.find(name);
+  if (it == keyword_freqs_.end()) {
+    return 0;
+  }
+  return it->second;
 }
 
 std::unordered_map<string, string>& Server::WebCache() {
