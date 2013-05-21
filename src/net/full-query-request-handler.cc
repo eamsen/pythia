@@ -152,20 +152,25 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   start_time = end_time;
 
   // Extract named entities.
-  NamedEntityExtractor extractor;
   vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
   vector<vector<std::pair<string, Entity::Type>>> extracted_snippets(num_items);
-  // #pragma omp parallel for
-  for (size_t i = 0; i < num_items; ++i) {
-    const string& url = items->getObject(i)->getValue<string>("link");
-    auto content_it = web_cache.find(url);
-    auto snippet_it = web_cache.find("snippet/" + url);
-    // #pragma omp critical
-    {
+  {
+    #pragma omp parallel for
+    for (size_t i = 0; i < num_items; ++i) {
+      NamedEntityExtractor extractor;
+      const string& url = items->getObject(i)->getValue<string>("link");
+      const auto content_it = web_cache.find(url);
+      const auto snippet_it = web_cache.find("snippet/" + url);
       extractor.Extract(content_it->second, &extracted_content[i]);
       extractor.Extract(snippet_it->second, &extracted_snippets[i]);
     }
   }
+  end_time = Clock();
+
+  response_stream << ",\"entity_extraction\":{"
+      << "\"duration\":" << (end_time - start_time).Value() << "}";
+
+  start_time = end_time;
 
   auto IsBadName = [](const string& word) {
     for (const char c: word) {
@@ -175,13 +180,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
     return word.size() < 2 || word.size() > 40;
   };
-
-  end_time = Clock();
-
-  response_stream << ",\"entity_extraction\":{"
-      << "\"duration\":" << (end_time - start_time).Value() << "}";
-
-  start_time = end_time;
 
   const OntologyIndex& ontology = server_.OntologyIndex();
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());

@@ -104,7 +104,7 @@ Server::Server(const string& name, const string& version,
                 << keyword_freqs_.size() << "/" << sum_keyword_freqs_
                 << ") saved to " << FLAGS_keywordcache << ".";
     } else {
-      LOG(ERROR) << "Could not save ontology index to " << FLAGS_keywordcache
+      LOG(ERROR) << "Could not save keyword index to " << FLAGS_keywordcache
                  << ".";
     }
   }
