@@ -122,18 +122,25 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   const size_t num_items = items->size();
   // Get document contents.
-  for (size_t i = 0; i < num_items; ++i) {
-    const string& url = items->getObject(i)->getValue<string>("link");
-    auto content_it = web_cache.find(url);
-    auto snippet_it = web_cache.find("snippet/" + url);
-    if (content_it == web_cache.end()) {
-      content_it = web_cache.insert({url,
-          flow::io::StripHtml(HttpGetRequest(url, timeout))}).first;
-      const string& snippet = items->getObject(i)->getValue<string>("snippet");
-      snippet_it = web_cache.insert({"snippet/" + url, snippet}).first;
+  {
+    vector<tuple<string, string>> documents(num_items);
+    #pragma omp parallel for
+    for (size_t i = 0; i < num_items; ++i) {
+      const string& url = items->getObject(i)->getValue<string>("link");
+      if (web_cache.find(url) == web_cache.end()) {
+        documents[i] = make_tuple(url,
+            flow::io::StripHtml(HttpGetRequest(url, timeout)));
+      }
     }
-  }
-  
+    for (size_t i = 0; i < num_items; ++i) {
+      const string& url = items->getObject(i)->getValue<string>("link");
+      if (web_cache.find(url) == web_cache.end()) {
+        web_cache.insert({get<0>(documents[i]), get<1>(documents[i])});
+        const string& snippet = items->getObject(i)->getValue<string>("snippet");
+        web_cache.insert({"snippet/" + url, snippet});
+      }
+    }
+  } 
   end_time = Clock();
 
   response_stream << ",\"document_retrieval\":{"
