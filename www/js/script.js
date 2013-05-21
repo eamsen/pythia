@@ -1,5 +1,15 @@
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
+var options = {
+  "show_performance": false,
+  "show_query_analysis": false,
+  "show_target_types": false,
+  "show_semantic_query": false,
+  "show_entity_chart": false,
+  "show_entity_table": false,
+  "show_documents": false
+};
+
 function urlFormat(q) {
   return q.replace(/ /g, '+');
 }
@@ -209,8 +219,75 @@ function drawEntityChart(data, max_score, max_entity_freq, max_content_freq) {
   chart.draw(data, options);
 }
 
-$(document).ready (
+function UpdateOptions(elem, show) {
+  if (elem.indexOf("Performance") != -1) {
+    options.show_performance = show;
+    return;
+  }
+  if (elem.indexOf("Query Analysis") != -1) {
+    options.show_query_analysis = show;
+    return;
+  }
+  if (elem.indexOf("Target Types") != -1) {
+    options.show_target_types = show;
+    return;
+  }
+  if (elem.indexOf("Semantic Query") != -1) {
+    options.show_semantic_query = show;
+    return;
+  }
+  if (elem.indexOf("Entity Chart") != -1) {
+    options.show_entity_chart = show;
+    return;
+  }
+  if (elem.indexOf("Entity Table") != -1) {
+    options.show_entity_table = show;
+    return;
+  }
+  if (elem.indexOf("Documents") != -1) {
+    options.show_documents = show;
+    return;
+  }
+}
+
+function UseOptions() {
+  if (options.show_performance) {
+    $("#performance-toggle").click();
+  }
+  if (options.show_query_analysis) {
+    $("#query-analysis-toggle").click();
+  }
+  if (options.show_target_types) {
+    $("#semantic-analysis-toggle").click();
+  }
+  if (options.show_semantic_query) {
+    $("#semantic-query-toggle").click();
+  }
+  if (options.show_entity_chart) {
+    $("#entity-chart-toggle").click();
+  }
+  if (options.show_entity_table) {
+    $("#entity-table-toggle").click();
+  }
+  if (options.show_documents) {
+    $("#documents-toggle").click();
+  }
+}
+
+$(document).load(
   function() {
+  }
+);
+
+$(document).ready(
+  function() {
+    $.cookie.json = true;
+    if (!$.cookie("pythia_options")) {
+      $.cookie("pythia_options", options);
+    }
+    options = $.cookie("pythia_options");
+    UseOptions();
+
     if (window.location.pathname == "/index.html") {
       window.location.pathname = "";
     }
@@ -220,13 +297,33 @@ $(document).ready (
   }
 );
 
-$(document).keypress (
+$(document).keypress(
   function(event) {
     if (event.which == 13) {
       event.preventDefault();
       urlQuery(urlFormat(userQuery()));
     } else if (event.charCode == 58) {
     }
+  }
+);
+
+$(document).on("click", ".accordion-toggle", 
+  function() {
+    $(this).html(
+      function(i, old) {
+        var pos = old.indexOf("+");
+        if (pos == -1) {
+          pos = old.indexOf("-");
+        }
+        if (pos == -1) {
+          return old;
+        }
+        UpdateOptions(old, old.charAt(pos) == '+' ? true : false);
+        $.cookie("pythia_options", options);
+        return old.substr(0, pos) + (old.charAt(pos) == '-' ? '+' : '-') +
+            old.substr(pos + 1);
+      }
+    );
   }
 );
 

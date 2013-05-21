@@ -29,9 +29,10 @@
       </div>
       <div class="row">
         <div class="span12">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="performance-toggle" 
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#performance-area">
-            <h5>Performance</h5>
+            <h5><span class="red">+</span> Performance</h5>
           </a>
           <div id="performance-area" class="collapse row">
             <div class="span8">
@@ -45,46 +46,51 @@
       </div>
       <div class="row">
         <div class="span4">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="query-analysis-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#query-analysis-area">
-            <h5>Query Analysis</h5>
+            <h5><span class="red">+</span> Query Analysis</h5>
           </a>
-          <div id="query-analysis-area" class="collapse in">
+          <div id="query-analysis-area" class="collapse">
           </div>
         </div>
         <div class="span4">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="semantic-analysis-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#semantic-analysis-area">
-            <h5>Target Types</h5>
+            <h5><span class="red">+</span> Target Types</h5>
           </a>
-          <div id="semantic-analysis-area" class="collapse in">
+          <div id="semantic-analysis-area" class="collapse">
           </div>
         </div>
         <div class="span4">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="semantic-query-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#broccoli-query-area">
-            <h5>Semantic Query</h5>
+            <h5><span class="red">+</span> Semantic Query</h5>
           </a>
-          <div id="broccoli-query-area" class="collapse in">
+          <div id="broccoli-query-area" class="collapse">
           </div>
         </div>
       </div>
       <div class="row">
         <div class="span12">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="entity-chart-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#entity-chart-area">
-            <h5>Entity Chart</h5>
+            <h5><span class="red">+</span> Entity Chart</h5>
           </a>
-          <div id="entity-chart-area" class="collapse in">
+          <div id="entity-chart-area" class="collapse">
             <div id="entity-chart" style="height: 450px;"></div>
           </div>
         </div>
       </div>
       <div class="row">
         <div class="span12">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="entity-table-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#entity-extraction-area">
-            <h5>Entity Table</h5>
+            <h5><span class="red">+</span> Entity Table</h5>
           </a>
           <div id="entity-extraction-area" class="collapse">
             <table id="entity-table"
@@ -94,9 +100,10 @@
       </div>
       <div class="row">
         <div class="span12">
-          <a class="accordion-toggle" data-toggle="collapse"
+          <a id="documents-toggle"
+            class="accordion-toggle" data-toggle="collapse"
             data-target="#result-area">
-            <h5>Retrieved Documents</h5>
+            <h5><span class="red">+</span> Retrieved Documents</h5>
           </a>
           <div id="result-area" class="collapse">
           </div>
@@ -118,6 +125,7 @@
     <script src="http://vjs.zencdn.net/c/video.js"></script>
     <script src="flat-ui/js/application.js"></script>
     <script src="js/jquery.server-observer.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
     <script src="js/script.js"></script>
     <!--[if lt IE 8]>
       <script src="flat-ui/js/icon-font-ie7.js"></script>

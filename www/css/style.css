@@ -1,79 +1,3 @@
-@font-face {
-  font-family: "TangerineRegular";
-  src: url("../fonts/Tangerine_Regular.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/Tangerine_Regular.woff") format("woff"),
-       url("../fonts/Tangerine_Regular.ttf") format("truetype"),
-       url("../fonts/Tangerine_Regular.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "TangerineBold";
-  src: url("../fonts/Tangerine_Bold.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/Tangerine_Bold.woff") format("woff"),
-       url("../fonts/Tangerine_Bold.ttf") format("truetype"),
-       url("../fonts/Tangerine_Bold.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "UbuntuMono";
-  src: url("../fonts/UbuntuMono-R.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/UbuntuMono-R.woff") format("woff"),
-       url("../fonts/UbuntuMono-R.ttf") format("truetype"),
-       url("../fonts/UbuntuMono-R.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Inconsolata";
-  src: url("../fonts/Inconsolata.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/Inconsolata.woff") format("woff"),
-       url("../fonts/Inconsolata.ttf") format("truetype"),
-       url("../fonts/Inconsolata.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Anonymous";
-  src: url("../fonts/anonymous.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/anonymous.woff") format("woff"),
-       url("../fonts/anonymous.ttf") format("truetype"),
-       url("../fonts/anonymous.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Cousine";
-  src: url("../fonts/cousine-regular.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/cousine-regular.woff") format("woff"),
-       url("../fonts/cousine-regular.ttf") format("truetype"),
-       url("../fonts/cousine-regular.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Cousine";
-  font-weight: bold;
-  src: url("../fonts/cousine-bold.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/cousine-bold.woff") format("woff"),
-       url("../fonts/cousine-bold.ttf") format("truetype"),
-       url("../fonts/cousine-bold.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Cousine";
-  font-style: italic;
-  src: url("../fonts/cousine-italic.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/cousine-italic.woff") format("woff"),
-       url("../fonts/cousine-italic.ttf") format("truetype"),
-       url("../fonts/cousine-italic.svg#svgFontName") format("svg");
-}
-
-@font-face {
-  font-family: "Cousine";
-  font-weight: bold;
-  font-style: italic;
-  src: url("../fonts/cousine-bold-italic.eot?#iefix") format("embedded-opentype"),
-       url("../fonts/cousine-bold-italic.woff") format("woff"),
-       url("../fonts/cousine-bold-italic.ttf") format("truetype"),
-       url("../fonts/cousine-bold-italic.svg#svgFontName") format("svg");
-}
-
 body {
   color: #f4f8f7;
   background-color: #111e21;
@@ -137,6 +61,10 @@ input[type="color"],
 
 .inactive {
   color: #a6a8a8;
+}
+
+.red {
+  color: #c93a3e;
 }
 
 .label {
