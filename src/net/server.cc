@@ -92,7 +92,6 @@ Server::Server(const string& name, const string& version,
       std::transform(word.begin(), word.end(), word.begin(), ::tolower);
       uint32_t freq;
       ss >> freq;
-      LOG(INFO) << freq;
       keyword_freqs_[word] += freq;
       sum_keyword_freqs_ += freq;
     }

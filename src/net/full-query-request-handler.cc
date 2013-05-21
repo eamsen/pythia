@@ -8,6 +8,7 @@
 #include <flow/clock.h>
 #include <flow/string.h>
 #include <flow/stringify.h>
+#include <flow/io/html.h>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -50,13 +51,13 @@ namespace net {
 
 string StripHtml(const string& content) {
   std::stringstream ss;
-  const size_t end = content.find("</body");
   size_t pos = content.find("<body");
+  const size_t end = content.find("</body", pos);
   while (pos != string::npos && pos < end) {
-    const size_t beg = content.find(">", pos) + 1;
+    const size_t beg = content.find(">", pos);
     pos = content.find("<", beg);
     if (beg != string::npos) {
-      ss << content.substr(beg, pos - beg);
+      ss << content.substr(beg + 1, pos - beg - 1);
     }
   }
   return ss.str();
@@ -67,7 +68,7 @@ FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
       uri_(uri),
       query_analyser_(server_.Tagger()) {}
 
-// TODO(esawin): This need heavy refactoring.
+// TODO(esawin): This needs refactoring.
 void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   static const int64_t timeout = 3 * 1e6;  // Microseconds.
 
@@ -116,10 +117,22 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   Poco::Dynamic::Var json_data = json_handler.result();
   Poco::JSON::Query json_query(json_data);
 
-  // Get page contents and extract named entities.
-  const OntologyIndex& ontology = server_.OntologyIndex();
   EntityIndex index;
   auto items = json_query.findArray("items");
+
+  const size_t num_items = items->size();
+  // Get document contents.
+  for (size_t i = 0; i < num_items; ++i) {
+    const string& url = items->getObject(i)->getValue<string>("link");
+    auto content_it = web_cache.find(url);
+    auto snippet_it = web_cache.find("snippet/" + url);
+    if (content_it == web_cache.end()) {
+      content_it = web_cache.insert({url,
+          flow::io::StripHtml(HttpGetRequest(url, timeout))}).first;
+      const string& snippet = items->getObject(i)->getValue<string>("snippet");
+      snippet_it = web_cache.insert({"snippet/" + url, snippet}).first;
+    }
+  }
   
   end_time = Clock();
 
@@ -131,24 +144,16 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   start_time = end_time;
 
+  // Extract named entities.
   NamedEntityExtractor extractor;
-  const size_t num_items = items->size();
   vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
   vector<vector<std::pair<string, Entity::Type>>> extracted_snippets(num_items);
-  #pragma omp parallel for
+  // #pragma omp parallel for
   for (size_t i = 0; i < num_items; ++i) {
     const string& url = items->getObject(i)->getValue<string>("link");
     auto content_it = web_cache.find(url);
     auto snippet_it = web_cache.find("snippet/" + url);
-    if (content_it == web_cache.end()) {
-      #pragma omp critical
-      content_it = web_cache.insert({url,
-          StripHtml(HttpGetRequest(url, timeout))}).first;
-      const string& snippet = items->getObject(i)->getValue<string>("snippet");
-      #pragma omp critical
-      snippet_it = web_cache.insert({"snippet/" + url, snippet}).first;
-    }
-    #pragma omp critical
+    // #pragma omp critical
     {
       extractor.Extract(content_it->second, &extracted_content[i]);
       extractor.Extract(snippet_it->second, &extracted_snippets[i]);
@@ -171,6 +176,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   start_time = end_time;
 
+  const OntologyIndex& ontology = server_.OntologyIndex();
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   // "keyword:coarse-type" ->
   // (content-freq, snippet-freq, score, total-frequency).
