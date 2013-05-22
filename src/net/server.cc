@@ -68,6 +68,9 @@ Server::Server(const string& name, const string& version,
   search_base_ += "&cx=" + api_cx_;
   search_base_ += "&q=";
 
+  fb_base_ = "/freebase/v1/search?key=";
+  fb_base_ += api_key_ + "&query=";
+
   // Load web cache.
   std::ifstream web_cache_stream(FLAGS_webcache);
   if (web_cache_stream) {
@@ -174,6 +177,10 @@ const string& Server::SearchHost() const {
 
 const string& Server::SearchBase() const {
   return search_base_;
+}
+
+const string& Server::FreebaseBase() const {
+  return fb_base_;
 }
 
 const Tagger& Server::Tagger() const {

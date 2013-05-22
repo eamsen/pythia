@@ -10,6 +10,22 @@ var options = {
   "show_documents": false
 };
 
+var server_options = {
+  // Freebase target type detection.
+  "fbtt": 1
+};
+
+function serverOptions() {
+  var o = "";
+  for (var i in server_options) {
+    if (o.length > 0) {
+      o += "&";
+    }
+    o += i + "=" + server_options[i];
+  }
+  return o;
+}
+
 function urlFormat(q) {
   return q.replace(/ /g, '+');
 }
@@ -35,7 +51,7 @@ function urlQuery(q) {
 function search() {
   userQuery(userFormat(urlQuery()));
   $.ajax({url: server + "/",
-    data: "qf=" + urlQuery(),
+    data: "qf=" + urlQuery() + "&" + serverOptions(),
     dataType: "json",
     success: callback});
 }
@@ -139,18 +155,28 @@ function callback(data, status, xhr) {
   broccoli_query += data.semantic_query.broccoli_query;
   $("#broccoli-query-area").html(broccoli_query);
 
-  var semantic_analysis = "";
+  var yago_target_types = "";
   for (var i in data.semantic_query.target_types) {
     var type = data.semantic_query.target_types[i][0];
     var score = data.semantic_query.target_types[i][1];
     var total_freq = data.semantic_query.target_types[i][2];
-    console.log(type + ": " + score + " " + total_freq);
     if (i > 0) {
-      semantic_analysis += ", ";
+      yago_target_types += ", ";
     }
-    semantic_analysis += "<span class=\"label\">" + type.toUpperCase() + "</span>";
+    yago_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
   }
-  $("#semantic-analysis-area").html(semantic_analysis);
+  $("#yago-target-types").html(yago_target_types);
+  var fb_target_types = "";
+  for (var i in data.semantic_query.fb_target_types) {
+    var type = data.semantic_query.fb_target_types[i][0];
+    var score = data.semantic_query.fb_target_types[i][1];
+    var total_freq = data.semantic_query.fb_target_types[i][2];
+    if (i > 0) {
+      fb_target_types += ", ";
+    }
+    fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
+  }
+  $("#fb-target-types").html(fb_target_types);
   drawEntityChart(data, max_score, max_entity_freq, max_content_freq);
 }
 

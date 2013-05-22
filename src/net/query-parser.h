@@ -40,12 +40,13 @@ class Query {
  private:
   void partition(const std::string& query) {
     size_t pos = 0;
-    while (pos != std::string::npos) {
+    while (pos < query.size()) {
       size_t end = query.find("=", pos);
       std::vector<std::string>& words = word_index_[
           query.substr(pos, end - pos)];
       pos = query.find("&", ++end);
       words = split(query.substr(end, pos - end));
+      pos += pos != std::string::npos;
     }
   }
 

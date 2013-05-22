@@ -24,6 +24,7 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& ApiCx() const;
   const std::string& SearchHost() const;
   const std::string& SearchBase() const;
+  const std::string& FreebaseBase() const;
   const pyt::nlp::Tagger& Tagger() const;
   const pyt::nlp::OntologyIndex& OntologyIndex() const;
   const uint32_t SumKeywordFreqs() const;
@@ -45,6 +46,7 @@ class Server: public Poco::Util::ServerApplication {
   std::string api_cx_;
   std::string search_host_;
   std::string search_base_;
+  std::string fb_base_;
   pyt::nlp::Tagger tagger_;
   pyt::nlp::OntologyIndex ontology_index_;
   std::unordered_map<std::string, std::string> web_cache_;

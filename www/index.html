@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="span4">
+        <div class="span12">
           <a id="query-analysis-toggle"
             class="accordion-toggle" data-toggle="collapse"
             data-target="#query-analysis-area">
@@ -54,16 +54,20 @@
           <div id="query-analysis-area" class="collapse">
           </div>
         </div>
-        <div class="span4">
+      </div>
+      <div class="row">
+        <div class="span6">
           <a id="semantic-analysis-toggle"
             class="accordion-toggle" data-toggle="collapse"
             data-target="#semantic-analysis-area">
             <h5><span class="red">+</span> Target Types</h5>
           </a>
           <div id="semantic-analysis-area" class="collapse">
+            <p>YAGO: <span id="yago-target-types"></span></p>
+            <p>FREEBASE: <span id="fb-target-types"></span></p>
           </div>
         </div>
-        <div class="span4">
+        <div class="span6">
           <a id="semantic-query-toggle"
             class="accordion-toggle" data-toggle="collapse"
             data-target="#broccoli-query-area">

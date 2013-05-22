@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
 #include <tuple>
 #include <regex>
 #include "./server.h"
@@ -207,6 +208,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       } else {
         idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
+        index.Add(e.first, e.second, i, (num_items - i) * idf);
       }
       get<0>(content_entities[entity_key]) += 1;
       // float ikf = idf;
@@ -214,7 +216,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       // if (keyword_freq > 0) {
         // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
-      index.Add(e.first, e.second, i, (num_items - i) * idf);
     }
     const float kSnippetMult = 10.0f;
     for (auto e: extracted_snippets[i]) {
@@ -236,6 +237,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       } else {
         idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
+        index.Add(e.first, e.second, i + num_items,
+            kSnippetMult * (num_items - i) * idf);
       }
       get<1>(content_entities[entity_key]) += 1;
       // float ikf = idf;
@@ -243,8 +246,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       // if (keyword_freq > 0) {
         // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
-      index.Add(e.first, e.second, i + num_items,
-          kSnippetMult * (num_items - i) * idf);
     }
   }
   const vector<string>& query_words = query.Words("qf");
@@ -298,18 +299,9 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   start_time = end_time;
 
   // Find target types.
+  // (type name, score, global frequency).
   vector<tuple<string, int, int>> target_types;
-  for (const string& w: target_keywords) {
-    // Add types occuring on the right-hand side of an is-a relation, which are
-    // singular forms of the target keywords.
-    const vector<string> singulars = SingularForms(w);
-    for (const string& s: singulars) {
-      // Check if a singular form of a target keyword is an ontology class.
-      if (ontology.RhsNameId(s) != OntologyIndex::kInvalidId) {
-        // target_types.push_back(s + "*");
-      }
-    }
-  }
+
   // TODO(esawin): Refactor this out of here.
   // Here comes the target type guessing based on most frequent entity types.
   const int is_a_relation_id = ontology.RelationId("is-a");
@@ -340,24 +332,94 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   const size_t k = std::min(3ul, rhs_sorted.size());
-  std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
-                    rhs_sorted.end(), std::greater<std::pair<float, tuple<int, int>> >());
-  rhs_sorted.resize(k);
-  for (const auto& rhs: rhs_sorted) {
-    target_types.push_back(make_tuple(ontology.Name(get<0>(rhs.second)),
-                                      rhs.first, get<1>(rhs.second)));
-    // LOG(INFO) << rhs.second << ": " << rhs.first;
+  if (k > 0) {
+    std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
+                      rhs_sorted.end(), std::greater<std::pair<float, tuple<int, int>> >());
+    rhs_sorted.resize(k);
+    for (const auto& rhs: rhs_sorted) {
+      target_types.push_back(make_tuple(ontology.Name(get<0>(rhs.second)),
+                                        rhs.first, get<1>(rhs.second)));
+    }
+  }
+
+  // The target types based on on Freebase.
+  vector<tuple<string, int, int>> fb_target_types;
+  std::unordered_map<string, float> entity_type_scores; 
+  LOG(INFO) << query.Words("fbtt").size();
+  if (query.Words("fbtt").size()) {
+    LOG(INFO) << query.Text("fbtt");
+  }
+  if (query.Words("fbtt").size() && query.Words("fbtt")[0] == "1") {
+    for (const auto& e: entities) {
+      string name = e.first;
+      flow::string::Replace(" ", "+", &name);
+      const string fb_url = server_.SearchHost() + server_.FreebaseBase() +
+          "\"" + name + "\"";
+      const string result = HttpsGetRequest(fb_url, timeout);
+      if (result.size() == 0 || result[0] != '{') {
+        LOG(WARNING) << "Freebase return error for " << name << ".";
+        continue;
+      }
+      // Don't trust the POCO JSON parser.
+      try {
+        json_parser.parse(result);
+        Poco::Dynamic::Var json_data = json_handler.result();
+        const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
+        if (!object) {
+          continue;
+        }
+        const string status = object->get("status").convert<string>(); 
+        if (status != "200 OK") {
+          continue;
+        }
+        const auto items =
+            object->get("result").extract<Poco::JSON::Array::Ptr>();
+        for (int i = 0, end = items->size(); i < end; ++i) {
+          const auto notable = items->getObject(i)->getObject("notable");
+          const float type_score =
+              items->getObject(i)->get("score").convert<float>();
+          if (!notable) {
+            continue;
+          }
+          const string type = notable->getValue<string>("name");
+          entity_type_scores[type] += type_score;
+        }
+      } catch(const Poco::Exception& e) {
+        LOG(WARNING) << e.what();
+      } catch(const std::exception& e) {
+        LOG(WARNING) << e.what();
+      } catch (...) {
+        LOG(WARNING) << "Unknown exception occured.";
+      }
+    }
+    const size_t k = std::min(3ul, entity_type_scores.size());
+    if (k > 0) {
+      vector<std::pair<float, string>> sorted_entity_type_scores;
+      sorted_entity_type_scores.reserve(entity_type_scores.size());
+      for (const auto& p: entity_type_scores) {
+        sorted_entity_type_scores.push_back({p.second, p.first});
+      }
+      std::partial_sort(sorted_entity_type_scores.begin(),
+                        sorted_entity_type_scores.begin() + k,
+                        sorted_entity_type_scores.end(),
+                        std::greater<std::pair<float, string>>());
+      sorted_entity_type_scores.resize(k);
+      for (const auto& e: sorted_entity_type_scores) {
+        fb_target_types.push_back(make_tuple(e.second, e.first, 0));
+      }
+    }
   }
   end_time = Clock();
 
   LOG(INFO) << "Top candidates: " << top_candidates;
   response_stream << ",\"semantic_query\":{"
       << "\"duration\":" << (end_time - start_time).Value()
-      << ",\"target_types\":" << JsonArray(target_types);
+      << ",\"target_types\":" << JsonArray(target_types)
+      << ",\"fb_target_types\":" << JsonArray(fb_target_types);
 
   // Construct the Broccoli query.
   response_stream << ",\"broccoli_query\":\"$1 :r:is-a "
-      << get<0>(target_types[0])
+      << (target_types.size() ? get<0>(target_types[0]) : "unknown")
       << "; $1 :r:occurs-with "
       << flow::io::Str(keywords, " ", "", "", "", "", "", "")
       << "\"}";
