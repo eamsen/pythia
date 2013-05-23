@@ -365,15 +365,19 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       flow::string::Replace(" ", "+", &name);
       const string fb_url = server_.SearchHost() + server_.FreebaseBase() +
           "\"" + name + "\"";
-      const string result = HttpsGetRequest(fb_url, timeout);
-      if (result.size() == 0 || result[0] != '{') {
+      auto result_it = web_cache.find(fb_url);
+      if (result_it == web_cache.end()) {
+        result_it = web_cache.insert({fb_url,
+                                      HttpsGetRequest(fb_url, timeout)}).first;
+      }
+      if (result_it->second.size() == 0 || result_it->second[0] != '{') {
         LOG(WARNING) << "Freebase return error for " << name << ".";
         continue;
       }
       // Don't trust the search results and JSON parsing.
       try {
         Poco::Dynamic::Var json_data;
-        json_parser.parse(result);
+        json_parser.parse(result_it->second);
         json_data = json_handler.result();
         const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
         if (!object) {
