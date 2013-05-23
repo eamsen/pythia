@@ -12,7 +12,7 @@ var options = {
 
 var server_options = {
   // Freebase target type detection.
-  "fbtt": 1
+  "fbtt": 0
 };
 
 function serverOptions() {

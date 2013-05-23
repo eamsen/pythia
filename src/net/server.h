@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <tuple>
 #include "../nlp/tagger.h"
 #include "../nlp/ontology-index.h"
+#include "../nlp/entity-index.h"
 
 namespace pyt {
 namespace net {
@@ -30,6 +32,8 @@ class Server: public Poco::Util::ServerApplication {
   const uint32_t SumKeywordFreqs() const;
   uint32_t KeywordFreq(const std::string& name) const;
   std::unordered_map<std::string, std::string>& WebCache();
+  std::unordered_map<std::string,
+      std::vector<std::pair<std::string, pyt::nlp::Entity::Type>>>& EntityCache();
 
  private:
   void initialize(Poco::Util::Application& self);  // NOLINT
@@ -50,6 +54,8 @@ class Server: public Poco::Util::ServerApplication {
   pyt::nlp::Tagger tagger_;
   pyt::nlp::OntologyIndex ontology_index_;
   std::unordered_map<std::string, std::string> web_cache_;
+  std::unordered_map<std::string,
+      std::vector<std::pair<std::string, pyt::nlp::Entity::Type>>> entity_cache_;
   std::unordered_map<std::string, uint32_t> keyword_freqs_;
   uint32_t sum_keyword_freqs_;
 };

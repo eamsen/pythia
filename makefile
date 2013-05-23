@@ -14,7 +14,7 @@ LIBS:=-Llibs -L$(POCODIR)/lib\
 	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
 	-lPocoJSON\
 	-lPocoNetSSL -lPocoCrypto -lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
-	-lpthread -lrt -lssl
+	-lpthread -lrt -lssl -lcrypto
 TSTFLAGS:=-O0 -Wall -g
 TSTLIBS:=$(GTESTLIBS) $(LIBS)
 BINS:=pythia
@@ -75,7 +75,7 @@ senna:
 poco:
 	@cd deps/poco/;\
 		./configure --omit=Data/ODBC,Data/MySQL --prefix=install --no-tests\
-		--no-samples --static;\
+		--no-samples;\
 		make all; make install;
 	@echo "compiled poco"
 

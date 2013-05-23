@@ -116,11 +116,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_it->second);
   Poco::Dynamic::Var json_data = json_handler.result();
-  Poco::JSON::Query json_query(json_data);
+  {
+    // TODO(esawin): Get linker error otherwise.
+    Poco::JSON::Query json_query(json_data);
+  }
+  const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
+  const auto items = object->get("items").extract<Poco::JSON::Array::Ptr>();
 
   EntityIndex index;
-  auto items = json_query.findArray("items");
-
   const size_t num_items = items->size();
   // Get document contents.
   {
@@ -152,6 +155,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   start_time = end_time;
 
+  auto& entity_cache = server_.EntityCache();
+
   // Extract named entities.
   vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
   vector<vector<std::pair<string, Entity::Type>>> extracted_snippets(num_items);
@@ -160,9 +165,15 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     for (size_t i = 0; i < num_items; ++i) {
       NamedEntityExtractor extractor;
       const string& url = items->getObject(i)->getValue<string>("link");
-      const auto content_it = web_cache.find(url);
+      const auto entity_it = entity_cache.find(url);
+      if (entity_it == entity_cache.end()) {
+        const auto content_it = web_cache.find(url);
+        extractor.Extract(content_it->second, &extracted_content[i]);
+        entity_cache.insert({url, extracted_content[i]});
+      } else {
+        extracted_content[i] = entity_it->second;
+      }
       const auto snippet_it = web_cache.find("snippet/" + url);
-      extractor.Extract(content_it->second, &extracted_content[i]);
       extractor.Extract(snippet_it->second, &extracted_snippets[i]);
     }
   }
@@ -187,7 +198,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // "keyword:coarse-type" ->
   // (content-freq, snippet-freq, score, total-frequency).
   std::unordered_map<string, tuple<int, int, int, int>> content_entities;
-  static const float max_log_lhs_freq = 23.0f;
+  static const float max_log_lhs_freq = 22.0f;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -201,14 +212,15 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       const int ontology_id = ontology.LhsNameId(space_free);
       const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
+      float rank = std::log2(num_items - i + 1);
       if (ontology_id == OntologyIndex::kInvalidId ||
           ontology.LhsFrequency(ontology_id) == 0) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(10 + ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
-        index.Add(e.first, e.second, i, (num_items - i) * idf);
+        index.Add(e.first, e.second, i, rank * idf);
       }
       get<0>(content_entities[entity_key]) += 1;
       // float ikf = idf;
@@ -217,7 +229,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
     }
-    const float kSnippetMult = 10.0f;
+    const float kSnippetMult = 21.0f;
     for (auto e: extracted_snippets[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
@@ -230,15 +242,16 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       const int ontology_id = ontology.LhsNameId(space_free);
       const string entity_key = e.first + ":" + Entity::TypeName(e.second);
       float idf = 0.0f;
+      float rank = std::log2(num_items - i + 1);
       if (ontology_id == OntologyIndex::kInvalidId ||
           ontology.LhsFrequency(ontology_id) == 0) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = max_log_lhs_freq - std::log2(ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(10 + ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
         index.Add(e.first, e.second, i + num_items,
-            kSnippetMult * (num_items - i) * idf);
+            kSnippetMult * rank * idf);
       }
       get<1>(content_entities[entity_key]) += 1;
       // float ikf = idf;
@@ -312,14 +325,14 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     const auto& relations = ontology.RelationsByLhs(e.first);
     for (const auto& r: relations) {
       if (r.first == is_a_relation_id) {
-        rhs_freqs.push_back({r.second, std::log2(e.second)});
+        rhs_freqs.push_back({r.second, e.second});
       }
     }
   }
   std::sort(rhs_freqs.begin(), rhs_freqs.end());
   vector<std::pair<float, tuple<int, int>> > rhs_sorted;
   // Higher values increase score for more abstract types.
-  const float log_num_triples = 23.3f;
+  const float log_num_triples = 23.0f;
   for (const auto& rhs: rhs_freqs) {
     const float idf = log_num_triples -
         std::log2(ontology.RhsFrequency(rhs.first));
@@ -334,7 +347,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   const size_t k = std::min(3ul, rhs_sorted.size());
   if (k > 0) {
     std::partial_sort(rhs_sorted.begin(), rhs_sorted.begin() + k,
-                      rhs_sorted.end(), std::greater<std::pair<float, tuple<int, int>> >());
+                      rhs_sorted.end(),
+                      std::greater<std::pair<float, tuple<int, int>> >());
     rhs_sorted.resize(k);
     for (const auto& rhs: rhs_sorted) {
       target_types.push_back(make_tuple(ontology.Name(get<0>(rhs.second)),
@@ -345,10 +359,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // The target types based on on Freebase.
   vector<tuple<string, int, int>> fb_target_types;
   std::unordered_map<string, float> entity_type_scores; 
-  LOG(INFO) << query.Words("fbtt").size();
-  if (query.Words("fbtt").size()) {
-    LOG(INFO) << query.Text("fbtt");
-  }
   if (query.Words("fbtt").size() && query.Words("fbtt")[0] == "1") {
     for (const auto& e: entities) {
       string name = e.first;
@@ -360,10 +370,11 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         LOG(WARNING) << "Freebase return error for " << name << ".";
         continue;
       }
-      // Don't trust the POCO JSON parser.
+      // Don't trust the search results and JSON parsing.
       try {
+        Poco::Dynamic::Var json_data;
         json_parser.parse(result);
-        Poco::Dynamic::Var json_data = json_handler.result();
+        json_data = json_handler.result();
         const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
         if (!object) {
           continue;
@@ -374,7 +385,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         }
         const auto items =
             object->get("result").extract<Poco::JSON::Array::Ptr>();
-        for (int i = 0, end = items->size(); i < end; ++i) {
+        for (size_t i = 0; i < items->size(); ++i) {
           const auto notable = items->getObject(i)->getObject("notable");
           const float type_score =
               items->getObject(i)->get("score").convert<float>();

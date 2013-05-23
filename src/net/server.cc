@@ -43,6 +43,7 @@ DEFINE_string(api, "api.txt", "Google API key + CX file.");
 DEFINE_string(webcache, "cache/web.bin", "HTML-content cache.");
 DEFINE_string(ontologycache, "cache/ontology.bin", "Ontology index cache.");
 DEFINE_string(keywordcache, "cache/keywords.bin", "Full text index cache.");
+DEFINE_string(entitycache, "cache/entity.bin", "Extracted entities cache.");
 
 Server::Server(const string& name, const string& version,
                const string& doc_path, const uint16_t port,
@@ -68,7 +69,7 @@ Server::Server(const string& name, const string& version,
   search_base_ += "&cx=" + api_cx_;
   search_base_ += "&q=";
 
-  fb_base_ = "/freebase/v1/search?key=";
+  fb_base_ = "/freebase/v1/search?limit=20&lang=en&key=";
   fb_base_ += api_key_ + "&query=";
 
   // Load web cache.
@@ -76,6 +77,13 @@ Server::Server(const string& name, const string& version,
   if (web_cache_stream) {
     io::Read(web_cache_stream, &web_cache_);
   }
+
+  // Load entity cache.
+  std::ifstream entity_cache_stream(FLAGS_entitycache);
+  if (entity_cache_stream) {
+    io::Read(entity_cache_stream, &entity_cache_);
+  }
+
   // Load keyword frequencies.
   std::ifstream keyword_bin_stream(FLAGS_keywordcache);
   if (keyword_bin_stream) {
@@ -152,6 +160,13 @@ Server::~Server() {
   } else {
     LOG(ERROR) << "Could not save web cache to " << FLAGS_webcache << ".";
   }
+  std::ofstream entity_cache_stream(FLAGS_entitycache);
+  if (entity_cache_stream) {
+    // TODO(esawin): Fix serialization (flow) first.
+    // io::Write(entity_cache_, entity_cache_stream);
+  } else {
+    LOG(ERROR) << "Could not save entity cache to " << FLAGS_entitycache << ".";
+  }
 }
 
 void Server::Run() {
@@ -205,6 +220,12 @@ uint32_t Server::KeywordFreq(const std::string& name) const {
 
 std::unordered_map<string, string>& Server::WebCache() {
   return web_cache_;
+}
+
+std::unordered_map<std::string,
+    std::vector<std::pair<std::string,
+                pyt::nlp::Entity::Type>>>& Server::EntityCache() {
+  return entity_cache_;
 }
 
 void Server::initialize(Application& self) {  // NOLINT

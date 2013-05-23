@@ -30,8 +30,8 @@ void EntityIndex::Add(const string& _entity, Entity::Type type,
     index_[entity].push_back({doc_id, score});
   } else {
     it->second.push_back({doc_id,
-        (it->second.back().doc_id == doc_id ? 1.0f : 1.5f) *
-        it->second.back().score + score});
+        (it->second.back().doc_id == doc_id ? 1.0f : 2.0f) * score +
+        it->second.back().score});
     entity.score = it->second.back().score;
   }
   queue_.push(entity);
