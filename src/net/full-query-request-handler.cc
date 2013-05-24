@@ -198,7 +198,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // "keyword:coarse-type" ->
   // (content-freq, snippet-freq, score, total-frequency).
   std::unordered_map<string, tuple<int, int, int, int>> content_entities;
-  static const float max_log_lhs_freq = 22.0f;
+  static const float max_log_lhs_freq = 25.0f;
   for (size_t i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
@@ -218,7 +218,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = max_log_lhs_freq - std::log2(10 + ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(120 + ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
         index.Add(e.first, e.second, i, rank * idf);
       }
@@ -229,7 +229,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // ikf = max_log_lhs_freq - std::log2(keyword_freq);
       // }
     }
-    const float kSnippetMult = 21.0f;
+    const float kSnippetMult = 22.0f;
     for (auto e: extracted_snippets[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
@@ -248,7 +248,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         // Ignore unkown entities.
         // continue;
       } else {
-        idf = max_log_lhs_freq - std::log2(10 + ontology.LhsFrequency(ontology_id));
+        idf = max_log_lhs_freq - std::log2(120 + ontology.LhsFrequency(ontology_id));
         get<3>(content_entities[entity_key]) = ontology.LhsFrequency(ontology_id);
         index.Add(e.first, e.second, i + num_items,
             kSnippetMult * rank * idf);

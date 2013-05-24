@@ -222,7 +222,7 @@ function drawEntityChart(data, max_score, max_entity_freq, max_content_freq) {
     var snippet_freq = data.top_entities[i][2];
     var score = data.top_entities[i][3];
     var entity_freq = data.top_entities[i][4];
-    if (score < max_score * 0.1) {
+    if (score < max_score * 0.2) {
       continue;
     }
     array.push([entity.toUpperCase(), content_freq, snippet_freq,
