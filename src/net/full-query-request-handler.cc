@@ -427,6 +427,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   end_time = Clock();
 
   LOG(INFO) << "Top candidates: " << top_candidates;
+  LOG(INFO) << "Target types: " << JsonArray(target_types);
+  LOG(INFO) << "Freebase target types: " << JsonArray(fb_target_types);
   response_stream << ",\"semantic_query\":{"
       << "\"duration\":" << (end_time - start_time).Value()
       << ",\"target_types\":" << JsonArray(target_types)

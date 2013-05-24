@@ -81,7 +81,8 @@ Server::Server(const string& name, const string& version,
   // Load entity cache.
   std::ifstream entity_cache_stream(FLAGS_entitycache);
   if (entity_cache_stream) {
-    io::Read(entity_cache_stream, &entity_cache_);
+    // TODO(esawin): Fix serialization (flow) first.
+    // io::Read(entity_cache_stream, &entity_cache_);
   }
 
   // Load keyword frequencies.
