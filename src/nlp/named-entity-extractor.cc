@@ -2,6 +2,7 @@
 #include "./named-entity-extractor.h"
 #include <glog/logging.h>
 #include <algorithm>
+#include <sstream>
 #include <bitset>
 #include "./entity-index.h"
 
@@ -102,34 +103,39 @@ vector<Tagger::Tag> NamedEntityExtractor::Extract(
   static const bitset<kNerUNAVAILABLE + 1> _is_entity_end(
       string("0000001010000100100"));
 
-  vector<Tag> tags = Tags(text);
+  const vector<Tag> tags = Tags(text);
   vector<Tag> entities;
+  entities.reserve(tags.size());
+  if (index) {
+    index->reserve(tags.size());
+  }
   for (const Tag& tag: tags) {
-    if (tag.label != Tagger::kNerO) {
-      entities.push_back(tag);
-      if (!index) {
-        continue;
+    if (tag.label == Tagger::kNerO) {
+      continue;
+    }
+    entities.push_back(tag);
+    if (!index) {
+      continue;
+    }
+    if (_is_single_word[tag.label]) {
+      // Single-word entity.
+      index->push_back({text.substr(tag.offset.begin, tag.offset.size),
+                        _entity_types[tag.label]}); 
+    } else if (_is_entity_end[tag.label]) {
+      // Multi-word entity.
+      const int end_index = entities.size();
+      int i = end_index - 1;
+      while (i > 0 && !_is_entity_begin[entities[i].label]) {
+        --i;
       }
-      if (_is_single_word[tag.label]) {
-        // Single-word entity.
-        index->push_back({text.substr(tag.offset.begin, tag.offset.size),
-                          _entity_types[tag.label]}); 
-      } else if (_is_entity_end[tag.label]) {
-        // Multi-word entity.
-        const int end_index = entities.size();
-        int i = end_index - 1;
-        while (i > 0 && !_is_entity_begin[entities[i].label]) {
-          --i;
-        }
-        LOG_IF(FATAL, i < 0) << "Entity begin not found.";
-        string entity = text.substr(entities[i].offset.begin,
-                                    entities[i].offset.size);
-        while (++i < end_index) {
-          entity += " " + text.substr(entities[i].offset.begin,
-                                      entities[i].offset.size);
-        }
-        index->push_back({entity, _entity_types[tag.label]});
+      LOG_IF(FATAL, i < 0) << "Entity begin not found.";
+      std::ostringstream entity;
+      entity << text.substr(entities[i].offset.begin, entities[i].offset.size);
+      while (++i < end_index) {
+        entity << " " << text.substr(entities[i].offset.begin,
+                                     entities[i].offset.size);
       }
+      index->push_back({entity.str(), _entity_types[tag.label]});
     }
   }
   return entities;

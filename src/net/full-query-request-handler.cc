@@ -16,7 +16,6 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
-#include <unordered_set>
 #include <map>
 #include <tuple>
 #include <regex>
@@ -30,10 +29,15 @@
 
 using std::string;
 using std::vector;
+using std::unordered_map;
+using std::unordered_set;
 using std::pair;
 using std::tuple;
 using std::make_tuple;
 using std::get;
+using std::log2;
+using std::max;
+using std::min;
 using pyt::nlp::Tagger;
 using pyt::nlp::NamedEntityExtractor;
 using pyt::nlp::EntityIndex;
@@ -63,6 +67,40 @@ string StripHtml(const string& content) {
   }
   return ss.str();
 }
+
+struct EntityItem {
+  static string JsonArray(const vector<EntityItem>& items) {
+    std::ostringstream ss;
+    ss << "[";
+    for (auto it = items.begin(), end = items.end(); it != end; ++it) {
+      if (it != items.begin()) {
+        ss << ",";
+      }
+      ss << it->JsonArray();
+    }
+    ss << "]";
+    return ss.str();
+  }
+
+  string JsonArray() const {
+    std::ostringstream ss;
+    ss << "[\"" << name << "\",\"" << Entity::TypeName(course_type) << "\","
+       << content_freq << "," << snippet_freq << "," << corpus_freq << ","
+       << score << ","
+       << flow::io::JsonArray(content_index) << ","
+       << flow::io::JsonArray(snippet_index) << "]";
+    return ss.str();
+  }
+
+  string name;
+  Entity::Type course_type;
+  int content_freq;
+  int snippet_freq;
+  int corpus_freq;
+  float score;
+  vector<pair<int, int>> content_index;
+  vector<pair<int, int>> snippet_index;
+};
 
 FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
     : server_(static_cast<Server&>(Poco::Util::Application::instance())),
@@ -155,35 +193,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   start_time = end_time;
 
-  auto& entity_cache = server_.EntityCache();
-
-  // Extract named entities.
-  vector<vector<std::pair<string, Entity::Type>>> extracted_content(num_items);
-  vector<vector<std::pair<string, Entity::Type>>> extracted_snippets(num_items);
-  {
-    #pragma omp parallel for
-    for (size_t i = 0; i < num_items; ++i) {
-      NamedEntityExtractor extractor;
-      const string& url = items->getObject(i)->getValue<string>("link");
-      const auto entity_it = entity_cache.find(url);
-      if (entity_it == entity_cache.end()) {
-        const auto content_it = web_cache.find(url);
-        extractor.Extract(content_it->second, &extracted_content[i]);
-        entity_cache.insert({url, extracted_content[i]});
-      } else {
-        extracted_content[i] = entity_it->second;
-      }
-      const auto snippet_it = web_cache.find("snippet/" + url);
-      extractor.Extract(snippet_it->second, &extracted_snippets[i]);
-    }
-  }
-  end_time = Clock();
-
-  response_stream << ",\"entity_extraction\":{"
-      << "\"duration\":" << (end_time - start_time).Value() << "}";
-
-  start_time = end_time;
-
   auto IsBadName = [](const string& word) {
     for (const char c: word) {
       if (!std::isalpha(c) && c != ' ' && c != '-' && c != '\'') {
@@ -193,7 +202,98 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return word.size() < 2 || word.size() > 40;
   };
 
+  auto& entity_cache = server_.EntityCache();
   const OntologyIndex& ontology = server_.OntologyIndex();
+
+  // Extract named entities.
+  unordered_map<string, int> entity_ids;
+  vector<EntityItem> entity_items;
+  vector<vector<pair<string, Entity::Type>>> extracted_content(num_items);
+  vector<vector<pair<string, Entity::Type>>> extracted_snippets(num_items);
+  {
+    #pragma omp parallel for
+    for (size_t i = 0; i < num_items; ++i) {
+      NamedEntityExtractor extractor;
+      const string& url = items->getObject(i)->getValue<string>("link");
+      const auto entity_it = entity_cache.find(url);
+      if (entity_it == entity_cache.end()) {
+        const auto content_it = web_cache.find(url);
+        const auto snippet_it = web_cache.find("snippet/" + url);
+        extractor.Extract(content_it->second, &extracted_content[i]);
+        extractor.Extract(snippet_it->second, &extracted_snippets[i]);
+        #pragma omp critical
+        {
+          entity_cache.insert({url, extracted_content[i]});
+          entity_cache.insert({"snippet/" + url, extracted_snippets[i]});
+        }
+      } else {
+        const auto snippet_it = entity_cache.find("snippet/" + url);
+        extracted_content[i] = entity_it->second;
+        extracted_snippets[i] = snippet_it->second;
+      }
+    }
+    for (size_t i = 0; i < num_items; ++i) {
+      for (auto p: extracted_content[i]) {
+        flow::string::Replace("\"", "", &p.first);
+        if (IsBadName(p.first)) {
+          continue;
+        }
+        std::transform(p.first.begin(), p.first.end(), p.first.begin(),
+            ::tolower);
+        string space_less = p.first;
+        flow::string::Replace(" ", "", &space_less);
+        const int ontology_id = ontology.LhsNameId(space_less);
+        auto it = entity_ids.find(p.first);
+        if (it == entity_ids.end()) {
+          it = entity_ids.insert({p.first, entity_items.size()}).first;
+          entity_items.push_back({p.first, p.second, 0, 0,
+                                  ontology.LhsFrequency(ontology_id),
+                                  0.0f, {}, {}});
+        } 
+        EntityItem& item = entity_items[it->second];
+        ++item.content_freq;
+        if (item.content_index.empty() ||
+            item.content_index.back().first != i) {
+          item.content_index.push_back({i, 0});
+        } 
+        ++item.content_index.back().second;
+      }
+      for (auto p: extracted_snippets[i]) {
+        flow::string::Replace("\"", "", &p.first);
+        if (IsBadName(p.first)) {
+          continue;
+        }
+        std::transform(p.first.begin(), p.first.end(), p.first.begin(),
+            ::tolower);
+        string space_less = p.first;
+        flow::string::Replace(" ", "", &space_less);
+        const int ontology_id = ontology.LhsNameId(space_less);
+        auto it = entity_ids.find(p.first);
+        if (it == entity_ids.end()) {
+          it = entity_ids.insert({p.first, entity_items.size()}).first;
+          entity_items.push_back({p.first, p.second, 0, 0,
+                                  ontology.LhsFrequency(ontology_id),
+                                  0.0f, {}, {}});
+        }
+        EntityItem& item = entity_items[it->second];
+        ++item.snippet_freq;
+        if (item.snippet_index.empty() ||
+            item.snippet_index.back().first != i) {
+          item.snippet_index.push_back({i, 0});
+        }
+        ++item.snippet_index.back().second;
+      }
+    }
+  }
+  end_time = Clock();
+
+  LOG(INFO) << EntityItem::JsonArray(entity_items);
+  response_stream << ",\"entity_extraction\":{"
+      << "\"duration\":" << (end_time - start_time).Value()
+      << ",\"entity_items\":" << EntityItem::JsonArray(entity_items) << "}";
+
+  start_time = end_time;
+
   // const float log_sum_keywords = std::log2(server_.SumKeywordFreqs());
   // "keyword:coarse-type" ->
   // (content-freq, snippet-freq, score, total-frequency).
@@ -302,7 +402,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
                     << "," << get<3>(it->second) << "]";
     get<2>(it->second) = entity.score;
   }
-  response_stream << "],\"entities\":" << JsonArray(content_entities);
+  response_stream << "],\"entities\":[]";  // << JsonArray(content_entities);
 
   end_time = Clock();
 

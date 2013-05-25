@@ -195,8 +195,9 @@ void OntologyIndex::LhsFrequency(const int lhs_id, const int freq) {
 }
 
 int OntologyIndex::LhsFrequency(const int lhs_id) const {
-  DLOG_IF(FATAL, lhs_id < 0 || lhs_id >= static_cast<int>(lhs_freqs_.size()))
-      << "Index out of bounds";
+  if (lhs_id < 0 || lhs_id >= static_cast<int>(lhs_freqs_.size())) {
+    return 0;
+  }
   return lhs_freqs_[lhs_id];
 }
 
