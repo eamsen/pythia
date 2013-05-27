@@ -113,3 +113,49 @@ $1 :r:occurs-with lewis carroll
 49 who invented the python programming language
 50 wonders of the ancient world
 
+$1 is-a Astronaut;$1 occurs-with walk* moon*
+$1 is-a Country;$1 occurs-with arab state persian gulf
+$1 is-a Astronaut;$1 occurs-with landed moon*
+$1 is-a Country;$2 equals World_War_II;$1 occurs-with axis power $2
+$1 is-a Borough;$2 equals New_York_City;$1 occurs-with borough $2
+$1 is-a Service;$1 occurs-with branch united states military
+$1 is-a Continent;$1 occurs-with world continent
+$1 is-a Person;$2 equals Nicole_Kidman;$1 occurs-with sibling $2
+$1 is-a Entity;$1 occurs-with diocese church ireland
+$1 is-a Location;$1 occurs-with dropped atomic bomb
+$1 is-a Epic_Poem;$1 occurs-with tamil literature*
+$1 is-a Deity;$1 occurs-with mount olympus
+$1 is-a Person;$2 equals Henry_II_of_England;$1 occurs-with sibling $2
+$1 is-a Person;$2 equals hijackersintheseptember11attacks:Hijackers_in_the_September_11_attacks;$1 occurs-with hijack* $2
+$1 is-a Legislature;$1 occurs-with house* russian parliament
+$1 is-a Person;$2 equals John_Lennon;$1 occurs-with father|mother $2
+$1 is-a Cricketer;$1 occurs-with kenya* captain*
+$1 is-a Person;$2 equals Kublai_Khan;$1 occurs-with sibling $2
+$1 is-a Person;$2 equals Lily_Allen;$1 occurs-with father|mother $2
+$1 is-a League;$2 equals United_States;$1 occurs-with major* $2
+$1 is-a Series;$1 occurs-with matt berry
+$1 is-a Person;$2 equals u2:U2;$1 occurs-with member* $2
+$1 is-a Movie;$2 equals Erykah_Badu;$1 occurs-with appear* $2
+$1 is-a Movie;$2 equals Joe_Frazier;$1 occurs-with appear* $2
+$1 is-a Movie;$2 equals Rafael_Rosell;$1 occurs-with appear* $2
+$1 is-a Country;$2 equals Portuguese_language;$1 has-official-language $2
+$1 is-a Angel;$1 occurs-with hierarchy angel*
+$1 is-a Country;$1 occurs-with permanent member security council
+$1 is-a President;$1 occurs-with mount rushmore;$1 occurs-with shooting
+$1 is-a Country;$2 equals Canada;$1 occurs-with territory $2
+$1 is-a Album;$2 equals Ratt;$1 occurs-with produc* $2
+$1 is-a Country;$2 equals Socialist_Federal_Republic_of_Yugoslavia;$1 occurs-with republic former $2
+$1 is-a Revolutionist;$1 occurs-with 1959 cuba*
+$1 is-a Maxim;$1 occurs-with set theory
+$1 is-a Country;$2 equals Oklahoma;$1 occurs-with border $2
+$1 is-a City;$1 occurs-with greek ancient cyprus*
+$1 is-a Country;$1 occurs-with state united states america
+$1 is-a Person;$1 occurs-with companion* islamic prophet
+$1 is-a Tribe;$1 occurs-with twelve israel*
+$1 is-a Book;$2 equals Paul_of_Tarsus;$1 occurs-with write* $2
+$1 is-a Language;$1 occurs-with spoken afghanistan
+$1 is-a Show_(Entertainment);$2 equals Thomas_Jane;$1 occurs-with appear* $2
+$1 is-a Country;$2 equals Elizabeth_II_of_the_United_Kingdom;$1 occurs-with monarch $2
+$1 is-a Person;$2 equals Jacki_Weaver;$1 occurs-with marr* $2
+$1 is-a Person;$1 occurs-with invent* python language
+$1 is-a Building;$1 occurs-with wonder* ancient world

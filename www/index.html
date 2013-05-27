@@ -79,6 +79,32 @@
       </div>
       <div class="row">
         <div class="span12">
+          <a id="scoring-toggle"
+            class="accordion-toggle" data-toggle="collapse"
+            data-target="#scoring-area">
+            <h5><span class="red">+</span> Scoring</h5>
+          </a>
+          <div id="scoring-area" class="collapse">
+            <div class="row">
+              <div id="score-desc" class="span12">
+                <span class="label">
+                  SCORE(CF0, ..., CF9, SF0, ..., SF9, DF, CORF)
+                </span><br>=
+                <span class="label">W0</span><span class="label">CFF(CF0)</span>
+                + <span class="label">...</span>
+                + <span class="label">W9</span><span class="label">CFF(CF9)</span>
+                + <span class="label">W10</span><span class="label">SFF(SF0)</span>
+                + <span class="label">...</span>
+                + <span class="label">W19</span><span class="label">SFF(SF9)</span>
+                + <span class="label">W20</span><span class="label">DFF(DF)</span>
+                + <span class="label">W21</span><span class="label">CORFF(CORF)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> 
+      <div class="row">
+        <div class="span12">
           <a id="entity-chart-toggle"
             class="accordion-toggle" data-toggle="collapse"
             data-target="#entity-chart-area">

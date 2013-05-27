@@ -5,6 +5,7 @@ var options = {
   "show_query_analysis": false,
   "show_target_types": false,
   "show_semantic_query": false,
+  "show_scoring": false,
   "show_entity_chart": false,
   "show_entity_table": false,
   "show_documents": false
@@ -15,7 +16,7 @@ var server_options = {
   "fbtt": 1
 };
 
-function serverOptions() {
+function ServerOptions() {
   var o = "";
   for (var i in server_options) {
     if (o.length > 0) {
@@ -26,33 +27,33 @@ function serverOptions() {
   return o;
 }
 
-function urlFormat(q) {
+function UrlFormat(q) {
   return '"' + q + '"';
 }
 
-function userFormat(q) {
+function UserFormat(q) {
   var qc = decodeURIComponent(q);
   return qc.substr(1, qc.length - 2);
 }
 
-function userQuery(q) {
+function UserQuery(q) {
   if (q) {
     document.getElementById("query").value = q.toLowerCase(); 
   }
   return document.getElementById('query').value; 
 }
 
-function urlQuery(q) {
+function UrlQuery(q) {
   if (q) {
     window.location.search = '?q=' + q.toLowerCase();
   }
   return window.location.search.substr(3);
 }
 
-function search() {
-  userQuery(userFormat(urlQuery()));
+function Search() {
+  UserQuery(UserFormat(UrlQuery()));
   $.ajax({url: server + "/",
-    data: "qf=" + urlQuery() + "&" + serverOptions(),
+    data: "qf=" + UrlQuery() + "&" + ServerOptions(),
     dataType: "json",
     success: callback});
 }
@@ -64,10 +65,12 @@ function Score(entity) {
   var content_doc_freq = entity[6].length;
   var snippet_doc_freq = entity[7].length;
   var corpus_if = corpus_freq > 0 ? 24.0 - Math.log(10.0 + corpus_freq) : 0.0;
-  var w = [1.0, 25.0, 10.0, 100.0];
+  var w = [0.0, 1.0, 25.0, 0.0, 10.0, 100.0];
   var s = [
+      content_freq,
       content_freq * corpus_if,
       snippet_freq,
+      snippet_freq * corpus_if,
       content_doc_freq,
       snippet_doc_freq];
   var score = 0;
@@ -141,14 +144,15 @@ function callback(data, status, xhr) {
     "<th>Corpus Frequency</th>" +
     "<th>Score</th>" +
     "</tr></thead><tbody>";
-  for (var i in data.entity_extraction.entity_items) {
-    var name = data.entity_extraction.entity_items[i][0];
-    var type = data.entity_extraction.entity_items[i][1];
-    var content_freq = data.entity_extraction.entity_items[i][2];
-    var snippet_freq = data.entity_extraction.entity_items[i][3];
-    var corpus_freq = data.entity_extraction.entity_items[i][4];
-    var score = Score(data.entity_extraction.entity_items[i]);
-    var doc_freq = data.entity_extraction.entity_items[i][6].length;
+  var entities = data.entity_extraction.entity_items;
+  for (var i in entities) {
+    var name = entities[i][0];
+    var type = entities[i][1];
+    var content_freq = entities[i][2];
+    var snippet_freq = entities[i][3];
+    var corpus_freq = entities[i][4];
+    var score = Score(entities[i]);
+    var doc_freq = entities[i][6].length;
     if (corpus_freq > 0) {
       entity_table += "<tr>";
     } else {
@@ -287,6 +291,10 @@ function UpdateOptions(elem, show) {
     options.show_semantic_query = show;
     return;
   }
+  if (elem.indexOf("Scoring") != -1) {
+    options.show_scoring = show;
+    return;
+  }
   if (elem.indexOf("Entity Chart") != -1) {
     options.show_entity_chart = show;
     return;
@@ -313,6 +321,9 @@ function UseOptions() {
   }
   if (options.show_semantic_query) {
     $("#semantic-query-toggle").click();
+  }
+  if (options.show_scoring) {
+    $("#scoring-toggle").click();
   }
   if (options.show_entity_chart) {
     $("#entity-chart-toggle").click();
@@ -342,8 +353,8 @@ $(document).ready(
     if (window.location.pathname == "/index.html") {
       window.location.pathname = "";
     }
-    if (urlQuery()) {
-      search();
+    if (UrlQuery()) {
+      Search();
     }
   }
 );
@@ -352,7 +363,7 @@ $(document).keypress(
   function(event) {
     if (event.which == 13) {
       event.preventDefault();
-      urlQuery(urlFormat(userQuery()));
+      UrlQuery(UrlFormat(UserQuery()));
     } else if (event.charCode == 58) {
     }
   }
