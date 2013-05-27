@@ -162,12 +162,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   const auto items = object->get("items").extract<Poco::JSON::Array::Ptr>();
 
   EntityIndex index;
-  const size_t num_items = items->size();
+  const int num_items = items->size();
   // Get document contents.
   {
     vector<tuple<string, string>> documents(num_items);
     #pragma omp parallel for
-    for (size_t i = 0; i < num_items; ++i) {
+    for (int i = 0; i < num_items; ++i) {
       const string& url = items->getObject(i)->getValue<string>("link");
       if (web_cache.find(url) == web_cache.end()) {
         documents[i] = make_tuple(url,
@@ -212,7 +212,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<vector<pair<string, Entity::Type>>> extracted_snippets(num_items);
   {
     #pragma omp parallel for
-    for (size_t i = 0; i < num_items; ++i) {
+    for (int i = 0; i < num_items; ++i) {
       NamedEntityExtractor extractor;
       const string& url = items->getObject(i)->getValue<string>("link");
       const auto entity_it = entity_cache.find(url);
@@ -232,7 +232,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         extracted_snippets[i] = snippet_it->second;
       }
     }
-    for (size_t i = 0; i < num_items; ++i) {
+    for (int i = 0; i < num_items; ++i) {
       for (auto p: extracted_content[i]) {
         flow::string::Replace("\"", "", &p.first);
         if (IsBadName(p.first)) {
@@ -287,7 +287,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   end_time = Clock();
 
-  LOG(INFO) << EntityItem::JsonArray(entity_items);
+  // LOG(INFO) << EntityItem::JsonArray(entity_items);
   response_stream << ",\"entity_extraction\":{"
       << "\"duration\":" << (end_time - start_time).Value()
       << ",\"entity_items\":" << EntityItem::JsonArray(entity_items) << "}";

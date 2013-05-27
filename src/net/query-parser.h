@@ -45,13 +45,17 @@ class Query {
       std::vector<std::string>& words = word_index_[
           query.substr(pos, end - pos)];
       pos = query.find("&", ++end);
-      words = split(query.substr(end, pos - end));
+      if (query[end] == '"') {
+        words = split(query.substr(end + 1, pos - end - 2));
+      } else { 
+        words = split(query.substr(end, pos - end));
+      }
       pos += pos != std::string::npos;
     }
   }
 
   static std::vector<std::string> split(
-      const std::string& content, const std::string& delims = "+") {
+      const std::string& content, const std::string& delims = " ") {
     std::vector<std::string> items;
     size_t pos = content.find_first_not_of(delims);
     while (pos != std::string::npos) {

@@ -27,11 +27,12 @@ function serverOptions() {
 }
 
 function urlFormat(q) {
-  return q.replace(/ /g, '+');
+  return '"' + q + '"';
 }
 
 function userFormat(q) {
-  return q.replace(/\+/g, ' ');
+  var qc = decodeURIComponent(q);
+  return qc.substr(1, qc.length - 2);
 }
 
 function userQuery(q) {
