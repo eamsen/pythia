@@ -50,6 +50,24 @@ function UrlQuery(q) {
   return window.location.search.substr(3);
 }
 
+function InitVSlider(s, v) {
+  $("#score-slider-" + s).slider({
+    min: 0.0,
+    max: 10.0,
+    step: 1,
+    orientation: "vertical",
+    value: v,
+    tooltip: "hide",
+    handle: "square"
+  });
+}
+
+function InitSliders() {
+  for (var w = 0; w < 10; w++) {
+    InitVSlider("w" + w, 2);
+  }
+}
+
 function Search() {
   UserQuery(UserFormat(UrlQuery()));
   $.ajax({url: server + "/",
@@ -134,9 +152,9 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(documents);
 
-  var max_score = 0;
-  var max_content_freq = 0;
-  var max_corpus_freq = 0;
+  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
     "<th>Content Frequency</th>" +
     "<th>Snippet Frequency</th>" +
@@ -172,13 +190,17 @@ function callback(data, status, xhr) {
     var snippet_freq = data.top_entities[i][2];
     var score = data.top_entities[i][3];
     var corpus_freq = data.top_entities[i][4];
-    max_content_freq = Math.max(max_content_freq, content_freq);
-    max_corpus_freq = Math.max(max_corpus_freq, corpus_freq);
-    max_score = Math.max(max_score, score);
+    ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
+    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
+    ex_score[0] = Math.min(ex_score[0], score);
+    ex_content_freq[1] = Math.max(ex_content_freq[1], content_freq);
+    ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
+    ex_score[1] = Math.max(ex_score[1], score);
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
   ApplySortability();
+  InitSliders();
 
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;
@@ -206,7 +228,7 @@ function callback(data, status, xhr) {
     fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
   }
   $("#fb-target-types").html(fb_target_types);
-  drawEntityChart(data, max_score, max_corpus_freq, max_content_freq);
+  drawEntityChart(data, ex_score, ex_corpus_freq, ex_content_freq);
 }
 
 function drawPerformanceChart(durations, total) {
@@ -239,19 +261,19 @@ function drawPerformanceChart(durations, total) {
   chart.draw(data, options);
 }
 
-function drawEntityChart(data, max_score, max_corpus_freq, max_content_freq) {
+function drawEntityChart(data, ex_score, ex_corpus_freq, ex_content_freq) {
   var array = [["Entity", "Content Frequency",
         "Snippet Frequency", "Entity Frequency (relative)",
         "Score (relative)"]];
-  var score_div = max_content_freq / max_score;
-  var freq_div = max_content_freq / max_corpus_freq;
+  var score_div = ex_content_freq[1] / ex_score[1];
+  var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
   for (var i in data.top_entities) {
     var entity = data.top_entities[i][0];
     var content_freq = data.top_entities[i][1];
     var snippet_freq = data.top_entities[i][2];
     var score = data.top_entities[i][3];
     var corpus_freq = data.top_entities[i][4];
-    if (score < max_score * 0.2) {
+    if (score < ex_score[1] * 0.2) {
       continue;
     }
     array.push([entity.toUpperCase(), content_freq, snippet_freq,
