@@ -1,19 +1,24 @@
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
 var options = {
-  "show_performance": false,
-  "show_query_analysis": false,
-  "show_target_types": false,
-  "show_semantic_query": false,
-  "show_scoring": false,
-  "show_entity_chart": false,
-  "show_entity_table": false,
-  "show_documents": false
+  show_performance: false,
+  show_query_analysis: false,
+  show_target_types: false,
+  show_semantic_query: false,
+  show_scoring: false,
+  show_entity_chart: false,
+  show_entity_table: false,
+  show_documents: false
 };
 
 var server_options = {
   // Freebase target type detection.
-  "fbtt": 1
+  fbtt: 1
+};
+
+var scoring_options = {
+  entities: null,
+  w: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 };
 
 function ServerOptions() {
@@ -53,22 +58,27 @@ function UrlQuery(q) {
 function InitVSlider(s, v) {
   $("#score-slider-" + s).slider({
     min: 0.0,
-    max: 10.0,
-    step: 1,
+    max: 1.0,
+    step: 0.01,
     orientation: "vertical",
     value: v,
     tooltip: "hide",
     handle: "square"
+  }).on("slideStop", function (ev) {
+    scoring_options.w[s[1]] = 1.0 - ev.value;
+    $.cookie("scoring_options", scoring_options);
+    UpdateEntityTable();
   });
 }
 
 function InitSliders() {
-  for (var w = 0; w < 10; w++) {
-    InitVSlider("w" + w, 2);
+  for (var i = 0; i < 10; i++) {
+    InitVSlider("w" + i, scoring_options.w[i]);
   }
 }
 
 function Search() {
+  scoring_options.entities = null;
   UserQuery(UserFormat(UrlQuery()));
   $.ajax({url: server + "/",
     data: "qf=" + UrlQuery() + "&" + ServerOptions(),
@@ -83,7 +93,8 @@ function Score(entity) {
   var content_doc_freq = entity[6].length;
   var snippet_doc_freq = entity[7].length;
   var corpus_if = corpus_freq > 0 ? 24.0 - Math.log(10.0 + corpus_freq) : 0.0;
-  var w = [0.0, 1.0, 25.0, 0.0, 10.0, 100.0];
+  // var w = [0.0, 1.0, 25.0, 0.0, 10.0, 100.0];
+  var w = scoring_options.w;
   var s = [
       content_freq,
       content_freq * corpus_if,
@@ -92,10 +103,48 @@ function Score(entity) {
       content_doc_freq,
       snippet_doc_freq];
   var score = 0;
-  for (var i in w) {
+  for (var i in s) {
     score += w[i] * s[i];
   }
   return Math.round(score);
+}
+
+function UpdateEntityTable() {
+  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
+    "<th>Content Frequency</th>" +
+    "<th>Snippet Frequency</th>" +
+    "<th>Document Frequency</th>" +
+    "<th>Corpus Frequency</th>" +
+    "<th>Score</th>" +
+    "</tr></thead><tbody>";
+  var entities = scoring_options.entities;
+  for (var i in entities) {
+    var name = entities[i][0];
+    var type = entities[i][1];
+    var content_freq = entities[i][2];
+    var snippet_freq = entities[i][3];
+    var corpus_freq = entities[i][4];
+    var score = Score(entities[i]);
+    var doc_freq = entities[i][6].length;
+    if (corpus_freq > 0) {
+      entity_table += "<tr>";
+    } else {
+      entity_table += "<tr class=\"error\">";
+    }
+    entity_table += "<td>" + name.toUpperCase() + "</td>" +
+      "<td>" + type + "</td>" +
+      "<td>" + content_freq + "</td>" +
+      "<td>" + snippet_freq + "</td>" +
+      "<td>" + doc_freq + "</td>" +
+      "<td>" + corpus_freq + "</td>" +
+      "<td>" + score + "</td></tr>";
+  }
+  entity_table += "</tbody>";
+  $("#entity-table").html(entity_table);
+  ApplySortability();
 }
 
 function callback(data, status, xhr) {
@@ -152,38 +201,13 @@ function callback(data, status, xhr) {
   }
   $("#result-area").html(documents);
 
+  scoring_options.entities = data.entity_extraction.entity_items;
+  UpdateEntityTable();
+
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
-  var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
-    "<th>Content Frequency</th>" +
-    "<th>Snippet Frequency</th>" +
-    "<th>Document Frequency</th>" +
-    "<th>Corpus Frequency</th>" +
-    "<th>Score</th>" +
-    "</tr></thead><tbody>";
-  var entities = data.entity_extraction.entity_items;
-  for (var i in entities) {
-    var name = entities[i][0];
-    var type = entities[i][1];
-    var content_freq = entities[i][2];
-    var snippet_freq = entities[i][3];
-    var corpus_freq = entities[i][4];
-    var score = Score(entities[i]);
-    var doc_freq = entities[i][6].length;
-    if (corpus_freq > 0) {
-      entity_table += "<tr>";
-    } else {
-      entity_table += "<tr class=\"error\">";
-    }
-    entity_table += "<td>" + name.toUpperCase() + "</td>" +
-      "<td>" + type + "</td>" +
-      "<td>" + content_freq + "</td>" +
-      "<td>" + snippet_freq + "</td>" +
-      "<td>" + doc_freq + "</td>" +
-      "<td>" + corpus_freq + "</td>" +
-      "<td>" + score + "</td></tr>";
-  }
+
   for (var i in data.top_entities) {
     var entity = data.top_entities[i][0];
     var content_freq = data.top_entities[i][1];
@@ -197,10 +221,6 @@ function callback(data, status, xhr) {
     ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
     ex_score[1] = Math.max(ex_score[1], score);
   }
-  entity_table += "</tbody>";
-  $("#entity-table").html(entity_table);
-  ApplySortability();
-  InitSliders();
 
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;
@@ -369,8 +389,14 @@ $(document).ready(
     if (!$.cookie("pythia_options")) {
       $.cookie("pythia_options", options);
     }
+    if (!$.cookie("scoring_options")) {
+      $.cookie("scoring_options", scoring_options);
+    }
     options = $.cookie("pythia_options");
+    scoring_options = $.cookie("scoring_options");
     UseOptions();
+
+    InitSliders();
 
     if (window.location.pathname == "/index.html") {
       window.location.pathname = "";
@@ -416,9 +442,9 @@ $.serverObserver.enable({
   url: server + "/index.html?" + (+new Date()),
   frequency: 3000,
   onServerOnline: function() {
-    $("#status-area").css({"background-color": "#111e21"}); 
+    $("#server-status-area").css({"background-color": "#111e21"}); 
   },
   onServerOffline: function() {
-    $("#status-area").css({"background-color": "#c93a3e"}); 
+    $("#server-status-area").css({"background-color": "#c93a3e"}); 
   }
 });
