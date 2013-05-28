@@ -52,7 +52,7 @@
             data-target="#query-analysis-area">
             <h5><span class="red">+</span> Query Analysis</h5>
           </a>
-          <div id="query-analysis-area" class="collapse">
+          <div id="query-analysis-area" class="collapse bordered">
           </div>
         </div>
         <div class="span6">
@@ -61,7 +61,7 @@
             data-target="#semantic-analysis-area">
             <h5><span class="red">+</span> Target Types</h5>
           </a>
-          <div id="semantic-analysis-area" class="collapse">
+          <div id="semantic-analysis-area" class="collapse bordered">
             <p>YAGO: <span style="padding-left:2em;" id="yago-target-types"></span></p>
             <p>FREEBASE: <span id="fb-target-types"></span></p>
           </div>
@@ -74,7 +74,7 @@
             data-target="#broccoli-query-area">
             <h5><span class="red">+</span> Semantic Query</h5>
           </a>
-          <div id="broccoli-query-area" class="collapse">
+          <div id="broccoli-query-area" class="collapse bordered">
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
             data-target="#scoring-area">
             <h5><span class="red">+</span> Scoring</h5>
           </a>
-          <div id="scoring-area" class="collapse">
+          <div id="scoring-area" class="collapse bordered">
             <div class="row">
               <div id="score-desc" class="span12">
                 <span class="label">
@@ -101,17 +101,37 @@
                 + <span class="label">W21</span><span class="label">CORFF(CORF)</span>
               </div>
             </div>
-            <div class="row slider-container">
-              <input id="score-slider-w0" type="text" value="">
-              <input id="score-slider-w1" type="text" value="">
-              <input id="score-slider-w2" type="text" value="">
-              <input id="score-slider-w3" type="text" value="">
-              <input id="score-slider-w4" type="text" value="">
-              <input id="score-slider-w5" type="text" value="">
-              <input id="score-slider-w6" type="text" value="">
-              <input id="score-slider-w7" type="text" value="">
-              <input id="score-slider-w8" type="text" value="">
-              <input id="score-slider-w9" type="text" value="">
+            <div class="row">
+              <div class="slider-container">
+                <div class="span5">
+                  <input id="score-slider-cfw0" type="text" value="">
+                  <input id="score-slider-cfw1" type="text" value="">
+                  <input id="score-slider-cfw2" type="text" value="">
+                  <input id="score-slider-cfw3" type="text" value="">
+                  <input id="score-slider-cfw4" type="text" value="">
+                  <input id="score-slider-cfw5" type="text" value="">
+                  <input id="score-slider-cfw6" type="text" value="">
+                  <input id="score-slider-cfw7" type="text" value="">
+                  <input id="score-slider-cfw8" type="text" value="">
+                  <input id="score-slider-cfw9" type="text" value="">
+                </div>
+                <div class="span5">
+                  <input id="score-slider-sfw0" type="text" value="">
+                  <input id="score-slider-sfw1" type="text" value="">
+                  <input id="score-slider-sfw2" type="text" value="">
+                  <input id="score-slider-sfw3" type="text" value="">
+                  <input id="score-slider-sfw4" type="text" value="">
+                  <input id="score-slider-sfw5" type="text" value="">
+                  <input id="score-slider-sfw6" type="text" value="">
+                  <input id="score-slider-sfw7" type="text" value="">
+                  <input id="score-slider-sfw8" type="text" value="">
+                  <input id="score-slider-sfw9" type="text" value="">
+                </div>
+                <div class="span1">
+                  <input id="score-slider-cdfw" type="text" value="">
+                  <input id="score-slider-sdfw" type="text" value="">
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -148,7 +168,7 @@
             data-target="#result-area">
             <h5><span class="red">+</span> Retrieved Documents</h5>
           </a>
-          <div id="result-area" class="collapse">
+          <div id="result-area" class="collapse bordered">
           </div>
         </div>
       </div>

@@ -32,6 +32,15 @@ a:hover {
   margin: -10px 0px;
 }
 
+.bordered {
+  border: 0px solid #f4f8f7;
+}
+
+.in.bordered {
+  padding: 5px 5px;
+  border: 2px solid #f4f8f7;
+}
+
 textarea,
 input[type="text"],
 input[type="password"],
