@@ -89,7 +89,7 @@ function SetSfw(v) {
 function InitSliders() {
   for (var i = 0; i < 10; ++i) {
     InitVSlider("cfw" + i, scoring_options.cfw[i], SetOptionFunc("cfw", i));
-    InitVSlider("sfw" + i, scoring_options.cfw[i], SetOptionFunc("sfw", i));
+    InitVSlider("sfw" + i, scoring_options.sfw[i], SetOptionFunc("sfw", i));
   }
   InitVSlider("cdfw", scoring_options.cdfw, SetOptionFunc("cdfw"));
   InitVSlider("sdfw", scoring_options.sdfw, SetOptionFunc("sdfw"));
