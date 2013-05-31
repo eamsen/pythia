@@ -1,7 +1,7 @@
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
 var options = {
-  v: 0.1,
+  v: "0.1",
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
@@ -18,14 +18,15 @@ var server_options = {
 };
 
 var entities = [];
+var query = null;
 var scoring_options = {
-  v: 0.11,
+  v: "0.1.2",
   cfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   sfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   cdfw: 0.5,
   sdfw: 0.5,
   ontology_filter: 1,
-  similarity_filter: 0
+  similarity_filter: 1
 };
 
 function ServerOptions() {
@@ -106,10 +107,59 @@ function Search() {
     success: callback});
 }
 
+// function PrefixEditDistance(prefix, word) {
+//   auto Dist = [](int r, int d, int i, bool eq) {
+//     return std::min(std::min(d, i) + 1, r + !eq);
+//   };
+// 
+//   const size_t size1 = word.size();
+//   const size_t size2 = prefix.size();
+//   std::vector<int> dists(size1 + 1, 0);
+//   for (size_t i = 1; i < size1 + 1; ++i) {
+//     dists[i] = i;
+//   }
+//   std::vector<int> new_dists(size1 + 1, 0);
+//   for (size_t w2 = 0; w2 < size2; ++w2) {
+//     new_dists[0] = dists[0] + 1;
+//     for (size_t w1 = 0; w1 < size1; ++w1) {
+//       new_dists[w1 + 1] = Dist(dists[w1], dists[w1 + 1], new_dists[w1],
+//                                word[w1] == prefix[w2]);
+//     }
+//     dists.swap(new_dists);
+//   }
+//   std::sort(dists.begin(), dists.end());
+//   return dists[0];
+// }
+
+function PrefixEditDistance(prefix, word) {
+  var dists = new Array(word.length + 1);
+  for (var i = 0; i < dists.length; ++i) {
+    dists[i] = i;
+  }
+  var ndists = new Array(word.length + 1);
+  var min = Number.MAX_VALUE;
+  for (var w2 = 0; w2 < prefix.length; ++w2) {
+    ndists[0] = dists[0] + 1;
+    for (var w1 = 0; w1 < word.length; ++w1) {
+      ndists[w1 + 1] = Math.min(Math.min(dists[w1 + 1], ndists[w1]) + 1,
+                                dists[w1] + (word[w1] == prefix[w2]));
+      min = Math.min(min, ndists[w1 + 1]);
+    }
+    dists = ndists;
+  }
+  return min;
+}
+
+function Similarity(entity) {
+}
+
 function Filter(entity) {
   if (scoring_options.ontology_filter &&
       entity[4] == 0) {
     return false;
+  }
+  if (scoring_options.similarity_filter > 0 &&
+      Similarity(entity[0])) {
   }
   return true;
 }
@@ -192,8 +242,10 @@ function callback(data, status, xhr) {
       ["Semantic Query Construction", data.semantic_query.duration / 1000]];
   drawPerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
+  query = data.query_analysis.keywords.slice(0);
   for (var i in data.query_analysis.target_keywords) { 
     var keywords = data.query_analysis.target_keywords[i].split(" ");
+    query.push(data.query_analysis.target_keywords[i]);
     for (var j in keywords) {
       target_keywords[keywords[j]] = true;
     }

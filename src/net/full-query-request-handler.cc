@@ -120,7 +120,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   std::ostream& response_stream = response->send();
 
   const Query query(uri_.getQuery());
-  const string& query_text = query.Text("qf");
+  string query_text = query.Text("qf");
   const string& query_uri = query.Uri("qf");
   LOG(INFO) << "Full query request: " << query_text << ".";
 
@@ -128,6 +128,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<string> target_keywords = query_analyser_.TargetKeywords(query_text);
   vector<string> keywords = query_analyser_.Keywords(query_text,
       target_keywords);
+  LOG(INFO) << "Keywords: " << keywords;
   LOG(INFO) << "Target keywords: " << target_keywords;
 
   end_time = Clock();
