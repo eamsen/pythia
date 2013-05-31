@@ -89,16 +89,23 @@
             <div class="row">
               <div id="score-desc" class="span12">
                 <span class="label">
-                  SCORE(CF0, ..., CF9, SF0, ..., SF9, DF, CORF)
+                  SCORE(CF0, ..., CF9, SF0, ..., SF9, CDF, SDF, EF)
                 </span><br>=
+                <span class="label">EFF(EF)</span>(
                 <span class="label">W0</span><span class="label">CFF(CF0)</span>
                 + <span class="label">...</span>
                 + <span class="label">W9</span><span class="label">CFF(CF9)</span>
                 + <span class="label">W10</span><span class="label">SFF(SF0)</span>
                 + <span class="label">...</span>
                 + <span class="label">W19</span><span class="label">SFF(SF9)</span>
-                + <span class="label">W20</span><span class="label">DFF(DF)</span>
-                + <span class="label">W21</span><span class="label">CORFF(CORF)</span>
+                )
+                + <span class="label">W20</span><span class="label">CDFF(CDF)</span>
+                + <span class="label">W21</span><span class="label">SDFF(SDF)</span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="span12">
+                <h6>Weights</h6>
               </div>
             </div>
             <div class="row">
@@ -131,6 +138,11 @@
                   <input id="score-slider-cdfw" type="text" value="">
                   <input id="score-slider-sdfw" type="text" value="">
                 </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="span12">
+                <h6>Filter</h6>
               </div>
             </div>
           </div>

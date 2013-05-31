@@ -1,6 +1,7 @@
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
 var options = {
+  v: 0.1,
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
@@ -18,10 +19,13 @@ var server_options = {
 
 var entities = [];
 var scoring_options = {
+  v: 0.11,
   cfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   sfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   cdfw: 0.5,
-  sdfw: 0.5
+  sdfw: 0.5,
+  ontology_filter: 1,
+  similarity_filter: 0
 };
 
 function ServerOptions() {
@@ -85,9 +89,6 @@ function SetOptionFunc(opt, i) {
   };
 }
 
-function SetSfw(v) {
-}
-
 function InitSliders() {
   for (var i = 0; i < 10; ++i) {
     InitVSlider("cfw" + i, scoring_options.cfw[i], SetOptionFunc("cfw", i));
@@ -105,7 +106,18 @@ function Search() {
     success: callback});
 }
 
+function Filter(entity) {
+  if (scoring_options.ontology_filter &&
+      entity[4] == 0) {
+    return false;
+  }
+  return true;
+}
+
 function Score(entity) {
+  if (!Filter(entity)) {
+    return 0;
+  }
   var content_freq = entity[2];
   var snippet_freq = entity[3];
   var corpus_freq = entity[4];
@@ -127,6 +139,7 @@ function Score(entity) {
   for (var i in snippet_freqs) {
     score += cfw[snippet_freqs[i][0]] * snippet_freqs[i][1];
   }
+  score /= corpus_freq + 10;
   score += cdfw * content_doc_freq;
   score += sdfw * snippet_doc_freq;
   return score;
@@ -501,16 +514,19 @@ $(document).load(
 $(document).ready(
   function() {
     $.cookie.json = true;
-    if (!$.cookie("pythia_options")) {
+    if (!$.cookie("pythia_options") ||
+        $.cookie("pythia_options").v == undefined ||
+        $.cookie("pythia_options").v < options.v) {
       $.cookie("pythia_options", options);
     }
-    if (!$.cookie("scoring_options")) {
+    if (!$.cookie("scoring_options") ||
+        $.cookie("scoring_options").v == undefined ||
+        $.cookie("scoring_options").v < scoring_options.v) {
       $.cookie("scoring_options", scoring_options);
     }
     options = $.cookie("pythia_options");
     scoring_options = $.cookie("scoring_options");
     UseOptions();
-
     InitSliders();
 
     if (window.location.pathname == "/index.html") {
