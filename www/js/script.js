@@ -104,7 +104,7 @@ function Search() {
   $.ajax({url: server + "/",
     data: "qf=" + UrlQuery() + "&" + ServerOptions(),
     dataType: "json",
-    success: callback});
+    success: Callback});
 }
 
 // function PrefixEditDistance(prefix, word) {
@@ -232,7 +232,7 @@ function UpdateEntityTable() {
   ApplySortability();
 }
 
-function callback(data, status, xhr) {
+function Callback(data, status, xhr) {
   var durations = [["Procedure", "Duration [ms]"],
       // ["Total", data.duration / 1000],
       ["Query Analysis", data.query_analysis.duration / 1000],

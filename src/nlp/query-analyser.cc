@@ -71,6 +71,8 @@ vector<string> QueryAnalyser::Keywords(const string& query,
         keywords.pop_back();
         ++pos;
       }
+    } else if (label == Tagger::kPosPOS) {
+      keywords.back() += query.substr(it->offset.begin, it->offset.size);
     }
   }
   return keywords;
