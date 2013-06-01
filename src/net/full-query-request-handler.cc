@@ -120,7 +120,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   std::ostream& response_stream = response->send();
 
   const Query query(uri_.getQuery());
-  string query_text = query.Text("qf");
+  const string& query_text = query.Text("qf");
   const string& query_uri = query.Uri("qf");
   LOG(INFO) << "Full query request: " << query_text << ".";
 

@@ -107,50 +107,28 @@ function Search() {
     success: Callback});
 }
 
-// function PrefixEditDistance(prefix, word) {
-//   auto Dist = [](int r, int d, int i, bool eq) {
-//     return std::min(std::min(d, i) + 1, r + !eq);
-//   };
-// 
-//   const size_t size1 = word.size();
-//   const size_t size2 = prefix.size();
-//   std::vector<int> dists(size1 + 1, 0);
-//   for (size_t i = 1; i < size1 + 1; ++i) {
-//     dists[i] = i;
-//   }
-//   std::vector<int> new_dists(size1 + 1, 0);
-//   for (size_t w2 = 0; w2 < size2; ++w2) {
-//     new_dists[0] = dists[0] + 1;
-//     for (size_t w1 = 0; w1 < size1; ++w1) {
-//       new_dists[w1 + 1] = Dist(dists[w1], dists[w1 + 1], new_dists[w1],
-//                                word[w1] == prefix[w2]);
-//     }
-//     dists.swap(new_dists);
-//   }
-//   std::sort(dists.begin(), dists.end());
-//   return dists[0];
-// }
-
 function PrefixEditDistance(prefix, word) {
-  var dists = new Array(word.length + 1);
-  for (var i = 0; i < dists.length; ++i) {
-    dists[i] = i;
+  var min_dist = Number.MAX_VALUE;
+  if (prefix.length > word.length) {
+    return min_dist;
   }
-  var ndists = new Array(word.length + 1);
-  var min = Number.MAX_VALUE;
+  var dists = new Array(new Array(word.length + 1), new Array(word.length + 1));
+  var di = 0;
+  for (var i = 0; i < dists[di].length; ++i) {
+    dists[di][i] = i;
+  }
   for (var w2 = 0; w2 < prefix.length; ++w2) {
-    ndists[0] = dists[0] + 1;
+    dists[1 - di][0] = dists[di][0] + 1;
     for (var w1 = 0; w1 < word.length; ++w1) {
-      ndists[w1 + 1] = Math.min(Math.min(dists[w1 + 1], ndists[w1]) + 1,
-                                dists[w1] + (word[w1] == prefix[w2]));
-      min = Math.min(min, ndists[w1 + 1]);
+      dists[1 - di][w1 + 1] = Math.min(Math.min(dists[di][w1 + 1],
+                                                dists[1 - di][w1]) + 1,
+                                       dists[di][w1] + (word[w1] != prefix[w2]));
     }
-    dists = ndists;
+    di = 1 - di;
   }
-  return min;
-}
-
-function Similarity(entity) {
+  dists[di].sort(function (a, b) { return a - b; });
+  min_dist = dists[di][0];
+  return min_dist;
 }
 
 function Filter(entity) {
@@ -158,8 +136,22 @@ function Filter(entity) {
       entity[4] == 0) {
     return false;
   }
-  if (scoring_options.similarity_filter > 0 &&
-      Similarity(entity[0])) {
+  if (scoring_options.similarity_filter > 0) {
+    var entity_words = entity[0].split(" ");
+    var num_similar = 0;
+    for (var i in entity_words) {
+      var query_words = query.split(" ");
+      for (var j in query_words) {
+        if (PrefixEditDistance(entity_words[i], query_words[j]) <
+            entity_words[i].length / 3) {
+          ++num_similar;
+          break;
+        }
+      }
+    }
+    if (num_similar > entity_words.length / 2) {
+      return false;
+    }
   }
   return true;
 }
@@ -242,10 +234,10 @@ function Callback(data, status, xhr) {
       ["Semantic Query Construction", data.semantic_query.duration / 1000]];
   drawPerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
-  query = data.query_analysis.keywords.slice(0);
+  query = data.query_analysis.keywords.slice(0).join(" ");
   for (var i in data.query_analysis.target_keywords) { 
     var keywords = data.query_analysis.target_keywords[i].split(" ");
-    query.push(data.query_analysis.target_keywords[i]);
+    query += " " + data.query_analysis.target_keywords[i];
     for (var j in keywords) {
       target_keywords[keywords[j]] = true;
     }
