@@ -20,11 +20,11 @@ var server_options = {
 var entities = [];
 var query = null;
 var scoring_options = {
-  v: "0.1.2",
-  cfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-  sfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-  cdfw: 0.5,
-  sdfw: 0.5,
+  v: "0.1.3",
+  cfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25],
+  sfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25],
+  cdfw: 0.25,
+  sdfw: 0.25,
   ontology_filter: 1,
   similarity_filter: 1
 };
@@ -91,7 +91,7 @@ function SetOptionFunc(opt, i) {
 }
 
 function InitSliders() {
-  for (var i = 0; i < 10; ++i) {
+  for (var i = 0; i < 11; ++i) {
     InitVSlider("cfw" + i, scoring_options.cfw[i], SetOptionFunc("cfw", i));
     InitVSlider("sfw" + i, scoring_options.sfw[i], SetOptionFunc("sfw", i));
   }
@@ -157,8 +157,10 @@ function Filter(entity) {
 }
 
 function Score(entity) {
+  var score = {filtered: false, cf: 0.0, sf: 0.0, cdf: 0.0, sdf: 0.0};
   if (!Filter(entity)) {
-    return 0;
+    score.filtered = true;
+    return score;
   }
   var content_freq = entity[2];
   var snippet_freq = entity[3];
@@ -167,23 +169,22 @@ function Score(entity) {
   var snippet_freqs = entity[7];
   var content_doc_freq = content_freqs.length;
   var snippet_doc_freq = snippet_freqs.length;
-  var corpus_if = corpus_freq > 0 ? 24.0 - Math.log(10.0 + corpus_freq) : 0.0;
-  // var w = [0.0, 1.0, 25.0, 0.0, 10.0, 100.0];
+
   var cfw = scoring_options.cfw;
   var sfw = scoring_options.sfw;
   var cdfw = scoring_options.cdfw;
   var sdfw = scoring_options.sdfw;
 
-  var score = 0;
-  for (var i in content_freqs) {
-    score += cfw[content_freqs[i][0]] * content_freqs[i][1];
+  for (var i = 0; i < content_freqs.length; ++i) {
+    score.cf += cfw[content_freqs[i][0]] * content_freqs[i][1];
   }
-  for (var i in snippet_freqs) {
-    score += cfw[snippet_freqs[i][0]] * snippet_freqs[i][1];
+  for (var i = 0; i < snippet_freqs.length; ++i) {
+    score.sf += sfw[snippet_freqs[i][0]] * snippet_freqs[i][1];
   }
-  score /= corpus_freq + 10;
-  score += cdfw * content_doc_freq;
-  score += sdfw * snippet_doc_freq;
+  score.cf /= corpus_freq + 10000.0;
+  score.sf /= corpus_freq + 10000.0;
+  score.cdf = content_doc_freq;
+  score.sdf = snippet_doc_freq;
   return score;
 }
 
@@ -364,24 +365,48 @@ function drawPerformanceChart(durations, total) {
 }
 
 function ScoreEntities() {
-  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
-  for (var i in entities) {
+  var ex_sfscore = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_cfscore = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_sdscore = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var ex_cdscore = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var scores = [];
+  for (var i = 0; i < entities.length; ++i) {
     var name = entities[i][0];
     var type = entities[i][1];
     var content_freq = entities[i][2];
     var snippet_freq = entities[i][3];
     var corpus_freq = entities[i][4];
     var score = Score(entities[i]);
-    entities[i][5] = score;
+    scores.push(score);
     var doc_freq = entities[i][6].length;
     ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
-    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
-    ex_score[0] = Math.min(ex_score[0], score);
     ex_content_freq[1] = Math.max(ex_content_freq[1], content_freq);
+    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
     ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
-    ex_score[1] = Math.max(ex_score[1], score);
+    ex_cfscore[0] = Math.min(ex_cfscore[0], score.cf);
+    ex_cfscore[1] = Math.max(ex_cfscore[1], score.cf);
+    ex_sfscore[0] = Math.min(ex_sfscore[0], score.sf);
+    ex_sfscore[1] = Math.max(ex_sfscore[1], score.sf);
+    ex_cdscore[0] = Math.min(ex_cdscore[0], score.cdf);
+    ex_cdscore[1] = Math.max(ex_cdscore[1], score.cdf);
+    ex_sdscore[0] = Math.min(ex_sdscore[0], score.sdf);
+    ex_sdscore[1] = Math.max(ex_sdscore[1], score.sdf);
+  }
+  var cfw = scoring_options.cfw[10];
+  var sfw = scoring_options.sfw[10];
+  var cdfw = scoring_options.cdfw;
+  var sdfw = scoring_options.sdfw;
+  for (var i = 0; i < entities.length; ++i) {
+    entities[i][5] = 0.0;
+    if (scores[i].filtered) {
+      continue;
+    }
+    entities[i][5] += scores[i].cf / ex_cfscore[1] * cfw +
+                      scores[i].sf / ex_sfscore[1] * sfw +
+                      scores[i].cdf / ex_cdscore[1] * cdfw +
+                      scores[i].sdf / ex_sdscore[1] * sdfw;
   }
 }
 
@@ -430,7 +455,7 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
-    if (score < ex_score[1] * 0.2) {
+    if (score < ex_score[1] * 0.40) {
       continue;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
