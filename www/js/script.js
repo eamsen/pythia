@@ -138,18 +138,21 @@ function Filter(entity) {
   }
   if (scoring_options.similarity_filter > 0) {
     var entity_words = entity[0].split(" ");
+    var query_words = query.split(" ");
     var num_similar = 0;
-    for (var i in entity_words) {
-      var query_words = query.split(" ");
-      for (var j in query_words) {
-        if (PrefixEditDistance(entity_words[i], query_words[j]) <
-            entity_words[i].length / 3) {
+    var num_equal = 0;
+    for (var i = 0; i < entity_words.length; ++i) {
+      for (var j = 0; j < query_words.length; ++j) {
+        var ped = PrefixEditDistance(entity_words[i], query_words[j]);
+        if (ped < entity_words[i].length / 3) {
           ++num_similar;
+          num_equal += ped == 0;
           break;
         }
       }
     }
-    if (num_similar > entity_words.length / 2) {
+    if (num_equal >= Math.min(entity_words.length, query_words.length) ||
+        num_similar >= Math.max(entity_words.length, query_words.length) / 2) {
       return false;
     }
   }
@@ -181,8 +184,8 @@ function Score(entity) {
   for (var i = 0; i < snippet_freqs.length; ++i) {
     score.sf += sfw[snippet_freqs[i][0]] * snippet_freqs[i][1];
   }
-  score.cf /= corpus_freq + 10000.0;
-  score.sf /= corpus_freq + 10000.0;
+  score.cf /= corpus_freq + 2000;
+  score.sf /= corpus_freq + 2000;
   score.cdf = content_doc_freq;
   score.sdf = snippet_doc_freq;
   return score;
@@ -419,12 +422,23 @@ function SortEntities(i) {
   });
 }
 
+function ExpMovAvg(scores) {
+  var a = 2.0 / (scores.length + 1);
+  var ema = scores[0];
+  for (var i = 1; i < scores.length; ++i) {
+    ema = ema + a * (scores[i] - ema);
+  }
+  return ema;
+}
+
 function UpdateEntityChart() {
   var k = Math.min(20, entities.length);
   
   var ex_score = [entities[k-1][5], entities[0][5]];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var score_sum = 0;
+  var scores = [];
 
   for (var i = 0; i < k; ++i) {
     var name = entities[i][0];
@@ -434,6 +448,8 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
+    score_sum += score;
+    scores.push(score);
     ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
     ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
     ex_score[0] = Math.min(ex_score[0], score);
@@ -447,6 +463,8 @@ function UpdateEntityChart() {
         "Score (relative)"]];
   var score_div = ex_content_freq[1] / ex_score[1];
   var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
+  // var avg_score = score_sum / k;
+  var avg_score = ExpMovAvg(scores);
   for (var i = 0; i < k; ++i) {
     var name = entities[i][0];
     var type = entities[i][1];
@@ -455,7 +473,7 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
-    if (score < ex_score[1] * 0.40) {
+    if (score < avg_score) {
       continue;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
