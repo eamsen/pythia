@@ -202,7 +202,7 @@ function Score(entity) {
   var score = {filtered: false, cf: 0.0, sf: 0.0, cdf: 0.0, sdf: 0.0};
   if (!PreFilter(entity)) {
     score.filtered = true;
-    return score;
+    // return score;
   }
   var content_freq = entity[2];
   var snippet_freq = entity[3];
@@ -250,7 +250,8 @@ function UpdateEntityTable() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
-    if (corpus_freq > 0) {
+    var filtered = entities[i][7];
+    if (!filtered) {
       entity_table += "<tr>";
     } else {
       entity_table += "<tr class=\"error\">";
@@ -443,8 +444,9 @@ function ScoreEntities() {
   var sdfw = scoring_options.sdfw;
   for (var i = 0; i < entities.length; ++i) {
     entities[i][5] = 0.0;
+    entities[i][7] = scores[i].filtered;
     if (scores[i].filtered) {
-      continue;
+      // continue;
     }
     entities[i][5] += scores[i].cf / ex_cfscore[1] * cfw +
                       scores[i].sf / ex_sfscore[1] * sfw +
@@ -477,7 +479,7 @@ function ExpMovAvg(scores) {
 function UpdateEntityChart() {
   var k = Math.min(20, entities.length);
   
-  var ex_score = [entities[k-1][5], entities[0][5]];
+  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var score_sum = 0;
@@ -491,14 +493,19 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
+    var filtered = entities[i][7];
+    if (filtered) {
+      k = Math.min(k + 1, entities.length);
+      continue;
+    }
     score_sum += score;
     scores.push(score);
-    ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
-    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
     ex_score[0] = Math.min(ex_score[0], score);
-    ex_content_freq[1] = Math.max(ex_content_freq[1], content_freq);
-    ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
     ex_score[1] = Math.max(ex_score[1], score);
+    ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
+    ex_content_freq[1] = Math.max(ex_content_freq[1], content_freq);
+    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
+    ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
   }
 
   var array = [["Entity", "Content Frequency",
@@ -516,8 +523,12 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
-    if (score < avg_score || score < ex_score[1] * 0.4) {
+    var filtered = entities[i][7];
+    if (filtered) {
       continue;
+    }
+    if (score < avg_score || score < ex_score[1] * 0.4) {
+      break;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
             corpus_freq * freq_div,
