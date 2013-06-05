@@ -1,3 +1,4 @@
+// Copyright 2013 Eugen Sawin <esawin@me73.com>
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
 var options = {
@@ -20,14 +21,28 @@ var server_options = {
 var entities = [];
 var query = null;
 var scoring_options = {
-  v: "0.1.3",
-  cfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25],
-  sfw: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25],
+  v: "0.1.4",
+  cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.25],
+  sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.25],
   cdfw: 0.25,
-  sdfw: 0.25,
+  sdfw: 0.20,
   ontology_filter: 1,
-  similarity_filter: 1
+  similarity_filter: 1,
+  coarse_type_filter: 1,
+  yago_type_filter: 0,
+  fb_type_filter: 0,
 };
+
+// Array.prototype.move = function(old_index, new_index) {
+//   if (new_index >= this.length) {
+//     var k = new_index - this.length;
+//     while ((k--) + 1) {
+//       this.push(undefined);
+//     }
+//   }
+//   this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+//   return this;
+// };
 
 function ServerOptions() {
   var o = "";
@@ -70,7 +85,7 @@ function InitVSlider(s, v, e) {
     step: 0.01,
     orientation: "vertical",
     value: 1.0 - v,
-    tooltip: "hide",
+    tooltip: "show",
     handle: "square"
   }).on("slideStop", e);
 }
@@ -84,6 +99,7 @@ function SetOptionFunc(opt, i) {
     }
     $.cookie("scoring_options", scoring_options);
     ScoreEntities();
+    FilterEntities();
     SortEntities();
     UpdateEntityTable();
     UpdateEntityChart();
@@ -108,7 +124,7 @@ function Search() {
 }
 
 function PrefixEditDistance(prefix, word) {
-  var min_dist = Number.MAX_VALUE;
+  var min_dist = Math.max(prefix.length, word.length);
   if (prefix.length > word.length) {
     return min_dist;
   }
@@ -131,37 +147,60 @@ function PrefixEditDistance(prefix, word) {
   return min_dist;
 }
 
-function Filter(entity) {
+function PreFilter(entity) {
   if (scoring_options.ontology_filter &&
       entity[4] == 0) {
     return false;
   }
-  if (scoring_options.similarity_filter > 0) {
+  if (scoring_options.similarity_filter) {
     var entity_words = entity[0].split(" ");
     var query_words = query.split(" ");
     var num_similar = 0;
-    var num_equal = 0;
-    for (var i = 0; i < entity_words.length; ++i) {
-      for (var j = 0; j < query_words.length; ++j) {
-        var ped = PrefixEditDistance(entity_words[i], query_words[j]);
-        if (ped < entity_words[i].length / 3) {
+    for (var j = 0; j < entity_words.length; ++j) {
+      if (entity_words[j].length > 3) {
+        continue;
+      }
+      for (var i = 0; i < query_words.length; ++i) {
+        var k = 0;
+        while (i + k < query_words.length &&
+               entity_words[j][k] == query_words[i + k][0]) {
+          ++k;
+        }
+        if (k == entity_words[j].length) {
           ++num_similar;
-          num_equal += ped == 0;
           break;
         }
       }
     }
-    if (num_equal >= Math.min(entity_words.length, query_words.length) ||
-        num_similar >= Math.max(entity_words.length, query_words.length) / 2) {
+    for (var i = 0; i < query_words.length; ++i) {
+      for (var j = 0; j < entity_words.length; ++j) {
+        if (query_words[i].length > entity_words[j].length) {
+          var ped = PrefixEditDistance(entity_words[j], query_words[i]);
+        } else {
+          var ped = PrefixEditDistance(query_words[i], entity_words[j]);
+        }
+        if (ped <= Math.min(query_words[i].length, entity_words[j].length) / 3) {
+          ++num_similar;
+        }
+      }
+    }
+    if (num_similar > Math.min(query_words.length, entity_words.length) / 2) {
+      console.log(entity[0]);
       return false;
     }
   }
   return true;
 }
 
+function PostFilter(entity) {
+  if (scoring_options.coarse_type_filter) {
+
+  }
+}
+
 function Score(entity) {
   var score = {filtered: false, cf: 0.0, sf: 0.0, cdf: 0.0, sdf: 0.0};
-  if (!Filter(entity)) {
+  if (!PreFilter(entity)) {
     score.filtered = true;
     return score;
   }
@@ -184,10 +223,11 @@ function Score(entity) {
   for (var i = 0; i < snippet_freqs.length; ++i) {
     score.sf += sfw[snippet_freqs[i][0]] * snippet_freqs[i][1];
   }
-  score.cf /= corpus_freq + 2000;
-  score.sf /= corpus_freq + 2000;
-  score.cdf = content_doc_freq;
-  score.sdf = snippet_doc_freq;
+  var corpus_freq_div = Math.log(corpus_freq + 1000);
+  score.cf /= corpus_freq_div;
+  score.sf /= corpus_freq_div;
+  score.cdf = content_doc_freq * content_doc_freq;
+  score.sdf = snippet_doc_freq * snippet_doc_freq;
   return score;
 }
 
@@ -422,6 +462,9 @@ function SortEntities(i) {
   });
 }
 
+function FilterEntities() {
+}
+
 function ExpMovAvg(scores) {
   var a = 2.0 / (scores.length + 1);
   var ema = scores[0];
@@ -473,7 +516,7 @@ function UpdateEntityChart() {
     var corpus_freq = entities[i][4];
     var score = entities[i][5];
     var doc_freq = entities[i][6].length;
-    if (score < avg_score) {
+    if (score < avg_score || score < ex_score[1] * 0.4) {
       continue;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
@@ -658,7 +701,7 @@ $(document).on("click", ".accordion-toggle",
 google.load("visualization", "1", {packages:["corechart"]});
 $.serverObserver.enable({
   url: server + "/index.html?" + (+new Date()),
-  frequency: 3000,
+  frequency: 5000,
   onServerOnline: function() {
     $("#server-status-area").css({"background-color": "#111e21"}); 
   },
