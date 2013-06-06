@@ -103,6 +103,7 @@ function SetOptionFunc(opt, i) {
     FilterEntities();
     UpdateEntityTable();
     UpdateEntityChart();
+    UpdateSemanticQuery();
   };
 }
 
@@ -120,7 +121,28 @@ function Search() {
   $.ajax({url: server + "/",
     data: "qf=" + UrlQuery() + "&" + ServerOptions(),
     dataType: "json",
-    success: Callback});
+    success: SearchCallback});
+}
+
+function QueryTypeInfo(entities) {
+  var k = 10;
+  var es = "";
+  for (var i = 0; i < entities.length; ++i) {
+    if (entities[i][8]) {
+      continue;
+    }
+    if (k-- < 0) {
+      break;
+    }
+    if (i > 0) {
+      es += '+';
+    }
+    es += '"' + entities[i][0] + '"';
+  }
+  $.ajax({url: server + "/",
+    data: "ti=" + es + "&" + ServerOptions(),
+    dataType: "json",
+    success: TypeInfoCallback});
 }
 
 function PrefixEditDistance(prefix, word) {
@@ -228,6 +250,10 @@ function Score(entity) {
   return score;
 }
 
+function UpdateSemanticQuery() {
+  QueryTypeInfo(entities);
+}
+
 function UpdateEntityTable() {
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -266,7 +292,35 @@ function UpdateEntityTable() {
   ApplySortability();
 }
 
-function Callback(data, status, xhr) {
+function TypeInfoCallback(data, status, xhr) {
+  var type_scores = {};
+  var best_type = [Number.MIN_VALUE, "unknown"];
+  var k = data.yago_types.length;
+  for (var i = 0; i < data.yago_types.length; ++i) {
+    var entity_name = data.yago_types[i][0];
+    var yago_types = data.yago_types[i][1];
+    for (var j = 0; j < yago_types.length; ++j) {
+      if (yago_types[j][1] > 1700000 ||
+          yago_types[j][1] < 400000 ||
+          yago_types[j][0].length > 20) {
+        continue;
+      }
+      if (type_scores[yago_types[j][0]] == undefined) {
+        type_scores[yago_types[j][0]] = [0, yago_types[j][1]];
+      }
+      type_scores[yago_types[j][0]][0] += (k - i);
+      var score = type_scores[yago_types[j][0]][0];
+      if (score > best_type[0]) {
+        best_type[0] = score;
+        best_type[1] = yago_types[j][0];
+      }
+    }
+  }
+  console.log(type_scores);
+  console.log(best_type);
+}
+
+function SearchCallback(data, status, xhr) {
   var durations = [["Procedure", "Duration [ms]"],
       // ["Total", data.duration / 1000],
       ["Query Analysis", data.query_analysis.duration / 1000],
@@ -328,6 +382,7 @@ function Callback(data, status, xhr) {
   FilterEntities();
   UpdateEntityTable();
   UpdateEntityChart();
+  UpdateSemanticQuery();
 
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;

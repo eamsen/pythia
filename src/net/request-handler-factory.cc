@@ -1,4 +1,4 @@
-// Copyright 2012 Eugen Sawin <esawin@me73.com>
+// Copyright 2012, 2013 Eugen Sawin <esawin@me73.com>
 #include "./request-handler-factory.h"
 #include <glog/logging.h>
 #include <Poco/URI.h>
@@ -6,6 +6,7 @@
 #include <vector>
 #include "./document-request-handler.h"
 #include "./full-query-request-handler.h"
+#include "./type-info-request-handler.h"
 
 using std::string;
 using std::vector;
@@ -24,6 +25,10 @@ Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(
   if (query.find("qf=") != string::npos) {
     // Full query request.
     return new FullQueryRequestHandler(uri);
+  }
+  if (query.find("ti=") != string::npos) {
+    // YAGO and Freebase type identification request.
+    return new TypeInfoRequestHandler(uri);
   }
   // Document request.
   return new DocumentRequestHandler();
