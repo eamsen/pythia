@@ -174,9 +174,6 @@ function PreFilter(entity) {
     }
     for (var i = 0; i < query_words.length; ++i) {
       for (var j = 0; j < entity_words.length; ++j) {
-        if (entity_words[j].length < 4) {
-          continue;
-        }
         if (query_words[i].length > entity_words[j].length) {
           var ped = PrefixEditDistance(entity_words[j], query_words[i]);
         } else {
@@ -331,24 +328,6 @@ function Callback(data, status, xhr) {
   UpdateEntityTable();
   UpdateEntityChart();
 
-  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
-  var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
-  var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
-
-  for (var i in data.top_entities) {
-    var entity = data.top_entities[i][0];
-    var content_freq = data.top_entities[i][1];
-    var snippet_freq = data.top_entities[i][2];
-    var score = data.top_entities[i][3];
-    var corpus_freq = data.top_entities[i][4];
-    ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
-    ex_corpus_freq[0] = Math.min(ex_corpus_freq[0], corpus_freq);
-    ex_score[0] = Math.min(ex_score[0], score);
-    ex_content_freq[1] = Math.max(ex_content_freq[1], content_freq);
-    ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
-    ex_score[1] = Math.max(ex_score[1], score);
-  }
-
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;
   $("#broccoli-query-area").html(broccoli_query);
@@ -375,7 +354,6 @@ function Callback(data, status, xhr) {
     fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
   }
   $("#fb-target-types").html(fb_target_types);
-  // drawEntityChart(data, ex_score, ex_corpus_freq, ex_content_freq);
 }
 
 function drawPerformanceChart(durations, total) {
@@ -489,7 +467,6 @@ function FilterEntities() {
         best_type[1] = type;
       }
     }
-    console.log(type_scores);
     for (var i = 0; i < k; ++i) {
       var entity = entities[i];
       var name = entity[0];
@@ -505,11 +482,12 @@ function FilterEntities() {
   }
 }
 
-function ExpMovAvg(scores) {
-  var a = 2.0 / (scores.length + 1);
-  var ema = scores[0];
-  for (var i = 1; i < scores.length; ++i) {
-    ema = ema + a * (scores[i] - ema);
+function ExpMovAvg(scores, k) {
+  var a = 2.0 / (k + 1);
+  var b = scores.length - k;
+  var ema = scores[b];
+  for (var i = b - 1; i >= 0; --i) {
+    ema = a * scores[i] + (1 - a) * ema;
   }
   return ema;
 }
@@ -552,7 +530,7 @@ function UpdateEntityChart() {
   var score_div = ex_content_freq[1] / ex_score[1];
   var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
   // var avg_score = score_sum / k;
-  var avg_score = ExpMovAvg(scores);
+  var avg_score = ExpMovAvg(scores, 10);
   for (var i = 0; i < k; ++i) {
     var name = entities[i][0];
     var type = entities[i][1];
@@ -565,45 +543,10 @@ function UpdateEntityChart() {
     if (filtered) {
       continue;
     }
-    if (score < avg_score * 0.7 || score < ex_score[1] * 0.45) {
+    if (score < avg_score * 0.7) {
       break;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
-            corpus_freq * freq_div,
-            score * score_div]); 
-  }
-  var data = google.visualization.arrayToDataTable(array);
-  var options = {
-    backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},
-    colors: ["#f4f8f7", "#d0d6aa", "#51bab6", "#c93a3e"],
-    fontName: "Lato",
-    chartArea: {left:160, top:20, height:"88%"},
-    legend: {textStyle: {color: "#f4f8f7"}},
-    vAxis: {textStyle: {color: "#f4f8f7"}},
-    hAxis: {textStyle: {color: "#f4f8f7"}}
-  };
-
-  var chart = new google.visualization.BarChart(
-      document.getElementById("entity-chart"));
-  chart.draw(data, options);
-}
-
-function drawEntityChart(data, ex_score, ex_corpus_freq, ex_content_freq) {
-  var array = [["Entity", "Content Frequency",
-        "Snippet Frequency", "Entity Frequency (relative)",
-        "Score (relative)"]];
-  var score_div = ex_content_freq[1] / ex_score[1];
-  var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
-  for (var i in data.top_entities) {
-    var entity = data.top_entities[i][0];
-    var content_freq = data.top_entities[i][1];
-    var snippet_freq = data.top_entities[i][2];
-    var score = data.top_entities[i][3];
-    var corpus_freq = data.top_entities[i][4];
-    if (score < ex_score[1] * 0.2) {
-      continue;
-    }
-    array.push([entity.toUpperCase(), content_freq, snippet_freq,
             corpus_freq * freq_div,
             score * score_div]); 
   }

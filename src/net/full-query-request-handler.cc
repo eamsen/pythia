@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <array>
 #include <unordered_set>
 #include <unordered_map>
 #include <map>
@@ -29,6 +30,7 @@
 
 using std::string;
 using std::vector;
+using std::array;
 using std::unordered_map;
 using std::unordered_set;
 using std::pair;
@@ -84,7 +86,7 @@ struct EntityItem {
 
   string JsonArray() const {
     std::ostringstream ss;
-    ss << "[\"" << name << "\",\"" << Entity::TypeName(course_type) << "\","
+    ss << "[\"" << name << "\",\"" << Entity::TypeName(coarse_type) << "\","
        << content_freq << "," << snippet_freq << "," << corpus_freq << ","
        << score << ","
        << flow::io::JsonArray(content_index) << ","
@@ -93,7 +95,7 @@ struct EntityItem {
   }
 
   string name;
-  Entity::Type course_type;
+  Entity::Type coarse_type;
   int content_freq;
   int snippet_freq;
   int corpus_freq;
@@ -175,7 +177,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
             flow::io::StripHtml(HttpGetRequest(url, timeout)));
       }
     }
-    for (size_t i = 0; i < num_items; ++i) {
+    for (int i = 0; i < num_items; ++i) {
       const string& url = items->getObject(i)->getValue<string>("link");
       if (web_cache.find(url) == web_cache.end()) {
         web_cache.insert({get<0>(documents[i]), get<1>(documents[i])});
@@ -209,6 +211,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // Extract named entities.
   unordered_map<string, int> entity_ids;
   vector<EntityItem> entity_items;
+  vector<array<int, 4>> coarse_type_freqs;
   vector<vector<pair<string, Entity::Type>>> extracted_content(num_items);
   vector<vector<pair<string, Entity::Type>>> extracted_snippets(num_items);
   {
@@ -250,6 +253,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
           entity_items.push_back({p.first, p.second, 0, 0,
                                   ontology.LhsFrequency(ontology_id),
                                   0.0f, {}, {}});
+          coarse_type_freqs.push_back({{0, 0, 0, 0}});
         } 
         EntityItem& item = entity_items[it->second];
         ++item.content_freq;
@@ -258,6 +262,8 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
           item.content_index.push_back({i, 0});
         } 
         ++item.content_index.back().second;
+        auto& coarse_type_freq = coarse_type_freqs[it->second];
+        ++coarse_type_freq[p.second];
       }
       for (auto p: extracted_snippets[i]) {
         flow::string::Replace("\"", "", &p.first);
@@ -275,6 +281,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
           entity_items.push_back({p.first, p.second, 0, 0,
                                   ontology.LhsFrequency(ontology_id),
                                   0.0f, {}, {}});
+          coarse_type_freqs.push_back({{0, 0, 0, 0}});
         }
         EntityItem& item = entity_items[it->second];
         ++item.snippet_freq;
@@ -283,7 +290,21 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
           item.snippet_index.push_back({i, 0});
         }
         ++item.snippet_index.back().second;
+        auto& coarse_type_freq = coarse_type_freqs[it->second];
+        ++coarse_type_freq[p.second];
       }
+    }
+    #pragma omp parallel for
+    for (size_t i = 0; i < entity_items.size(); ++i) {
+      Entity::Type best_type = Entity::kPersonType;
+      int best_freq = coarse_type_freqs[i][0];
+      for (int j = 1; j < 4; ++j) {
+        if (coarse_type_freqs[i][j] > best_freq) {
+          best_type = static_cast<Entity::Type>(j);
+          best_freq = coarse_type_freqs[i][j];
+        }
+      }
+      entity_items[i].coarse_type = best_type;
     }
   }
   end_time = Clock();
@@ -300,7 +321,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   // (content-freq, snippet-freq, score, total-frequency).
   std::unordered_map<string, tuple<int, int, int, int>> content_entities;
   static const float max_log_lhs_freq = 25.0f;
-  for (size_t i = 0; i < num_items; ++i) {
+  for (int i = 0; i < num_items; ++i) {
     for (auto e: extracted_content[i]) {
       std::transform(e.first.begin(), e.first.end(), e.first.begin(),
           ::tolower);
@@ -374,12 +395,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     return false;
   };
 
-  response_stream << ",\"top_entities\":[";
   // Find the top candidates.
   const size_t num_top = 20;
   size_t current_num = 0;
   std::unordered_map<string, int> entities;
-  string top_candidates;
   while (current_num < num_top && index.QueueSize()) {
     Entity entity = index.PopTop();
     if (entities.count(entity.name) || IsSimilarToQuery(entity.name) ||
@@ -387,24 +406,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       // DLOG(INFO) << "Filtered entity: " << entity.name;
       continue;
     }
-    top_candidates += (top_candidates.size() ? ", ": "") + entity.name;
-    if (current_num) {
-      response_stream << ",";
-    }
     ++current_num;
     entities.insert({entity.name, entity.score});
     const string entity_key = entity.name + ":" + Entity::TypeName(entity.type);
     const auto it = content_entities.find(entity_key);
     LOG_IF(FATAL, it == content_entities.end()) << "Unkown entity top scored";
-    response_stream << "[\"" << entity.name
-                    << "\"," << get<0>(it->second)
-                    << "," << get<1>(it->second)
-                    << "," << entity.score
-                    << "," << get<3>(it->second) << "]";
     get<2>(it->second) = entity.score;
   }
-  response_stream << "],\"entities\":[]";  // << JsonArray(content_entities);
-
   end_time = Clock();
 
   response_stream << ",\"entity_ranking\":{"
@@ -527,7 +535,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   }
   end_time = Clock();
 
-  LOG(INFO) << "Top candidates: " << top_candidates;
   LOG(INFO) << "Target types: " << JsonArray(target_types);
   LOG(INFO) << "Freebase target types: " << JsonArray(fb_target_types);
   response_stream << ",\"semantic_query\":{"
