@@ -174,10 +174,11 @@ function PreFilter(entity) {
     }
     for (var i = 0; i < query_words.length; ++i) {
       for (var j = 0; j < entity_words.length; ++j) {
+        var ped = 0;
         if (query_words[i].length > entity_words[j].length) {
-          var ped = PrefixEditDistance(entity_words[j], query_words[i]);
+          ped = PrefixEditDistance(entity_words[j], query_words[i]);
         } else {
-          var ped = PrefixEditDistance(query_words[i], entity_words[j]);
+          ped = PrefixEditDistance(query_words[i], entity_words[j]);
         }
         if (ped <= Math.min(query_words[i].length, entity_words[j].length) / 3) {
           ++num_similar;
@@ -273,7 +274,7 @@ function Callback(data, status, xhr) {
       ["Entity Extraction", data.entity_extraction.duration / 1000],
       ["Entity Ranking", data.entity_ranking.duration / 1000],
       ["Semantic Query Construction", data.semantic_query.duration / 1000]];
-  drawPerformanceChart(durations, data.duration / 1000);
+  UpdatePerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
   query = data.query_analysis.keywords.slice(0).join(" ");
   for (var i in data.query_analysis.target_keywords) { 
@@ -356,7 +357,7 @@ function Callback(data, status, xhr) {
   $("#fb-target-types").html(fb_target_types);
 }
 
-function drawPerformanceChart(durations, total) {
+function UpdatePerformanceChart(durations, total) {
   var data = google.visualization.arrayToDataTable(durations);
   var options = {
     backgroundColor: {fill: "transparent", stroke: "#f4f8f7", strokeWidth: 4},

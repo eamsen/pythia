@@ -57,10 +57,10 @@ vector<string> QueryAnalyser::Keywords(const string& query,
 
   size_t pos = 0;
   vector<string> keywords;
-  string u_query = query;
-  // We need a first upper case letter for the POS-tagger.
-  u_query[0] = std::toupper(u_query[0]); 
-  vector<Tagger::Tag> tags = tagger_.Tags(u_query);
+  // We need a first upper case letter and punctuation for the POS-tagger.
+  string prop_query = query + ".";
+  prop_query[0] = std::toupper(prop_query[0]); 
+  vector<Tagger::Tag> tags = tagger_.Tags(prop_query);
   for (auto beg = tags.cbegin(), end = tags.cend(), it = beg; it != end; ++it) {
     const int label = it->label;
     if (IsNN(label) || IsJJ(label)) {
