@@ -523,6 +523,7 @@ function FilterEntities() {
         best_type[1] = type;
       }
     }
+    console.log(type_scores);
     for (var i = 0; i < k; ++i) {
       var entity = entities[i];
       var name = entity[0];
@@ -599,7 +600,7 @@ function UpdateEntityChart() {
     if (filtered) {
       continue;
     }
-    if (score < avg_score * 0.7) {
+    if (score < avg_score * 0.7 || score < ex_score[1] * 0.3) {
       break;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
