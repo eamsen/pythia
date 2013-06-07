@@ -297,18 +297,26 @@ function TypeInfoCallback(data, status, xhr) {
   var best_type = [Number.MIN_VALUE, "unknown"];
   var k = data.yago_types.length;
   for (var i = 0; i < data.yago_types.length; ++i) {
+    var entity_score = 0;
     var entity_name = data.yago_types[i][0];
     var yago_types = data.yago_types[i][1];
+    for (var j = i; j < entities.length; ++j) {
+      if (entities[j][0] == entity_name) {
+        entity_score = entities[j][5];
+        break;
+      }
+    }
     for (var j = 0; j < yago_types.length; ++j) {
-      if (yago_types[j][1] > 1700000 ||
-          yago_types[j][1] < 400000 ||
-          yago_types[j][0].length > 20) {
+      if (// yago_types[j][1] > 2400000 ||
+          // yago_types[j][1] < 100 ||
+          yago_types[j][0].length > 18) {
         continue;
       }
       if (type_scores[yago_types[j][0]] == undefined) {
         type_scores[yago_types[j][0]] = [0, yago_types[j][1]];
       }
-      type_scores[yago_types[j][0]][0] += (k - i);
+      var itf = 1 / (yago_types[j][1] + 10000) / Math.log(yago_types[j][1] + 100);
+      type_scores[yago_types[j][0]][0] += entity_score * itf;
       var score = type_scores[yago_types[j][0]][0];
       if (score > best_type[0]) {
         best_type[0] = score;
@@ -523,7 +531,6 @@ function FilterEntities() {
         best_type[1] = type;
       }
     }
-    console.log(type_scores);
     for (var i = 0; i < k; ++i) {
       var entity = entities[i];
       var name = entity[0];
