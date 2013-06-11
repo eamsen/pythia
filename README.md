@@ -3,8 +3,8 @@
 By Eugen Sawin <esawin@me73.com>.
 
 ## Description
-Pythia is an experimental platform for semantic web search with keyword
-queries.
+Pythia is an experimental platform for **semantic web search** with **keyword
+queries**.
 
 The goal is to translate keyword queries, as typically used with full-text
 search engines, to semantic queries suitable as input for semantic search
