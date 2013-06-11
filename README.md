@@ -2,13 +2,28 @@
 **A Semantic Web Oracle.**   
 By Eugen Sawin <esawin@me73.com>.
 
-## Version
-Currently, this is used as an experimental platform to convert keyword queries
-to structured queries suitable for semantic search engines. Essentially, it
-is an entity retrieval system with suprisingly good results for some queries.
-To support agile
-development and high flexibility, the pipeline is kept simple and mostly
-undocumented until certain features, that have proved valuable, have stabilized.
+## Description
+Pythia is an experimental platform for semantic web search with keyword
+queries.
+
+The goal is to translate keyword queries, as typically used with full-text
+search engines, to semantic queries suitable as input for semantic search
+engines with high confidence.
+
+The hybrid approach combines full-text search and natural language
+processing to provide the best search experience.
+
+## Required Data
+The hybrid approach requires a **full-text index** and **knowledge base**.
+
+Currently, the full-text search is conducted via the *Google Custom Search API*,
+avoiding the requirement for an index pipeline. Likewise the *Freebase API* is
+used for a lightweight access to entity data, in addition to an offline format
+of the *YAGO database*.
+
+Due to its huge size, the ontology index is not included in this repository, but
+will be
+made available online to allow for reproduction of the system and results.
 
 ## Requirements
 * POSIX.1b-compliant operating system (support for librt)
