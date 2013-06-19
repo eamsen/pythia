@@ -1,0 +1,10 @@
+moons-of-saturn                           $1 is-a Moon_(Object); $1 occurs-with saturn
+hiv-positive-people                       $1 is-a Person; $1 occurs-with hiv|aids diagnos*|positive|died|death
+victoria-cross-recipients                 $1 is-a Person; $1 occurs-with recipient|receive* $2; $2 equals Victoria_Cross
+whitecap-fc-players                       $1 is-a Person; $1 occurs-with play*|sign* $2; $2 equals Vancouver_Whitecaps_FC
+premiers-of-bc                            $1 is-a Person; $1 occurs-with premier* $2; $2 equals British_Columbia
+first-ladies-of-the-united-states         $1 is-a First_Lady; $1 occurs-with united states
+aol-acquisitions                          $1 is-a Company; $1 occurs-with acqui* america*|aol online|aol
+nations-at-the-winter-olympic-games       $1 is-a Country; $1 occurs-with participat*|compete*|represent* $2; $2 equals Winter_Olympic_Games
+san-jose-sharks-players                   $1 is-a Player; $1 occurs-with play*|sign*|trade* $2; $2 equals San_Jose_Sharks
+governors-of-bombay                       $1 is-a Governor; $1 occurs-with bombay

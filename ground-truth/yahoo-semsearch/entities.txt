@@ -1,0 +1,430 @@
+apollo-astronauts-walked-moon             Neil_Armstrong
+apollo-astronauts-walked-moon             Buzz_Aldrin
+apollo-astronauts-walked-moon             Pete_Conrad
+apollo-astronauts-walked-moon             Alan_Bean
+apollo-astronauts-walked-moon             Alan_Shepard
+apollo-astronauts-walked-moon             Edgar_Mitchell
+apollo-astronauts-walked-moon             David_Scott
+apollo-astronauts-walked-moon             James_Irwin
+apollo-astronauts-walked-moon             John_Young_(astronaut)
+apollo-astronauts-walked-moon             Charles_Duke
+apollo-astronauts-walked-moon             Eugene_Cernan
+apollo-astronauts-walked-moon             Harrison_Schmitt
+
+arab-states-persian-gulf                  Bahrain
+arab-states-persian-gulf                  Kuwait
+arab-states-persian-gulf                  Oman
+arab-states-persian-gulf                  Qatar
+arab-states-persian-gulf                  Saudi_Arabia
+arab-states-persian-gulf                  United_Arab_Emirates
+
+astronauts-landed-moon                    Neil_Armstrong
+astronauts-landed-moon                    Buzz_Aldrin
+astronauts-landed-moon                    Pete_Conrad
+astronauts-landed-moon                    Alan_Bean
+astronauts-landed-moon                    Alan_Shepard
+astronauts-landed-moon                    Edgar_Mitchell
+astronauts-landed-moon                    David_Scott
+astronauts-landed-moon                    James_Irwin
+astronauts-landed-moon                    John_Young_(astronaut)
+astronauts-landed-moon                    Charles_Duke
+astronauts-landed-moon                    Eugene_Cernan
+astronauts-landed-moon                    Harrison_Schmitt
+
+axis-powers-world-war-II                  Nazi_Germany
+axis-powers-world-war-II                  Empire_of_Japan
+axis-powers-world-war-II                  Kingdom_of_Italy_(1861–1946)
+
+boroughs-new-york-city                    Manhattan
+boroughs-new-york-city                    The_Bronx
+boroughs-new-york-city                    Brooklyn
+boroughs-new-york-city                    Queens_County,_New_York
+boroughs-new-york-city                    Staten_Island
+
+branches-us-military                      United_States_Army
+branches-us-military                      United_States_Marine_Corps
+branches-us-military                      United_States_Navy
+branches-us-military                      United_States_Air_Force
+branches-us-military                      United_States_Coast_Guard
+
+continents-in-the-world                   Africa
+continents-in-the-world                   Europe
+continents-in-the-world                   Asia
+continents-in-the-world                   North_America
+continents-in-the-world                   South_America
+continents-in-the-world                   Antarctica
+continents-in-the-world                   Australia_(continent)
+
+nicole-kidman-siblings                    Antonia_Kidman
+
+dioceses-church-of-ireland                Diocese_of_Armagh_(Church_of_Ireland)
+dioceses-church-of-ireland                Diocese_of_Clogher_(Church_of_Ireland)
+dioceses-church-of-ireland                Diocese_of_Connor_(Church_of_Ireland)
+dioceses-church-of-ireland                Diocese_of_Derry_and_Raphoe
+dioceses-church-of-ireland                Diocese_of_Down_and_Dromore
+dioceses-church-of-ireland                Diocese_of_Kilmore,_Elphin_and_Ardagh
+dioceses-church-of-ireland                Diocese_of_Tuam,_Killala_and_Achonry
+dioceses-church-of-ireland                Diocese_of_Dublin_and_Glendalough
+dioceses-church-of-ireland                Diocese_of_Cashel_and_Ossory
+dioceses-church-of-ireland                Diocese_of_Cork,_Cloyne_and_Ross
+dioceses-church-of-ireland                Diocese_of_Limerick_and_Killaloe
+dioceses-church-of-ireland                Diocese_of_Meath_and_Kildare
+dioceses-church-of-ireland                Roman_Catholic_Archdiocese_of_Armagh
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Ardagh_and_Clonmacnoise
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Clogher
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Derry
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Kilmore
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Meath
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Raphoe
+dioceses-church-of-ireland                Roman_Catholic_Archdiocese_of_Cashel_and_Emly
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Cloyne
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Cork_and_Ross
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Kerry
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Killaloe
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Limerick
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Waterford_and_Lismore
+dioceses-church-of-ireland                Roman_Catholic_Archdiocese_of_Dublin
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Ferns
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Kildare_and_Leighlin
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Ossory
+dioceses-church-of-ireland                Roman_Catholic_Archdiocese_of_Tuam
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Achonry
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Clonfert
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Elphin
+dioceses-church-of-ireland                Saint_Francis_National_School
+dioceses-church-of-ireland                Roman_Catholic_Diocese_of_Killala
+
+first-targets-of-the-atomic-bomb          Kokura
+first-targets-of-the-atomic-bomb          Hiroshima
+first-targets-of-the-atomic-bomb          Nagasaki
+
+five-great-epics-tamil-literature         Silappatikaram
+five-great-epics-tamil-literature         Manimekalai
+five-great-epics-tamil-literature         Civaka_Cintamani
+five-great-epics-tamil-literature         Valayapathi
+five-great-epics-tamil-literature         Kundalakesi
+
+gods-dwelt-mount-olympus                  Zeus
+gods-dwelt-mount-olympus                  Hera
+gods-dwelt-mount-olympus                  Poseidon
+gods-dwelt-mount-olympus                  Demeter
+gods-dwelt-mount-olympus                  Dionysus
+gods-dwelt-mount-olympus                  Apollo
+gods-dwelt-mount-olympus                  Artemis
+gods-dwelt-mount-olympus                  Hermes
+gods-dwelt-mount-olympus                  Athena
+gods-dwelt-mount-olympus                  Ares
+gods-dwelt-mount-olympus                  Aphrodite
+gods-dwelt-mount-olympus                  Hephaestus
+
+henry-iis-brothers-and-sisters            Geoffrey,_Count_of_Nantes
+henry-iis-brothers-and-sisters            William_FitzEmpress
+henry-iis-brothers-and-sisters            Hamelin_Plantagenet
+
+hijackers-september-11                    Mohamed_Atta
+hijackers-september-11                    Waleed_al-Shehri
+hijackers-september-11                    Wail_al-Shehri
+hijackers-september-11                    Abdulaziz_al-Omari
+hijackers-september-11                    Satam_al-Suqami
+hijackers-september-11                    Marwan_al-Shehhi
+hijackers-september-11                    Fayez_Banihammad
+hijackers-september-11                    Mohand_al-Shehri
+hijackers-september-11                    Hamza_al-Ghamdi
+hijackers-september-11                    Ahmed_al-Ghamdi
+hijackers-september-11                    Hani_Hanjour
+hijackers-september-11                    Khalid_al-Mihdhar
+hijackers-september-11                    Majed_Moqed
+hijackers-september-11                    Nawaf_al-Hazmi
+hijackers-september-11                    Salem_al-Hazmi
+hijackers-september-11                    Ziad_Jarrah
+hijackers-september-11                    Ahmed_al-Haznawi
+hijackers-september-11                    Ahmed_al-Nami
+hijackers-september-11                    Saeed_al-Ghamdi
+
+houses-russian-parliament                 State_Duma
+houses-russian-parliament                 Federation_Council_of_Russia
+
+john-lennon-parents                       Alfred_Lennon
+john-lennon-parents                       Julia_Lennon
+
+kenyas-captain-cricket                    Collins_Obuya
+kenyas-captain-cricket                    Jimmy_Kamande
+kenyas-captain-cricket                    Maurice_Odumbe
+kenyas-captain-cricket                    Aasif_Karim
+kenyas-captain-cricket                    Steve_Tikolo
+kenyas-captain-cricket                    Thomas_Odoyo
+kenyas-captain-cricket                    Maurice_Ouma
+kenyas-captain-cricket                    Tom_Tikolo
+kenyas-captain-cricket                    Ragheb_Aga
+
+kublai-khan-siblings                      Ariq_Böke
+kublai-khan-siblings                      Hulagu_Khan
+kublai-khan-siblings                      Möngke_Khan
+
+lilly-allen-parents                       Alison_Owen
+lilly-allen-parents                       Keith_Allen_(actor)
+
+major-leagues-united-states               Major_League_Baseball
+major-leagues-united-states               National_Basketball_Association
+major-leagues-united-states               National_Football_League
+major-leagues-united-states               National_Hockey_League
+major-leagues-united-states               Arena_Football_League
+major-leagues-united-states               Major_League_Lacrosse
+major-leagues-united-states               National_Lacrosse_League
+major-leagues-united-states               Major_League_Soccer
+major-leagues-united-states               Women's_National_Basketball_Association
+
+matt-berry-tv-series                      Portlandia_(TV_series)
+matt-berry-tv-series                      Shooting_Stars
+matt-berry-tv-series                      Aqua_Teen_Hunger_Force
+matt-berry-tv-series                      The_IT_Crowd
+matt-berry-tv-series                      Five_Daughters
+matt-berry-tv-series                      The_Wrong_Door
+matt-berry-tv-series                      The_Peter_Serafinowicz_Show
+matt-berry-tv-series                      Saxondale
+matt-berry-tv-series                      Man_to_Man_with_Dean_Learner
+matt-berry-tv-series                      Snuff_Box
+matt-berry-tv-series                      The_Mighty_Boosh_(TV_series)
+matt-berry-tv-series                      Garth_Marenghi's_Darkplace
+
+members-u2                                Bono
+members-u2                                The_Edge
+members-u2                                Adam_Clayton
+members-u2                                Larry_Mullen,_Jr.
+
+movies-starring-erykah-badu               House_of_D
+movies-starring-erykah-badu               The_Cider_House_Rules_(film)
+movies-starring-erykah-badu               Blues_Brothers_2000
+movies-starring-erykah-badu               Re:GENERATION_music_project
+movies-starring-erykah-badu               Teenage_Paparazzo
+movies-starring-erykah-badu               Before_the_Music_Dies
+movies-starring-erykah-badu               Dave_Chappelle's_Block_Party
+
+movies-starring-joe-frazier               Home_of_Angels
+movies-starring-joe-frazier               Facing_Ali
+movies-starring-joe-frazier               Rocky
+
+movies-starring-rafael-rosell             Ang_Tanging_Ina_Mo:_Last_na_'To!
+movies-starring-rafael-rosell             Working_Girls_(2010_film)
+movies-starring-rafael-rosell             Ang_Darling_Kong_Aswang
+movies-starring-rafael-rosell             In_My_Life_(2009_film)
+movies-starring-rafael-rosell             When_Love_Begins
+movies-starring-rafael-rosell             D'_Lucky_Ones
+movies-starring-rafael-rosell             Dreamboy
+movies-starring-rafael-rosell             Pinay_Pie
+
+nations-portuguese-official-language      Angola
+nations-portuguese-official-language      Brazil
+nations-portuguese-official-language      Cape_Verde
+nations-portuguese-official-language      Guinea-Bissau
+nations-portuguese-official-language      Mozambique
+nations-portuguese-official-language      Portugal
+nations-portuguese-official-language      East_Timor
+nations-portuguese-official-language      Macau
+nations-portuguese-official-language      SÃ£o_TomÃ©_and_PrÃ­ncipe
+nations-portuguese-official-language      Equatorial_Guinea
+
+orders-choirs-angels                      Archangel
+orders-choirs-angels                      Seraph
+orders-choirs-angels                      Cherub
+orders-choirs-angels                      Thrones
+orders-choirs-angels                      Angel
+orders-choirs-angels                      Living_creatures_(Bible)
+orders-choirs-angels                      Ophanim
+orders-choirs-angels                      Er'el
+orders-choirs-angels                      Hashmallim
+orders-choirs-angels                      Elohim
+orders-choirs-angels                      Sons_of_God
+
+permanent-members-un-security-council     France
+permanent-members-un-security-council     United_Kingdom
+permanent-members-un-security-council     United_States
+permanent-members-un-security-council     People's_Republic_of_China
+permanent-members-un-security-council     Russian_Federation
+
+presidents-mount-rushmore-shooting        Abraham_Lincoln
+
+provinces-territories-canada              Alberta
+provinces-territories-canada              British_Columbia
+provinces-territories-canada              Manitoba
+provinces-territories-canada              Newfoundland_and_Labrador
+provinces-territories-canada              Northwest_Territories
+provinces-territories-canada              Nova_Scotia
+provinces-territories-canada              Ontario
+provinces-territories-canada              Prince_Edward_Island
+provinces-territories-canada              Quebec
+provinces-territories-canada              Saskatchewan
+provinces-territories-canada              Yukon
+provinces-territories-canada              New_Brunswick
+provinces-territories-canada              Nunavut
+
+ratt-albums                               Dancing_Undercover
+ratt-albums                               Invasion_of_Your_Privacy
+ratt-albums                               Out_of_the_Cellar
+ratt-albums                               Ratt_(album)
+ratt-albums                               Reach_for_the_Sky_(Ratt_album)
+ratt-albums                               Detonator_(album)
+ratt-albums                               Collage_(Ratt_album)
+ratt-albums                               Infestation_(album)
+
+republics-former-yugoslavia               Socialist_Republic_of_Macedonia
+republics-former-yugoslavia               Socialist_Republic_of_Montenegro
+republics-former-yugoslavia               Socialist_Republic_of_Slovenia
+republics-former-yugoslavia               Socialist_Republic_of_Serbia
+republics-former-yugoslavia               Socialist_Republic_of_Bosnia_and_Herzegovina
+republics-former-yugoslavia               Socialist_Republic_of_Croatia
+
+revolutionaries-1959-cuba                 Che_Guevara
+revolutionaries-1959-cuba                 Camilo_Cienfuegos
+revolutionaries-1959-cuba                 Fidel_Castro
+revolutionaries-1959-cuba                 Raúl_Castro
+
+standard-axioms-set-theory                Axiom_of_Choice
+standard-axioms-set-theory                Axiom_schema_of_predicative_separation
+standard-axioms-set-theory                Axiom_of_Regularity
+standard-axioms-set-theory                Axiom_schema_of_replacement
+standard-axioms-set-theory                Axiom_of_Infinity
+standard-axioms-set-theory                Axiom_of_power_set
+standard-axioms-set-theory                Axiom_of_union
+standard-axioms-set-theory                Axiom_of_pairing
+standard-axioms-set-theory                Axiom_schema_of_separation
+standard-axioms-set-theory                Axiom_of_empty_set
+standard-axioms-set-theory                Axiom_of_Extensionality
+
+states-border-oklahoma                    Arkansas
+states-border-oklahoma                    Missouri
+states-border-oklahoma                    Colorado
+states-border-oklahoma                    New_mexico
+states-border-oklahoma                    Texas
+states-border-oklahoma                    Kansas
+
+ten-ancient-greek-city-kingdoms-cyprus    Lapithos
+ten-ancient-greek-city-kingdoms-cyprus    Marion,_Cyprus
+ten-ancient-greek-city-kingdoms-cyprus    Paphos
+ten-ancient-greek-city-kingdoms-cyprus    Salamis,_Cyprus
+ten-ancient-greek-city-kingdoms-cyprus    Soli,_Cyprus
+ten-ancient-greek-city-kingdoms-cyprus    Kourion
+ten-ancient-greek-city-kingdoms-cyprus    Chytri
+ten-ancient-greek-city-kingdoms-cyprus    Citium
+ten-ancient-greek-city-kingdoms-cyprus    Amathus
+ten-ancient-greek-city-kingdoms-cyprus    Idalium
+ten-ancient-greek-city-kingdoms-cyprus    Ledra
+ten-ancient-greek-city-kingdoms-cyprus    Tamassos
+ten-ancient-greek-city-kingdoms-cyprus    Kyrenia
+
+first-13-american-states                  Delaware
+first-13-american-states                  Pennsylvania
+first-13-american-states                  New_Jersey
+first-13-american-states                  Georgia_(U.S._state)
+first-13-american-states                  Connecticut
+first-13-american-states                  Massachusetts
+first-13-american-states                  Maryland
+first-13-american-states                  South_Carolina
+first-13-american-states                  New_Hampshire
+first-13-american-states                  Virginia
+first-13-american-states                  New_York
+first-13-american-states                  North_Carolina
+first-13-american-states                  Rhode_Island
+
+four-companions-prophet                   Abu_Bakr
+four-companions-prophet                   Umar
+four-companions-prophet                   Uthman_ibn_Affan
+four-companions-prophet                   Ali
+
+twelve-tribes-israel                      Tribe_of_Issachar
+twelve-tribes-israel                      Tribe_of_Menasheh
+twelve-tribes-israel                      Tribe_of_Ephraim
+twelve-tribes-israel                      Tribe_of_Levi
+twelve-tribes-israel                      Tribe_of_Benjamin
+twelve-tribes-israel                      Tribe_of_Dan
+twelve-tribes-israel                      Tribe_of_Judah
+twelve-tribes-israel                      Tribe_of_Joseph
+twelve-tribes-israel                      Tribe_of_Naphtali
+twelve-tribes-israel                      Tribe_of_Gad
+twelve-tribes-israel                      Tribe_of_Asher
+twelve-tribes-israel                      Tribe_of_Zebulun
+twelve-tribes-israel                      Tribe_of_Simeon
+twelve-tribes-israel                      Tribe_of_Reuben
+
+books-paul-of-tarsus                      Epistle_to_the_Romans
+books-paul-of-tarsus                      1_Corinthians
+books-paul-of-tarsus                      2_Corinthians
+books-paul-of-tarsus                      Epistle_to_the_Galatians
+books-paul-of-tarsus                      Ephesians
+books-paul-of-tarsus                      Philippians
+books-paul-of-tarsus                      Colossians
+books-paul-of-tarsus                      1_Thessalonians
+books-paul-of-tarsus                      2_Thessalonians
+books-paul-of-tarsus                      1_Timothy
+books-paul-of-tarsus                      2_Timothy
+books-paul-of-tarsus                      Epistle_to_Titus
+books-paul-of-tarsus                      Epistle_to_Philemon
+books-paul-of-tarsus                      Book_of_Acts
+
+languages-afghanistan                     Dari_(Eastern_Persian)
+languages-afghanistan                     Pashto_language
+languages-afghanistan                     Uzbek_language
+languages-afghanistan                     Turkmen_language
+languages-afghanistan                     Balochi_language
+languages-afghanistan                     Pashayi_language
+languages-afghanistan                     Nuristani_languages
+languages-afghanistan                     Askunu_language
+languages-afghanistan                     Kamkata-viri_language
+languages-afghanistan                     Vasi-vari_language
+languages-afghanistan                     Tregami_language
+languages-afghanistan                     Waigali_language
+languages-afghanistan                     Pamir_languages
+languages-afghanistan                     Shughni_language
+languages-afghanistan                     Munji_language
+languages-afghanistan                     Sanglechi_language
+languages-afghanistan                     Ishkashimi_language
+languages-afghanistan                     Wakhi_language
+languages-afghanistan                     Yidgha_language
+languages-afghanistan                     Brahui_language
+languages-afghanistan                     Hindko_language
+languages-afghanistan                     Kyrgyz_language
+languages-afghanistan                     Persian_language
+
+tv-shows-thomas-jane                      On_Air_with_Ryan_Seacrest_(TV_series)
+tv-shows-thomas-jane                      The_Rosie_O'Donnell_Show
+tv-shows-thomas-jane                      She-Wolf_of_London
+tv-shows-thomas-jane                      Anatomy_of_a_Scene
+tv-shows-thomas-jane                      HBO_First_Look
+tv-shows-thomas-jane                      Jimmy_Kimmel_Live!
+tv-shows-thomas-jane                      Medium_(TV_series)
+tv-shows-thomas-jane                      Entertainment_Tonight
+tv-shows-thomas-jane                      Space_Top_10_Countdown
+tv-shows-thomas-jane                      Arrested_Development_(TV_series)
+tv-shows-thomas-jane                      Last_Call_with_Carson_Daly
+tv-shows-thomas-jane                      Hung_(TV_series)
+
+british-monarch-head-of-state             Antigua_and_Barbuda
+british-monarch-head-of-state             Australia
+british-monarch-head-of-state             The_Bahamas
+british-monarch-head-of-state             Barbados
+british-monarch-head-of-state             Belize
+british-monarch-head-of-state             Canada
+british-monarch-head-of-state             Grenada
+british-monarch-head-of-state             Jamaica
+british-monarch-head-of-state             New_Zealand
+british-monarch-head-of-state             Papua_New_Guinea
+british-monarch-head-of-state             Saint_Kitts_and_Nevis
+british-monarch-head-of-state             Saint_Lucia
+british-monarch-head-of-state             Saint_Vincent_and_the_Grenadines
+british-monarch-head-of-state             Solomon_Islands
+british-monarch-head-of-state             Tuvalu
+british-monarch-head-of-state             United_Kingdom
+
+founder-stumbleupon                       Garrett_Camp
+
+jacki-weaver-spouses                      Derryn_Hinch
+
+inventor-python                           Guido_van_Rossum
+
+wonders-ancient-world                     Colossus_of_Rhodes
+wonders-ancient-world                     Great_Pyramid_of_Giza
+wonders-ancient-world                     Mausoleum_at_Halicarnassus
+wonders-ancient-world                     Temple_of_Artemis
+wonders-ancient-world                     Hanging_Gardens_of_Babylon
+wonders-ancient-world                     Lighthouse_of_Alexandria
+wonders-ancient-world                     Statue_of_Zeus_at_Olympia

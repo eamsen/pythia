@@ -1,0 +1,46 @@
+apollo-astronauts-walked-moon             $1 is-a Astronaut; $1 occurs-with walk* moon*
+arab-states-persian-gulf                  $1 is-a Country; $1 occurs-with arab state persian gulf
+astronauts-landed-moon                    $1 is-a Astronaut; $1 occurs-with landed moon*
+axis-powers-world-war-II                  $1 is-a Country; $1 occurs-with axis power $2; $2 equals World_War_II
+boroughs-new-york-city                    $1 is-a Borough; $1 occurs-with borough locat* $2; $2 equals New_York_City
+branches-us-military                      $1 is-a Service; $1 occurs-with branch united states military
+continents-in-the-world                   $1 is-a Continent; $1 occurs-with world continent
+nicole-kidman-siblings                    $1 is-a Person; $1 occurs-with sibling|brother|sister $2; $2 equals Nicole_Kidman
+dioceses-church-of-ireland                $1 is-a Entity; $1 occurs-with diocese church ireland
+first-targets-of-the-atomic-bomb          $1 is-a Location; $1 occurs-with dropped atomic bomb
+five-great-epics-tamil-literature         $1 is-a Epic_Poem; $1 occurs-with tamil literature*
+gods-dwelt-mount-olympus                  $1 is-a Deity; $1 occurs-with mount olympus
+henry-iis-brothers-and-sisters            $1 is-a Person; $1 occurs-with sibling|brother|sister $2; $2 equals Henry_II_of_England
+hijackers-september-11                    $1 is-a Person; $1 occurs-with hijack* $2; $2 equals Hijackers_in_the_September_11_attacks
+houses-russian-parliament                 $1 is-a Legislature; $1 occurs-with house* russian parliament
+john-lennon-parents                       $1 is-a Person; $1 occurs-with father|mother $2; $2 equals John_Lennon
+kenyas-captain-cricket                    $1 is-a Cricketer; $1 occurs-with kenya* captain*
+kublai-khan-siblings                      $1 is-a Person; $1 occurs-with sibling|brother|sister $2; $2 equals Kublai_Khan
+lilly-allen-parents                       $1 is-a Person; $1 occurs-with father|mother $2; $2 equals Lily_Allen
+major-leagues-united-states               $1 is-a League; $1 occurs-with major* $2; $2 equals United_States
+matt-berry-tv-series                      $1 is-a Series; $1 occurs-with matt berry
+members-u2                                $1 is-a Person; $1 occurs-with member* $2; $2 equals U2
+movies-starring-erykah-badu               $1 is-a Movie; $1 occurs-with appear*|acted|role*|star* $2; $2 equals Erykah_Badu
+movies-starring-joe-frazier               $1 is-a Movie; $1 occurs-with appear*|acted|role*|star* $2; $2 equals Joe_Frazier
+movies-starring-rafael-rosell             $1 is-a Movie; $1 occurs-with appear*|acted|role*|star* $2; $2 equals Rafael_Rosell
+nations-portuguese-official-language      $1 is-a Country; $1 has-official-language $2; $2 equals Portuguese_language
+orders-choirs-angels                      $1 is-a Angel; $1 occurs-with hierarchy angel*
+permanent-members-un-security-council     $1 is-a Country; $1 occurs-with permanent member security council united nations
+presidents-mount-rushmore-shooting        $1 is-a President; $1 occurs-with depict* mount rushmore; $1 occurs-with shooting
+provinces-territories-canada              $1 is-a Country; $1 occurs-with province|territory located $2; $2 equals Canada
+ratt-albums                               $1 is-a Album; $1 occurs-with produc*|record*|publish* $2; $2 equals Ratt
+republics-former-yugoslavia               $1 is-a Country; $1 occurs-with republic former $2; $2 equals Socialist_Federal_Republic_of_Yugoslavia
+revolutionaries-1959-cuba                 $1 is-a Revolutionist; $1 occurs-with 1959 cuba*
+standard-axioms-set-theory                $1 is-a Maxim; $1 occurs-with set theory
+states-border-oklahoma                    $1 is-a Country; $1 occurs-with border $2; $2 equals Oklahoma
+ten-ancient-greek-city-kingdoms-cyprus    $1 is-a City; $1 occurs-with greek ancient cyprus*
+first-13-american-states                  $1 is-a Country; $1 occurs-with state united states america
+four-companions-prophet                   $1 is-a Person; $1 occurs-with companion* islamic prophet
+twelve-tribes-israel                      $1 is-a Tribe; $1 occurs-with twelve israel*
+books-paul-of-tarsus                      $1 is-a Book; $1 occurs-with write*|wrote*|written -not $2; $2 equals Paul_of_Tarsus
+languages-afghanistan                     $1 is-a Language; $1 occurs-with spoken|speak* afghanistan
+tv-shows-thomas-jane                      $1 is-a Show_(Entertainment); $1 occurs-with appear*|role*|occur* $2; $2 equals Thomas_Jane
+british-monarch-head-of-state             $1 is-a Country; $1 occurs-with monarch $2; $2 equals Elizabeth_II_of_the_United_Kingdom
+jacki-weaver-spouses                      $1 is-a Person; $1 occurs-with spouse|marr* $2; $2 equals Jacki_Weaver
+inventor-python                           $1 is-a Person; $1 occurs-with invent*|author python language
+wonders-ancient-world                     $1 is-a Building; $1 occurs-with wonder* ancient world
