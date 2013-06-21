@@ -15,15 +15,20 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <flow/clock.h>
+#include <flow/string.h>
 #include <string>
 #include <vector>
 #include <ostream>
 #include <fstream>
+#include <sstream>
 #include "./request-handler-factory.h"
 #include "../io/serialize.h"
 
 using std::string;
 using std::vector;
+using std::stringstream;
+using std::ifstream;
+using std::ofstream;
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPServer;
 using Poco::Net::HTTPServerParams;
@@ -40,10 +45,13 @@ namespace pyt {
 namespace net {
 
 DEFINE_string(api, "api.txt", "Google API key + CX file.");
+DEFINE_string(groundtruthdir, "ground-truth", "Ground truth directory.");
 DEFINE_string(webcache, "cache/web.bin", "HTML-content cache.");
 DEFINE_string(ontologycache, "cache/ontology.bin", "Ontology index cache.");
 DEFINE_string(keywordcache, "cache/keywords.bin", "Full text index cache.");
 DEFINE_string(entitycache, "cache/entity.bin", "Extracted entities cache.");
+DEFINE_string(groundtruthcache, "cache/ground-truth.bin",
+    "Ground truth index cache.");
 
 Server::Server(const string& name, const string& version,
                const string& doc_path, const uint16_t port,
@@ -72,96 +80,163 @@ Server::Server(const string& name, const string& version,
   fb_base_ = "/freebase/v1/search?limit=20&lang=en&key=";
   fb_base_ += api_key_ + "&query=";
 
+  // Load ground truth.
+  {
+    ThreadClock start_time;
+    ifstream bin_stream(FLAGS_groundtruthcache);
+    if (bin_stream) {
+      // Load binary ground truth index.
+      io::Read(bin_stream, &ground_truth_);
+      LOG(INFO) << "Read binary ground truth index ["
+          << ThreadClock() - start_time << "]";
+    } else {
+      // Construct ground truth index from text files.
+      for (int i = 0; i < 10; ++i) {
+        ifstream stream(FLAGS_groundtruthdir + "/entities-" + std::to_string(i));
+        if (!stream) {
+          continue;
+        }
+        stringstream json;
+        json << "[";
+        string prev_query;
+        while (stream.good()) {
+          string query;
+          stream >> query;
+
+          string entity;
+          stream >> entity;
+
+          flow::string::Replace("-", " ", &query);
+          flow::string::Replace("_", " ", &entity);
+
+          if (query.empty() || entity.empty()) {
+            continue;
+          }
+
+          if (query != prev_query) {
+            if (prev_query.size()) {
+              json << "],";
+            }
+            json << "[\"" << query << "\",";
+          } else if (prev_query.size()) {
+            json << ",";
+          }
+          json << "\"" << entity << "\"";
+          prev_query.swap(query);
+        }
+        if (prev_query.size()) {
+          json << "]";
+        }
+        json << "]";
+        LOG(INFO) << json.str();
+        ground_truth_.insert({std::to_string(i), json.str()});
+      }
+      ofstream out_bin_stream(FLAGS_groundtruthcache);
+      io::Write(ground_truth_, out_bin_stream);
+      LOG(INFO) << "Constructed ground truth index ["
+          << ThreadClock() - start_time << "]";
+    }
+  }
+
   // Load web cache.
-  std::ifstream web_cache_stream(FLAGS_webcache);
-  if (web_cache_stream) {
-    io::Read(web_cache_stream, &web_cache_);
+  {
+    ifstream stream(FLAGS_webcache);
+    if (stream) {
+      io::Read(stream, &web_cache_);
+    }
   }
 
   // Load entity cache.
-  std::ifstream entity_cache_stream(FLAGS_entitycache);
-  if (entity_cache_stream) {
-    // TODO(esawin): Fix serialization (flow) first.
-    // io::Read(entity_cache_stream, &entity_cache_);
+  {
+    ifstream stream(FLAGS_entitycache);
+    if (stream) {
+      // TODO(esawin): Fix serialization (flow) first.
+      // io::Read(entity_cache_stream, &entity_cache_);
+    }
   }
 
   // Load keyword frequencies.
-  std::ifstream keyword_bin_stream(FLAGS_keywordcache);
-  if (keyword_bin_stream) {
-    // Load keyword frequencies from cached binary format.
-    io::Read(keyword_bin_stream, &sum_keyword_freqs_);
-    io::Read(keyword_bin_stream, &keyword_freqs_);
-    LOG(INFO) << "Keyword index loaded from " << FLAGS_keywordcache << ".";
-  } else {
-    // Load keyword frequencies from text file.
-    sum_keyword_freqs_ = 0;
-    std::ifstream keyword_stream("data/word-frequencies.txt");
-    string line;
-    while (getline(keyword_stream, line)) {
-      std::stringstream ss(line);
-      string word;
-      ss >> word;
-      std::transform(word.begin(), word.end(), word.begin(), ::tolower);
-      uint32_t freq;
-      ss >> freq;
-      keyword_freqs_[word] += freq;
-      sum_keyword_freqs_ += freq;
-    }
-    std::ofstream keyword_bin_stream(FLAGS_keywordcache);
-    if (keyword_bin_stream) {
-      ThreadClock begtime;
-      io::Write(sum_keyword_freqs_, keyword_bin_stream);
-      io::Write(keyword_freqs_, keyword_bin_stream);
-      LOG(INFO) << "Keyword frequencies ("
-                << keyword_freqs_.size() << "/" << sum_keyword_freqs_
-                << ") saved to " << FLAGS_keywordcache << ".";
+  {
+    ifstream bin_stream(FLAGS_keywordcache);
+    if (bin_stream) {
+      // Load keyword frequencies from cached binary format.
+      io::Read(bin_stream, &sum_keyword_freqs_);
+      io::Read(bin_stream, &keyword_freqs_);
+      LOG(INFO) << "Keyword index loaded from " << FLAGS_keywordcache << ".";
     } else {
-      LOG(ERROR) << "Could not save keyword index to " << FLAGS_keywordcache
-                 << ".";
+      // Load keyword frequencies from text file.
+      sum_keyword_freqs_ = 0;
+      ifstream stream("data/word-frequencies.txt");
+      string line;
+      while (getline(stream, line)) {
+        stringstream ss(line);
+        string word;
+        ss >> word;
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+        uint32_t freq;
+        ss >> freq;
+        keyword_freqs_[word] += freq;
+        sum_keyword_freqs_ += freq;
+      }
+      std::ofstream out_bin_stream(FLAGS_keywordcache);
+      if (out_bin_stream) {
+        ThreadClock start_time;
+        io::Write(sum_keyword_freqs_, out_bin_stream);
+        io::Write(keyword_freqs_, out_bin_stream);
+        LOG(INFO) << "Keyword frequencies ("
+                  << keyword_freqs_.size() << "/" << sum_keyword_freqs_
+                  << ") saved to " << FLAGS_keywordcache << ".";
+      } else {
+        LOG(ERROR) << "Could not save keyword index to " << FLAGS_keywordcache
+                   << ".";
+      }
     }
   }
+
   // Construct ontology index.
-  std::ifstream ontology_bin_stream(FLAGS_ontologycache);
-  if (ontology_bin_stream) {
-    // Load ontology index from cached binary format.
-    ThreadClock begtime;
-    ontology_index_.Load(ontology_bin_stream);
-    LOG(INFO) << "Ontology index loaded from " << FLAGS_ontologycache
-              << " [" << ThreadClock() - begtime << "].";
-  } else {
-    static const std::unordered_set<string> ontology_filter = {};
-        // {"entity", "abstraction", "object", "physicalentity"};
-    // Construct ontology from text file.
-    ThreadClock begtime;
-    std::ifstream ontology_stream("data/ontology-is-a.txt");
-    int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(ontology_stream,
-        ontology_filter, &ontology_index_);
-    LOG(INFO) << "Indexed " << num_triples << " ontology triples"
-              << " [" << ThreadClock() - begtime << "].";
-    std::ifstream ontology_scores_stream("data/ontology.entity-scores.txt");
-    pyt::nlp::OntologyIndex::ParseScoresFromCsv(ontology_scores_stream,
-        &ontology_index_);
-    std::ofstream ontology_bin_stream(FLAGS_ontologycache);
-    if (ontology_bin_stream) {
-      ThreadClock begtime;
-      ontology_index_.Save(ontology_bin_stream);
-      LOG(INFO) << "Ontology index saved to " << FLAGS_ontologycache
-                << " [" << ThreadClock() - begtime << "].";
+  {
+    ifstream bin_stream(FLAGS_ontologycache);
+    if (bin_stream) {
+      // Load ontology index from cached binary format.
+      ThreadClock start_time;
+      ontology_index_.Load(bin_stream);
+      LOG(INFO) << "Ontology index loaded from " << FLAGS_ontologycache
+                << " [" << ThreadClock() - start_time << "]";
     } else {
-      LOG(ERROR) << "Could not save ontology index to " << FLAGS_ontologycache
-                 << ".";
+      static const std::unordered_set<string> ontology_filter = {};
+          // {"entity", "abstraction", "object", "physicalentity"};
+      // Construct ontology from text file.
+      ThreadClock start_time;
+      ifstream stream("data/ontology-is-a.txt");
+      int num_triples = pyt::nlp::OntologyIndex::ParseFromCsv(stream,
+          ontology_filter, &ontology_index_);
+      LOG(INFO) << "Indexed " << num_triples << " ontology triples"
+                << " [" << ThreadClock() - start_time << "]";
+      ifstream scores_stream("data/ontology.entity-scores.txt");
+      pyt::nlp::OntologyIndex::ParseScoresFromCsv(scores_stream,
+          &ontology_index_);
+      ofstream out_bin_stream(FLAGS_ontologycache);
+      if (out_bin_stream) {
+        ThreadClock start_time;
+        ontology_index_.Save(out_bin_stream);
+        LOG(INFO) << "Ontology index saved to " << FLAGS_ontologycache
+                  << " [" << ThreadClock() - start_time << "]";
+      } else {
+        LOG(ERROR) << "Could not save ontology index to " << FLAGS_ontologycache
+                   << ".";
+      }
     }
   }
 }
 
 Server::~Server() {
-  std::ofstream web_cache_stream(FLAGS_webcache);
+  ofstream web_cache_stream(FLAGS_webcache);
   if (web_cache_stream) {
     io::Write(web_cache_, web_cache_stream);
   } else {
     LOG(ERROR) << "Could not save web cache to " << FLAGS_webcache << ".";
   }
-  std::ofstream entity_cache_stream(FLAGS_entitycache);
+  ofstream entity_cache_stream(FLAGS_entitycache);
   if (entity_cache_stream) {
     // TODO(esawin): Fix serialization (flow) first.
     // io::Write(entity_cache_, entity_cache_stream);
@@ -197,6 +272,15 @@ const string& Server::SearchBase() const {
 
 const string& Server::FreebaseBase() const {
   return fb_base_;
+}
+
+const string& Server::GroundTruth(const string& path) const {
+  static const string kEmpty = "[]";
+  const auto it = ground_truth_.find(path);
+  if (it == ground_truth_.end()) {
+    return kEmpty;
+  }
+  return it->second;
 }
 
 const Tagger& Server::Tagger() const {

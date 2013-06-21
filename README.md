@@ -100,7 +100,7 @@ For debugging, use the debug version:
 
     make debug
 
-## Using
+## Usage
 To start Pythia use:
 
     ./pythia

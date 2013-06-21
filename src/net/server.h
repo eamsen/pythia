@@ -27,6 +27,7 @@ class Server: public Poco::Util::ServerApplication {
   const std::string& SearchHost() const;
   const std::string& SearchBase() const;
   const std::string& FreebaseBase() const;
+  const std::string& GroundTruth(const std::string& path) const;
   const pyt::nlp::Tagger& Tagger() const;
   const pyt::nlp::OntologyIndex& OntologyIndex() const;
   const uint32_t SumKeywordFreqs() const;
@@ -57,6 +58,7 @@ class Server: public Poco::Util::ServerApplication {
   std::unordered_map<std::string,
       std::vector<std::pair<std::string, pyt::nlp::Entity::Type>>> entity_cache_;
   std::unordered_map<std::string, uint32_t> keyword_freqs_;
+  std::unordered_map<std::string, std::string> ground_truth_;
   uint32_t sum_keyword_freqs_;
 };
 

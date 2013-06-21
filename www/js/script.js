@@ -104,6 +104,7 @@ function SetOptionFunc(opt, i) {
     UpdateEntityTable();
     UpdateEntityChart();
     UpdateSemanticQuery();
+    EvaluateResults();
   };
 }
 
@@ -308,7 +309,7 @@ function TypeInfoCallback(data, status, xhr) {
     }
     for (var j = 0; j < yago_types.length; ++j) {
       if (// yago_types[j][1] > 2400000 ||
-          // yago_types[j][1] < 100 ||
+          yago_types[j][1] < 50 ||
           yago_types[j][0].length > 18) {
         continue;
       }
@@ -324,7 +325,7 @@ function TypeInfoCallback(data, status, xhr) {
       }
     }
   }
-  console.log(type_scores);
+  // console.log(type_scores);
   console.log(best_type);
 }
 
@@ -391,6 +392,7 @@ function SearchCallback(data, status, xhr) {
   UpdateEntityTable();
   UpdateEntityChart();
   UpdateSemanticQuery();
+  EvaluateResults();
 
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;
@@ -401,10 +403,7 @@ function SearchCallback(data, status, xhr) {
     var type = data.semantic_query.target_types[i][0];
     var score = data.semantic_query.target_types[i][1];
     var total_freq = data.semantic_query.target_types[i][2];
-    if (i > 0) {
-      yago_target_types += ", ";
-    }
-    yago_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
+    yago_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span> ";
   }
   $("#yago-target-types").html(yago_target_types);
   var fb_target_types = "";
@@ -412,10 +411,7 @@ function SearchCallback(data, status, xhr) {
     var type = data.semantic_query.fb_target_types[i][0];
     var score = data.semantic_query.fb_target_types[i][1];
     var total_freq = data.semantic_query.fb_target_types[i][2];
-    if (i > 0) {
-      fb_target_types += ", ";
-    }
-    fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span>";
+    fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span> ";
   }
   $("#fb-target-types").html(fb_target_types);
 }
@@ -448,6 +444,17 @@ function UpdatePerformanceChart(durations, total) {
     hAxis: {textStyle: {color: "#f4f8f7"}}
   };
   chart.draw(data, options);
+}
+
+function EvaluateResults() {
+  $.ajax({url: server + "/ground-truth/",
+    data: "0",
+    dataType: "json",
+    success: GroundTruthRequestCallback});
+}
+
+function GroundTruthRequestCallback(data, status, xhr) {
+  console.log(data);
 }
 
 function ScoreEntities() {
@@ -589,7 +596,7 @@ function UpdateEntityChart() {
   }
 
   var array = [["Entity", "Content Frequency",
-        "Snippet Frequency", "Entity Frequency (relative)",
+        "Snippet Frequency", "Corpus Frequency (relative)",
         "Score (relative)"]];
   var score_div = ex_content_freq[1] / ex_score[1];
   var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
