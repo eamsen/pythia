@@ -454,7 +454,11 @@ function EvaluateResults() {
 }
 
 function GroundTruthRequestCallback(data, status, xhr) {
-  console.log(data);
+  var gt = data.ground_truth;
+  for (var i = 0; i < gt.length; ++i) {
+    var query = gt[i][0];
+    console.log(gt[i]);
+  }
 }
 
 function ScoreEntities() {

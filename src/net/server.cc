@@ -108,6 +108,8 @@ Server::Server(const string& name, const string& version,
 
           flow::string::Replace("-", " ", &query);
           flow::string::Replace("_", " ", &entity);
+          std::transform(entity.begin(), entity.end(), entity.begin(),
+              ::tolower);
 
           if (query.empty() || entity.empty()) {
             continue;
