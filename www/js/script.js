@@ -33,6 +33,16 @@ var scoring_options = {
   fb_type_filter: 0,
 };
 
+var ground_truth = {
+  valid: false,
+  data: [],
+};
+
+var evaluation = {
+  valid: false,
+  next: 0,
+};
+
 // Array.prototype.move = function(old_index, new_index) {
 //   if (new_index >= this.length) {
 //     var k = new_index - this.length;
@@ -68,7 +78,7 @@ function UserQuery(q) {
   if (q) {
     document.getElementById("query").value = q.toLowerCase(); 
   }
-  return document.getElementById('query').value; 
+  return document.getElementById("query").value; 
 }
 
 function UrlQuery(q) {
@@ -98,12 +108,12 @@ function SetOptionFunc(opt, i) {
       scoring_options[opt] = 1.0 - ev.value;
     }
     $.cookie("scoring_options", scoring_options);
-    ScoreEntities();
-    SortEntities();
-    FilterEntities();
-    UpdateEntityTable();
-    UpdateEntityChart();
-    UpdateSemanticQuery();
+    ScoreEntities(entities);
+    SortEntities(entities);
+    FilterEntities(entities);
+    UpdateEntityTable(entities);
+    UpdateEntityChart(entities);
+    UpdateSemanticQuery(entities);
     EvaluateResults();
   };
 }
@@ -117,10 +127,13 @@ function InitSliders() {
   InitVSlider("sdfw", scoring_options.sdfw, SetOptionFunc("sdfw"));
 }
 
-function Search() {
-  UserQuery(UserFormat(UrlQuery()));
+function Search(query, opts) {
+  if (opts == undefined) {
+    opts = "";
+  }
+  opts += "&" + ServerOptions();
   $.ajax({url: server + "/",
-    data: "qf=" + UrlQuery() + "&" + ServerOptions(),
+    data: "qf=" + query + opts, 
     dataType: "json",
     success: SearchCallback});
 }
@@ -251,11 +264,11 @@ function Score(entity) {
   return score;
 }
 
-function UpdateSemanticQuery() {
+function UpdateSemanticQuery(entities) {
   QueryTypeInfo(entities);
 }
 
-function UpdateEntityTable() {
+function UpdateEntityTable(entities) {
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -330,6 +343,10 @@ function TypeInfoCallback(data, status, xhr) {
 }
 
 function SearchCallback(data, status, xhr) {
+  if (data.eval) {
+    UpdateEvaluation(data);
+    return;
+  }
   var durations = [["Procedure", "Duration [ms]"],
       // ["Total", data.duration / 1000],
       ["Query Analysis", data.query_analysis.duration / 1000],
@@ -386,12 +403,12 @@ function SearchCallback(data, status, xhr) {
   $("#result-area").html(documents);
 
   entities = data.entity_extraction.entity_items;
-  ScoreEntities();
-  SortEntities();
-  FilterEntities();
-  UpdateEntityTable();
-  UpdateEntityChart();
-  UpdateSemanticQuery();
+  ScoreEntities(entities);
+  SortEntities(entities);
+  FilterEntities(entities);
+  UpdateEntityTable(entities);
+  UpdateEntityChart(entities);
+  UpdateSemanticQuery(entities);
   EvaluateResults();
 
   var broccoli_query = "";
@@ -446,7 +463,33 @@ function UpdatePerformanceChart(durations, total) {
   chart.draw(data, options);
 }
 
-function EvaluateResults() {
+function EvaluateResults(init) {
+  if (init == undefined) {
+    init = true;
+    evaluation.valid = false;
+    evaluation.next = 0;
+  }
+  if (!ground_truth.valid) {
+    GroundTruthRequest();
+  } else if (evaluation.valid) {
+    return;
+  } else {
+    if (evaluation.next >= ground_truth.data.length) {
+      evaluation.valid = true;
+      evaluation.next = 0;
+    } else {
+      Search(ground_truth.data[evaluation.next][0], "&eval=1");
+      ++evaluation.next;
+    }
+  }
+}
+
+function UpdateEvaluation(data) {
+  // console.log(data);
+  EvaluateResults(false);
+}
+
+function GroundTruthRequest() {
   $.ajax({url: server + "/ground-truth/",
     data: "0",
     dataType: "json",
@@ -454,14 +497,12 @@ function EvaluateResults() {
 }
 
 function GroundTruthRequestCallback(data, status, xhr) {
-  var gt = data.ground_truth;
-  for (var i = 0; i < gt.length; ++i) {
-    var query = gt[i][0];
-    console.log(gt[i]);
-  }
+  ground_truth.data = data.ground_truth;
+  ground_truth.valid = true;
+  EvaluateResults();
 }
 
-function ScoreEntities() {
+function ScoreEntities(entities) {
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_sfscore = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -508,7 +549,7 @@ function ScoreEntities() {
   }
 }
 
-function SortEntities(i) {
+function SortEntities(entities, i) {
   if (i == undefined) {
     i = 5;
   }
@@ -517,7 +558,7 @@ function SortEntities(i) {
   });
 }
 
-function FilterEntities() {
+function FilterEntities(entities) {
   if (scoring_options.coarse_type_filter) {
     var k = Math.min(10, entities.length);
     var type_scores = {misc: -0.1};
@@ -567,7 +608,7 @@ function ExpMovAvg(scores, k) {
   return ema;
 }
 
-function UpdateEntityChart() {
+function UpdateEntityChart(entities) {
   var k = Math.min(20, entities.length);
   
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -730,7 +771,7 @@ $(document).ready(
       window.location.pathname = "";
     }
     if (UrlQuery()) {
-      Search();
+      Search(UserQuery(UserFormat(UrlQuery())));
     }
   }
 );

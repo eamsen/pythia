@@ -79,7 +79,6 @@ void GroundTruthRequestHandler::Handle(Request* request, Response* response) {
   response_stream << "{\"duration\":" << duration.Value()
       << ",\"ground_truth\":" << ground_truth
       << "}";
-  LOG(INFO) << ground_truth;
 }
 
 }  // namespace net

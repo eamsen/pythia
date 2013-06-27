@@ -135,7 +135,11 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
 
   end_time = Clock();
 
-  response_stream << "{\"query_analysis\":{"
+  response_stream << "{";
+  if (query.Text("eval") != "") {
+    response_stream << "\"eval\":" << query.Text("eval") << ",";
+  }
+  response_stream << "\"query_analysis\":{"
       << "\"duration\":" << (end_time - start_time).Value() << ","
       << "\"query\":" << JsonArray(query.Words("qf")) << ","
       << "\"keywords\":" << JsonArray(keywords) << ","
