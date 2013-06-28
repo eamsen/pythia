@@ -409,7 +409,6 @@ function SearchCallback(data, status, xhr) {
   UpdateEntityTable(entities);
   UpdateEntityChart(entities);
   UpdateSemanticQuery(entities);
-  EvaluateResults();
 
   var broccoli_query = "";
   broccoli_query += data.semantic_query.broccoli_query;
@@ -486,6 +485,9 @@ function EvaluateResults(init) {
 
 function UpdateEvaluation(data) {
   // console.log(data);
+  entities = data.entity_extraction.entity_items;
+  ScoreEntities(entities);
+  SortEntities(entities);
   EvaluateResults(false);
 }
 
@@ -773,6 +775,7 @@ $(document).ready(
     if (UrlQuery()) {
       Search(UserQuery(UserFormat(UrlQuery())));
     }
+    EvaluateResults();
   }
 );
 
