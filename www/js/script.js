@@ -2,7 +2,7 @@
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 
 var options = {
-  v: "0.1",
+  v: "0.1.2",
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
@@ -10,6 +10,7 @@ var options = {
   show_scoring: false,
   show_entity_chart: false,
   show_entity_table: false,
+  show_evaluation: false,
   show_documents: false
 };
 
@@ -108,7 +109,7 @@ function SetOptionFunc(opt, i) {
       scoring_options[opt] = 1.0 - ev.value;
     }
     $.cookie("scoring_options", scoring_options);
-    ScoreEntities(entities);
+    ScoreEntities(query, entities);
     SortEntities(entities);
     FilterEntities(entities);
     UpdateEntityTable(entities);
@@ -183,7 +184,7 @@ function PrefixEditDistance(prefix, word) {
   return min_dist;
 }
 
-function PreFilter(entity) {
+function PreFilter(query, entity) {
   if (scoring_options.ontology_filter &&
       entity[4] == 0) {
     return false;
@@ -231,9 +232,9 @@ function PreFilter(entity) {
 function PostFilter(entity) {
 }
 
-function Score(entity) {
+function Score(query, entity) {
   var score = {filtered: false, cf: 0.0, sf: 0.0, cdf: 0.0, sdf: 0.0};
-  if (!PreFilter(entity)) {
+  if (!PreFilter(query, entity)) {
     score.filtered = true;
     // return score;
   }
@@ -343,7 +344,7 @@ function TypeInfoCallback(data, status, xhr) {
 }
 
 function SearchCallback(data, status, xhr) {
-  if (data.eval) {
+  if (data.eval !== undefined) {
     UpdateEvaluation(data);
     return;
   }
@@ -403,7 +404,7 @@ function SearchCallback(data, status, xhr) {
   $("#result-area").html(documents);
 
   entities = data.entity_extraction.entity_items;
-  ScoreEntities(entities);
+  ScoreEntities(query, entities);
   SortEntities(entities);
   FilterEntities(entities);
   UpdateEntityTable(entities);
@@ -477,17 +478,50 @@ function EvaluateResults(init) {
       evaluation.valid = true;
       evaluation.next = 0;
     } else {
-      Search(ground_truth.data[evaluation.next][0], "&eval=1");
+      Search(ground_truth.data[evaluation.next][0], "&eval=" + evaluation.next);
       ++evaluation.next;
     }
   }
 }
 
 function UpdateEvaluation(data) {
-  // console.log(data);
-  entities = data.entity_extraction.entity_items;
-  ScoreEntities(entities);
+  var entities = data.entity_extraction.entity_items;
+  var query = data.query_analysis.keywords.slice(0).join(" ");
+  ScoreEntities(query, entities);
   SortEntities(entities);
+  var table = $("#evaluation-table").html();
+  if (data.eval == 0) {
+    table = "<thead><tr>" +
+      "<th>Query</th>" +
+      "<th>Recall</th>" +
+      "<th>Precision</th>" +
+      "</tr></thead><tbody>";
+  } else {
+    table = table.substr(0, table.length - 8);
+  }
+  var relevant = {};
+  var num_rel = ground_truth.data[data.eval].length - 1;
+  var recall = 0;
+  var precision = 0;
+  for (var i = 1; i < num_rel + 1; ++i) {
+    relevant[ground_truth.data[data.eval][i]] = 0;
+  }
+  for (var i = 0; i < entities.length; ++i) {
+    var name = entities[i][0];
+    var filtered = entities[i][8];
+    if (!filtered && relevant[name] == 0) {
+      relevant[name] = i + 1;
+      ++recall;
+    }
+  }
+  recall /= num_rel;
+  table += "<tr><td>" + ground_truth.data[data.eval][0] + "</td>" +
+    "<td>" + recall + "</td>" +
+    "<td>" + precision + "</td>" +
+    "</tr>";
+  table += "</tbody>";
+  $("#evaluation-table").html(table);
+  ApplySortability();
   EvaluateResults(false);
 }
 
@@ -504,7 +538,7 @@ function GroundTruthRequestCallback(data, status, xhr) {
   EvaluateResults();
 }
 
-function ScoreEntities(entities) {
+function ScoreEntities(query, entities) {
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_sfscore = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -518,7 +552,7 @@ function ScoreEntities(entities) {
     var content_freq = entities[i][2];
     var snippet_freq = entities[i][3];
     var corpus_freq = entities[i][4];
-    var score = Score(entities[i]);
+    var score = Score(query, entities[i]);
     scores.push(score);
     var doc_freq = entities[i][6].length;
     ex_content_freq[0] = Math.min(ex_content_freq[0], content_freq);
@@ -713,6 +747,10 @@ function UpdateOptions(elem, show) {
     options.show_entity_table = show;
     return;
   }
+  if (elem.indexOf("Evaluation") != -1) {
+    options.show_evaluation = show;
+    return;
+  }
   if (elem.indexOf("Documents") != -1) {
     options.show_documents = show;
     return;
@@ -740,6 +778,9 @@ function UseOptions() {
   }
   if (options.show_entity_table) {
     $("#entity-table-toggle").click();
+  }
+  if (options.show_evaluation) {
+    $("#evaluation-toggle").click();
   }
   if (options.show_documents) {
     $("#documents-toggle").click();
