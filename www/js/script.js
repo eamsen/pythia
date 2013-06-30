@@ -300,7 +300,7 @@ function UpdateEntityTable(entities) {
       "<td>" + snippet_freq + "</td>" +
       "<td>" + doc_freq + "</td>" +
       "<td>" + corpus_freq + "</td>" +
-      "<td>" + score + "</td></tr>";
+      "<td>" + score.toFixed(3) + "</td></tr>";
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
@@ -477,6 +477,7 @@ function EvaluateResults(init) {
     if (evaluation.next >= ground_truth.data.length) {
       evaluation.valid = true;
       evaluation.next = 0;
+      ApplySortability();
     } else {
       Search(ground_truth.data[evaluation.next][0], "&eval=" + evaluation.next);
       ++evaluation.next;
@@ -494,7 +495,8 @@ function UpdateEvaluation(data) {
     table = "<thead><tr>" +
       "<th>Query</th>" +
       "<th>Recall</th>" +
-      "<th>Precision</th>" +
+      "<th>P@10</th>" +
+      "<th>P@R</th>" +
       "</tr></thead><tbody>";
   } else {
     table = table.substr(0, table.length - 8);
@@ -502,7 +504,8 @@ function UpdateEvaluation(data) {
   var relevant = {};
   var num_rel = ground_truth.data[data.eval].length - 1;
   var recall = 0;
-  var precision = 0;
+  var precision_10 = 0;
+  var precision_r = 0;
   for (var i = 1; i < num_rel + 1; ++i) {
     relevant[ground_truth.data[data.eval][i]] = 0;
   }
@@ -512,16 +515,24 @@ function UpdateEvaluation(data) {
     if (!filtered && relevant[name] == 0) {
       relevant[name] = i + 1;
       ++recall;
+      if (i < 10) {
+        ++precision_10;
+      }
+      if (i < num_rel) {
+        ++precision_r;
+      }
     }
   }
   recall /= num_rel;
+  precision_10 /= 10;
+  precision_r /= num_rel;
   table += "<tr><td>" + ground_truth.data[data.eval][0] + "</td>" +
-    "<td>" + recall + "</td>" +
-    "<td>" + precision + "</td>" +
+    "<td>" + recall.toFixed(3) + "</td>" +
+    "<td>" + precision_10.toFixed(3) + "</td>" +
+    "<td>" + precision_r.toFixed(3) + "</td>" +
     "</tr>";
   table += "</tbody>";
   $("#evaluation-table").html(table);
-  ApplySortability();
   EvaluateResults(false);
 }
 
