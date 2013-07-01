@@ -108,6 +108,12 @@ Server::Server(const string& name, const string& version,
 
           flow::string::Replace("-", " ", &query);
           flow::string::Replace("_", " ", &entity);
+          const size_t entity_end = entity.find("(");
+          if (entity_end != string::npos) {
+            LOG(INFO) << entity;
+            entity = entity.substr(0, entity_end - 1);
+            LOG(INFO) << entity;
+          }
           std::transform(entity.begin(), entity.end(), entity.begin(),
               ::tolower);
 
@@ -130,7 +136,6 @@ Server::Server(const string& name, const string& version,
           json << "]";
         }
         json << "]";
-        LOG(INFO) << json.str();
         ground_truth_.insert({std::to_string(i), json.str()});
       }
       ofstream out_bin_stream(FLAGS_groundtruthcache);
