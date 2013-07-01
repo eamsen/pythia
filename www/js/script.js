@@ -522,6 +522,7 @@ function UpdateEvaluation(data) {
   evaluation.precisions_10[data.eval] = precision_10;
   evaluation.precisions_r[data.eval] = precision_r;
   var table_header = "<thead><tr>" +
+    "<th>Id</th>" +
     "<th>Query</th>" +
     "<th>Recall</th>" +
     "<th>P@10</th>" +
@@ -545,14 +546,16 @@ function UpdateEvaluation(data) {
         function(v1, v2) { return v1 + v2; }
     ) / num;
     table = table.substr(0, table_header.length) +
-      "<tr class=\"error\"><td>MEAN</td>" +
+      "<tr class=\"error\">" + "<td>0</td>" + 
+      "<td>MEAN</td>" +
       "<td>" + avg_recall.toFixed(3) + "</td>" +
       "<td>" + avg_precision_10.toFixed(3) + "</td>" +
       "<td>" + avg_precision_r.toFixed(3) + "</td>" +
       "</tr>" + table.substr(table_header.length);
   }
 
-  table += "<tr><td>" + ground_truth.data[data.eval][0] + "</td>" +
+  table += "<tr><td>" + (data.eval + 1) + "</td>" + 
+    "<td>" + ground_truth.data[data.eval][0] + "</td>" +
     "<td>" + recall.toFixed(3) + "</td>" +
     "<td>" + precision_10.toFixed(3) + "</td>" +
     "<td>" + precision_r.toFixed(3) + "</td>" +
