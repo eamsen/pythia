@@ -42,6 +42,9 @@ var ground_truth = {
 var evaluation = {
   valid: false,
   next: 0,
+  recalls: [],
+  precisions_10: [],
+  precisions_r: [],
 };
 
 // Array.prototype.move = function(old_index, new_index) {
@@ -490,17 +493,6 @@ function UpdateEvaluation(data) {
   var query = data.query_analysis.keywords.slice(0).join(" ");
   ScoreEntities(query, entities);
   SortEntities(entities);
-  var table = $("#evaluation-table").html();
-  if (data.eval == 0) {
-    table = "<thead><tr>" +
-      "<th>Query</th>" +
-      "<th>Recall</th>" +
-      "<th>P@10</th>" +
-      "<th>P@R</th>" +
-      "</tr></thead><tbody>";
-  } else {
-    table = table.substr(0, table.length - 8);
-  }
   var relevant = {};
   var num_rel = ground_truth.data[data.eval].length - 1;
   var recall = 0;
@@ -526,6 +518,40 @@ function UpdateEvaluation(data) {
   recall /= num_rel;
   precision_10 /= 10;
   precision_r /= num_rel;
+  evaluation.recalls[data.eval] = recall;
+  evaluation.precisions_10[data.eval] = precision_10;
+  evaluation.precisions_r[data.eval] = precision_r;
+  var table_header = "<thead><tr>" +
+    "<th>Query</th>" +
+    "<th>Recall</th>" +
+    "<th>P@10</th>" +
+    "<th>P@R</th>" +
+    "</tr></thead><tbody>";
+  var table = $("#evaluation-table").html();
+  if (data.eval == 0) {
+    table = table_header;
+  } else {
+    table = table.substr(0, table.length - 8);
+  }
+  if (data.eval == ground_truth.data.length - 1) {
+    var num = ground_truth.data.length;
+    var avg_recall = evaluation.recalls.reduce(
+        function(v1, v2) { return v1 + v2; }
+    ) / num;
+    var avg_precision_10 = evaluation.precisions_10.reduce(
+        function(v1, v2) { return v1 + v2; } 
+    ) / num;
+    var avg_precision_r = evaluation.precisions_r.reduce(
+        function(v1, v2) { return v1 + v2; }
+    ) / num;
+    table = table.substr(0, table_header.length) +
+      "<tr class=\"error\"><td>MEAN</td>" +
+      "<td>" + avg_recall.toFixed(3) + "</td>" +
+      "<td>" + avg_precision_10.toFixed(3) + "</td>" +
+      "<td>" + avg_precision_r.toFixed(3) + "</td>" +
+      "</tr>" + table.substr(table_header.length);
+  }
+
   table += "<tr><td>" + ground_truth.data[data.eval][0] + "</td>" +
     "<td>" + recall.toFixed(3) + "</td>" +
     "<td>" + precision_10.toFixed(3) + "</td>" +
