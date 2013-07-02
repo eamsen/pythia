@@ -35,16 +35,21 @@ var scoring_options = {
 };
 
 var ground_truth = {
+  v: "0.0.1",
   valid: false,
   data: [],
 };
 
 var evaluation = {
+  v: "0.0.2",
   valid: false,
   next: 0,
   recalls: [],
   precisions_10: [],
   precisions_r: [],
+  avg_recall: 0,
+  avg_precision_10: 0,
+  avg_precision_r: 0,
 };
 
 function ServerOptions() {
@@ -456,25 +461,57 @@ function UpdatePerformanceChart(durations, total) {
 }
 
 function EvaluateResults(init) {
-  if (init == undefined) {
-    init = true;
+  if (init === undefined || init == true) {
     evaluation.valid = false;
     evaluation.next = 0;
   }
   if (!ground_truth.valid) {
     GroundTruthRequest();
   } else if (evaluation.valid) {
+    RenderEvaluation(evaluation);
     return;
   } else {
     if (evaluation.next >= ground_truth.data.length) {
       evaluation.valid = true;
       evaluation.next = 0;
+      $.cookie("evaluation", evaluation);
       ApplySortability();
     } else {
       Search(ground_truth.data[evaluation.next][0], "&eval=" + evaluation.next);
       ++evaluation.next;
     }
   }
+}
+
+function RenderEvaluation(evaluation) {
+  var table = "<thead><tr>" +
+    "<th>Id</th>" +
+    "<th>Query</th>" +
+    "<th>Recall</th>" +
+    "<th>P@10</th>" +
+    "<th>P@R</th>" +
+    "</tr></thead>" +
+    "<tr class=\"error\">" + "<td>0</td>" + 
+    "<td>MEAN</td>" +
+    "<td>" + evaluation.avg_recall.toFixed(3) + "</td>" +
+    "<td>" + evaluation.avg_precision_10.toFixed(3) + "</td>" +
+    "<td>" + evaluation.avg_precision_r.toFixed(3) + "</td>";
+
+  for (var i = 0; i < ground_truth.data.length; ++i) {
+    var query = ground_truth.data[i][0];
+    var recall = evaluation.recalls[i];
+    var precision_10 = evaluation.precisions_10[i];
+    var precision_r = evaluation.precisions_r[i];
+
+    table += "<tr><td>" + (i + 1) + "</td>" + 
+      '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
+      "<td>" + recall.toFixed(3) + "</td>" +
+      "<td>" + precision_10.toFixed(3) + "</td>" +
+      "<td>" + precision_r.toFixed(3) + "</td>" +
+      "</tr>";
+  }
+  table += "</tbody>";
+  $("#evaluation-table").html(table);
 }
 
 function UpdateEvaluation(data) {
@@ -522,28 +559,28 @@ function UpdateEvaluation(data) {
     table = table_header;
   } else if (data.eval == ground_truth.data.length - 1) {
     var num = ground_truth.data.length;
-    var avg_recall = evaluation.recalls.reduce(
+    evaluation.avg_recall = evaluation.recalls.reduce(
         function(v1, v2) { return v1 + v2; }
     ) / num;
-    var avg_precision_10 = evaluation.precisions_10.reduce(
+    evaluation.avg_precision_10 = evaluation.precisions_10.reduce(
         function(v1, v2) { return v1 + v2; } 
     ) / num;
-    var avg_precision_r = evaluation.precisions_r.reduce(
+    evaluation.avg_precision_r = evaluation.precisions_r.reduce(
         function(v1, v2) { return v1 + v2; }
     ) / num;
     table = table_header +
       "<tr class=\"error\">" + "<td>0</td>" + 
       "<td>MEAN</td>" +
-      "<td>" + avg_recall.toFixed(3) + "</td>" +
-      "<td>" + avg_precision_10.toFixed(3) + "</td>" +
-      "<td>" + avg_precision_r.toFixed(3) + "</td>" +
+      "<td>" + evaluation.avg_recall.toFixed(3) + "</td>" +
+      "<td>" + evaluation.avg_precision_10.toFixed(3) + "</td>" +
+      "<td>" + evaluation.avg_precision_r.toFixed(3) + "</td>" +
       "</tr>" + table.substr(table_header.length);
   } else {
     table = table.substr(0, table.length - 8);
   }
   var query = ground_truth.data[data.eval][0];
   table += "<tr><td>" + (data.eval + 1) + "</td>" + 
-    '<td><a href=\'' + server + '/?q="' + query + '"\'>' + query  + "</a></td>" +
+    '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
     "<td>" + recall.toFixed(3) + "</td>" +
     "<td>" + precision_10.toFixed(3) + "</td>" +
     "<td>" + precision_r.toFixed(3) + "</td>" +
@@ -563,7 +600,7 @@ function GroundTruthRequest() {
 function GroundTruthRequestCallback(data, status, xhr) {
   ground_truth.data = data.ground_truth;
   ground_truth.valid = true;
-  EvaluateResults();
+  EvaluateResults(false);
 }
 
 function ScoreEntities(query, entities) {
@@ -815,26 +852,21 @@ function UseOptions() {
   }
 }
 
-$(document).load(
-  function() {
+function LoadCookie(name) {
+  if ($.cookie(name) == undefined ||
+      $.cookie(name).v == undefined ||
+      $.cookie(name).v < window[name].v) {
+    $.cookie(name, window[name]);
   }
-);
+  window[name] = $.cookie(name);
+}
 
 $(document).ready(
   function() {
     $.cookie.json = true;
-    if (!$.cookie("pythia_options") ||
-        $.cookie("pythia_options").v == undefined ||
-        $.cookie("pythia_options").v < options.v) {
-      $.cookie("pythia_options", options);
-    }
-    if (!$.cookie("scoring_options") ||
-        $.cookie("scoring_options").v == undefined ||
-        $.cookie("scoring_options").v < scoring_options.v) {
-      $.cookie("scoring_options", scoring_options);
-    }
-    options = $.cookie("pythia_options");
-    scoring_options = $.cookie("scoring_options");
+    LoadCookie("options");
+    LoadCookie("scoring_options");
+    LoadCookie("evaluation");
     UseOptions();
     InitSliders();
 
@@ -844,7 +876,7 @@ $(document).ready(
     if (UrlQuery()) {
       Search(UserQuery(UserFormat(UrlQuery())));
     }
-    EvaluateResults();
+    EvaluateResults(false);
   }
 );
 
@@ -870,7 +902,7 @@ $(document).on("click", ".accordion-toggle",
           return old;
         }
         UpdateOptions(old, old.charAt(pos) == '+' ? true : false);
-        $.cookie("pythia_options", options);
+        $.cookie("options", options);
         return old.substr(0, pos) + (old.charAt(pos) == '-' ? '+' : '-') +
             old.substr(pos + 1);
       }
