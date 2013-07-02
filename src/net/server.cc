@@ -110,9 +110,7 @@ Server::Server(const string& name, const string& version,
           flow::string::Replace("_", " ", &entity);
           const size_t entity_end = entity.find("(");
           if (entity_end != string::npos) {
-            LOG(INFO) << entity;
             entity = entity.substr(0, entity_end - 1);
-            LOG(INFO) << entity;
           }
           std::transform(entity.begin(), entity.end(), entity.begin(),
               ::tolower);

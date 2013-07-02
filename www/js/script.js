@@ -520,10 +520,7 @@ function UpdateEvaluation(data) {
   var table = $("#evaluation-table").html();
   if (data.eval == 0) {
     table = table_header;
-  } else {
-    table = table.substr(0, table.length - 8);
-  }
-  if (data.eval == ground_truth.data.length - 1) {
+  } else if (data.eval == ground_truth.data.length - 1) {
     var num = ground_truth.data.length;
     var avg_recall = evaluation.recalls.reduce(
         function(v1, v2) { return v1 + v2; }
@@ -534,17 +531,19 @@ function UpdateEvaluation(data) {
     var avg_precision_r = evaluation.precisions_r.reduce(
         function(v1, v2) { return v1 + v2; }
     ) / num;
-    table = table.substr(0, table_header.length) +
+    table = table_header +
       "<tr class=\"error\">" + "<td>0</td>" + 
       "<td>MEAN</td>" +
       "<td>" + avg_recall.toFixed(3) + "</td>" +
       "<td>" + avg_precision_10.toFixed(3) + "</td>" +
       "<td>" + avg_precision_r.toFixed(3) + "</td>" +
       "</tr>" + table.substr(table_header.length);
+  } else {
+    table = table.substr(0, table.length - 8);
   }
-
+  var query = ground_truth.data[data.eval][0];
   table += "<tr><td>" + (data.eval + 1) + "</td>" + 
-    "<td>" + ground_truth.data[data.eval][0] + "</td>" +
+    '<td><a href=\'' + server + '/?q="' + query + '"\'>' + query  + "</a></td>" +
     "<td>" + recall.toFixed(3) + "</td>" +
     "<td>" + precision_10.toFixed(3) + "</td>" +
     "<td>" + precision_r.toFixed(3) + "</td>" +
