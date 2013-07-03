@@ -104,6 +104,25 @@ struct EntityItem {
   vector<pair<int, int>> snippet_index;
 };
 
+int FilterEntityItems(vector<EntityItem>* items) {
+  static const int kMinDocFreq = 2;
+
+  const int org_size = items->size();
+  int size = org_size;
+  int i = 0;
+  while (i < size) {
+    if (std::max((*items)[i].content_index.size(),
+                 (*items)[i].snippet_index.size()) < kMinDocFreq) {
+      (*items)[i] = items->back();
+      items->pop_back();
+      --size;
+    } else {
+      ++i;
+    }
+  }
+  return org_size - size;
+}
+
 FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
     : server_(static_cast<Server&>(Poco::Util::Application::instance())),
       uri_(uri),
@@ -312,6 +331,9 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     }
   }
   end_time = Clock();
+
+  LOG(INFO) << "Filtered entities: " << FilterEntityItems(&entity_items)
+      << ", now: " << entity_items.size();
 
   // LOG(INFO) << EntityItem::JsonArray(entity_items);
   response_stream << ",\"entity_extraction\":{"
