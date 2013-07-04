@@ -173,15 +173,12 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
     response_it = web_cache.insert({search_url,
         HttpsGetRequest(search_url, timeout)}).first;
   }
+  try {
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_it->second);
   Poco::Dynamic::Var json_data = json_handler.result();
-  {
-    // TODO(esawin): Get linker error otherwise.
-    Poco::JSON::Query json_query(json_data);
-  }
   const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
   const auto items = object->get("items").extract<Poco::JSON::Array::Ptr>();
 
@@ -533,11 +530,11 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
           entity_type_scores[type] += type_score;
         }
       } catch(const Poco::Exception& e) {
-        LOG(WARNING) << e.what();
+        LOG(ERROR) << e.what();
       } catch(const std::exception& e) {
-        LOG(WARNING) << e.what();
+        LOG(ERROR) << e.what();
       } catch (...) {
-        LOG(WARNING) << "Unknown exception occured.";
+        LOG(ERROR) << "Unknown exception occured.";
       }
     }
     const size_t k = std::min(3ul, entity_type_scores.size());
@@ -573,6 +570,13 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       << flow::io::Str(keywords, " ", "", "", "", "", "", "")
       << "\"}";
 
+  } catch(const Poco::Exception& e) {
+    LOG(ERROR) << e.what();
+  } catch(const std::exception& e) {
+    LOG(ERROR) << e.what();
+  } catch (...) {
+    LOG(ERROR) << "Unknown exception occured.";
+  }
   end_time = Clock();
   response_stream << ",\"duration\":"
       << (end_time - request_start_time).Value() << "}";
