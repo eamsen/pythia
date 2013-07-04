@@ -69,7 +69,6 @@ void GroundTruthRequestHandler::Handle(Request* request, Response* response) {
   response->setContentType("text/plain");
   std::ostream& response_stream = response->send();
 
-  auto& web_cache = server_.WebCache();
   const string path = uri_.getQuery();
   LOG(INFO) << "Ground truth request: " << path;
 

@@ -61,8 +61,6 @@ TypeInfoRequestHandler::TypeInfoRequestHandler(const Poco::URI& uri)
       uri_(uri) {}
 
 void TypeInfoRequestHandler::Handle(Request* request, Response* response) {
-  static const int64_t timeout = 3 * 1e6;  // Microseconds.
-
   // Prepare clocks.
   Clock request_start_time;
   Clock start_time;
@@ -78,7 +76,6 @@ void TypeInfoRequestHandler::Handle(Request* request, Response* response) {
   vector<string> entities = flow::string::Split(query_text, "+");
   LOG(INFO) << "Type Info request: " << query_text;
 
-  auto& web_cache = server_.WebCache();
   const OntologyIndex& ontology = server_.OntologyIndex();
 
   response_stream << "{";
