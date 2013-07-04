@@ -22,7 +22,7 @@ var server_options = {
 var entities = [];
 var query = null;
 var scoring_options = {
-  v: "0.1.4",
+  v: "0.1.5",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   cdfw: 0.25,
@@ -32,6 +32,7 @@ var scoring_options = {
   coarse_type_filter: 1,
   yago_type_filter: 0,
   fb_type_filter: 0,
+  entity_clustering: 0,
 };
 
 var ground_truth = {
@@ -41,16 +42,24 @@ var ground_truth = {
 };
 
 var evaluation = {
-  v: "0.0.2",
+  v: "0.0.3",
   valid: false,
   next: 0,
   recalls: [],
   precisions_10: [],
   precisions_r: [],
+  approx_recalls: [],
+  approx_precisions_10: [],
+  approx_precisions_r: [],
   avg_recall: 0,
   avg_precision_10: 0,
   avg_precision_r: 0,
+  avg_approx_recall: 0,
+  avg_approx_precision_10: 0,
+  avg_approx_precision_r: 0,
 };
+
+var value_prec = 2;
 
 function ServerOptions() {
   var o = "";
@@ -181,6 +190,102 @@ function PrefixEditDistance(prefix, word) {
   return min_dist;
 }
 
+function MergeEntities(e1, e2) {
+  var e = [];
+  var num_words1 = e1[0].split(" ").length;
+  var num_words2 = e2[0].split(" ").length;
+  if ((e1[1] == "person" && num_words1 > num_words2 && num_words1 < 5) ||
+      (e1[1] != "person" && e1[2] > e2[2])) {
+    e[0] = e1[0];
+  } else {
+    e[0] = e2[0];
+  }
+  if (e1[2] > e2[2] && e1[1] != "misc") {
+    e[1] = e1[1];
+  } else {
+    e[1] = e2[1];
+  }
+  e[2] = e1[2] + e2[2];
+  e[3] = e1[3] + e2[3];
+  e[4] = e1[4] + e2[4];
+  e[5] = e1[5] + e2[5];
+  e[6] = e1[6].concat(e2[6]);
+  e[7] = e1[7].concat(e2[7]);
+  return e; 
+}
+
+function ClusterEntities(entities) {
+  if (!scoring_options.entity_clustering) {
+    return entities;
+  }
+  var new_entities = new Array(entities, []);
+  var ei = 0;
+  while (new_entities[0].length != new_entities[1].length) {
+    new_entities[1 - ei] = [];
+    var ignore = new Array(new_entities[ei].length);
+    for (var i = 0; i < new_entities[ei].length; ++i) {
+      if (ignore[i]) {
+        continue;
+      }
+      var name = new_entities[ei][i][0].split(" ");
+      for (var j = i + 1; j < new_entities[ei].length; ++j) {
+        var other_name = new_entities[ei][j][0].split(" ");
+        if (IsSimilar(name, other_name)) {
+          new_entities[1 - ei].push(MergeEntities(new_entities[ei][i],
+                                                  new_entities[ei][j]));
+          ignore[j] = true;
+          break;
+        }
+      }
+      if (j == new_entities[ei].length) {
+        new_entities[1 - ei].push(new_entities[ei][i]);
+      }
+    }
+    ei = 1 - ei;
+  }
+  return new_entities[0];
+}
+
+function IsSimilar(words1, words2) {
+  var num_similar = 0;
+  for (var j = 0; j < words1.length; ++j) {
+    if (words1[j].length > 3) {
+      continue;
+    }
+    for (var i = 0; i < words2.length; ++i) {
+      var k = 0;
+      while (i + k < words2.length &&
+             words1[j][k] == words2[i + k][0]) {
+        ++k;
+      }
+      if (k == words1[j].length) {
+        ++num_similar;
+        break;
+      }
+    }
+  }
+  for (var i = 0; i < words2.length; ++i) {
+    if (words2[i].length == 0) {
+      continue;
+    }
+    for (var j = 0; j < words1.length; ++j) {
+      if (words1[j].length == 0) {
+        continue;
+      }
+      var ped = 0;
+      if (words2[i].length > words1[j].length) {
+        ped = PrefixEditDistance(words1[j], words2[i]);
+      } else {
+        ped = PrefixEditDistance(words2[i], words1[j]);
+      }
+      if (ped <= Math.min(words2[i].length, words1[j].length) * 0.3) {
+        ++num_similar;
+      }
+    }
+  }
+  return num_similar > Math.min(words1.length, words2.length) * 0.6;
+}
+
 function PreFilter(query, entity) {
   if (scoring_options.ontology_filter &&
       entity[4] == 0) {
@@ -189,37 +294,7 @@ function PreFilter(query, entity) {
   if (scoring_options.similarity_filter) {
     var entity_words = entity[0].split(" ");
     var query_words = query.split(" ");
-    var num_similar = 0;
-    for (var j = 0; j < entity_words.length; ++j) {
-      if (entity_words[j].length > 3) {
-        continue;
-      }
-      for (var i = 0; i < query_words.length; ++i) {
-        var k = 0;
-        while (i + k < query_words.length &&
-               entity_words[j][k] == query_words[i + k][0]) {
-          ++k;
-        }
-        if (k == entity_words[j].length) {
-          ++num_similar;
-          break;
-        }
-      }
-    }
-    for (var i = 0; i < query_words.length; ++i) {
-      for (var j = 0; j < entity_words.length; ++j) {
-        var ped = 0;
-        if (query_words[i].length > entity_words[j].length) {
-          ped = PrefixEditDistance(entity_words[j], query_words[i]);
-        } else {
-          ped = PrefixEditDistance(query_words[i], entity_words[j]);
-        }
-        if (ped <= Math.min(query_words[i].length, entity_words[j].length) / 3) {
-          ++num_similar;
-        }
-      }
-    }
-    if (num_similar > Math.min(query_words.length, entity_words.length) / 2) {
+    if (IsSimilar(entity_words, query_words)) {
       return false;
     }
   }
@@ -271,10 +346,10 @@ function UpdateEntityTable(entities) {
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_corpus_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
   var entity_table = "<thead><tr><th>Entity</th><th>Coarse Type</th>" +
-    "<th>Content Frequency</th>" +
-    "<th>Snippet Frequency</th>" +
-    "<th>Document Frequency</th>" +
-    "<th>Corpus Frequency</th>" +
+    "<th>Content Freq</th>" +
+    "<th>Snippet Freq</th>" +
+    "<th>Document Freq</th>" +
+    "<th>Corpus Freq</th>" +
     "<th>Score</th>" +
     "</tr></thead><tbody>";
   for (var i in entities) {
@@ -297,7 +372,7 @@ function UpdateEntityTable(entities) {
       "<td>" + snippet_freq + "</td>" +
       "<td>" + doc_freq + "</td>" +
       "<td>" + corpus_freq + "</td>" +
-      "<td>" + score.toFixed(3) + "</td></tr>";
+      "<td>" + score.toFixed(value_prec) + "</td></tr>";
   }
   entity_table += "</tbody>";
   $("#entity-table").html(entity_table);
@@ -341,6 +416,8 @@ function TypeInfoCallback(data, status, xhr) {
 }
 
 function SearchCallback(data, status, xhr) {
+  data.entity_extraction.entity_items =
+      ClusterEntities(data.entity_extraction.entity_items);
   if (data.eval !== undefined) {
     UpdateEvaluation(data);
     return;
@@ -492,22 +569,34 @@ function RenderEvaluation(evaluation) {
     "<th>P@R</th>" +
     "</tr></thead>" +
     "<tr class=\"error\">" + "<td>0</td>" + 
-    "<td>MEAN</td>" +
-    "<td>" + evaluation.avg_recall.toFixed(3) + "</td>" +
-    "<td>" + evaluation.avg_precision_10.toFixed(3) + "</td>" +
-    "<td>" + evaluation.avg_precision_r.toFixed(3) + "</td>";
+    "<td>AVERAGE</td>" +
+    "<td>" + evaluation.avg_recall.toFixed(value_prec) +
+    "<span> [" + evaluation.avg_approx_recall.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td>" + evaluation.avg_precision_10.toFixed(value_prec) +
+    "<span> [" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td>" + evaluation.avg_precision_r.toFixed(value_prec) +
+    "<span> [" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
+    "]</span></td>";
 
   for (var i = 0; i < ground_truth.data.length; ++i) {
     var query = ground_truth.data[i][0];
     var recall = evaluation.recalls[i];
     var precision_10 = evaluation.precisions_10[i];
     var precision_r = evaluation.precisions_r[i];
+    var approx_recall = evaluation.approx_recalls[i];
+    var approx_precision_10 = evaluation.approx_precisions_10[i];
+    var approx_precision_r = evaluation.approx_precisions_r[i];
 
     table += "<tr><td>" + (i + 1) + "</td>" + 
       '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
-      "<td>" + recall.toFixed(3) + "</td>" +
-      "<td>" + precision_10.toFixed(3) + "</td>" +
-      "<td>" + precision_r.toFixed(3) + "</td>" +
+      "<td>" + recall.toFixed(value_prec) +
+      "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
+      "<td>" + precision_10.toFixed(value_prec) +
+      "<span class='red'> [" + approx_precision_10.toFixed(value_prec) + "]</span></td>" +
+      "<td>" + precision_r.toFixed(value_prec) +
+      "<span class='red'> [" + approx_precision_r.toFixed(value_prec) + "]</span></td>" +
       "</tr>";
   }
   table += "</tbody>";
@@ -530,7 +619,7 @@ function UpdateEvaluation(data) {
   for (var i = 0; i < entities.length; ++i) {
     var name = entities[i][0];
     var filtered = entities[i][8];
-    if (!filtered && relevant[name] == 0) {
+    if (!filtered && relevant[name] === 0) {
       relevant[name] = i + 1;
       ++recall;
       if (i < 10) {
@@ -541,12 +630,47 @@ function UpdateEvaluation(data) {
       }
     }
   }
+  var approx_recall = 0;
+  var approx_precision_10 = 0;
+  var approx_precision_r = 0;
+  for (var i = 0; i < entities.length; ++i) {
+    var name = entities[i][0];
+    var name_array = name.split(" ");
+    var filtered = entities[i][8];
+    if (!filtered && relevant[name] === undefined) {
+      for (var j = 1; j < num_rel + 1; ++j) {
+        var truth_name = ground_truth.data[data.eval][j];
+        if (relevant[truth_name] === 0 &&
+            IsSimilar(name_array, truth_name.split(" "))) {
+          relevant[truth_name] = i + 1;
+          ++approx_recall;
+          if (i < 10) {
+            ++approx_precision_10;
+          }
+          if (i < num_rel) {
+            ++approx_precision_r;
+          }
+          break;
+        }
+      }
+    } 
+  }
+  approx_recall = (recall + approx_recall) / num_rel;
+  approx_precision_10 = (precision_10 + approx_precision_10) / 10;
+  approx_precision_r = (precision_r + approx_precision_r) / num_rel;
+
   recall /= num_rel;
   precision_10 /= 10;
   precision_r /= num_rel;
+
   evaluation.recalls[data.eval] = recall;
   evaluation.precisions_10[data.eval] = precision_10;
   evaluation.precisions_r[data.eval] = precision_r;
+
+  evaluation.approx_recalls[data.eval] = approx_recall;
+  evaluation.approx_precisions_10[data.eval] = approx_precision_10;
+  evaluation.approx_precisions_r[data.eval] = approx_precision_r;
+
   var table_header = "<thead><tr>" +
     "<th>Id</th>" +
     "<th>Query</th>" +
@@ -559,6 +683,7 @@ function UpdateEvaluation(data) {
     table = table_header;
   } else if (data.eval == ground_truth.data.length - 1) {
     var num = ground_truth.data.length;
+
     evaluation.avg_recall = evaluation.recalls.reduce(
         function(v1, v2) { return v1 + v2; }
     ) / num;
@@ -568,12 +693,29 @@ function UpdateEvaluation(data) {
     evaluation.avg_precision_r = evaluation.precisions_r.reduce(
         function(v1, v2) { return v1 + v2; }
     ) / num;
+
+    evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(
+        function(v1, v2) { return v1 + v2; }
+    ) / num;
+    evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(
+        function(v1, v2) { return v1 + v2; } 
+    ) / num;
+    evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(
+        function(v1, v2) { return v1 + v2; }
+    ) / num;
+
     table = table_header +
-      "<tr class=\"error\">" + "<td>0</td>" + 
-      "<td>MEAN</td>" +
-      "<td>" + evaluation.avg_recall.toFixed(3) + "</td>" +
-      "<td>" + evaluation.avg_precision_10.toFixed(3) + "</td>" +
-      "<td>" + evaluation.avg_precision_r.toFixed(3) + "</td>" +
+      "<tr class='error'>" + "<td>0</td>" + 
+      "<td>AVERAGE</td>" +
+      "<td>" + evaluation.avg_recall.toFixed(value_prec) +
+      "<span> [" + evaluation.avg_approx_recall.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + evaluation.avg_precision_10.toFixed(value_prec) +
+      "<span> [" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + evaluation.avg_precision_r.toFixed(value_prec) +
+      "<span> [" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
+      "]</span></td>" +
       "</tr>" + table.substr(table_header.length);
   } else {
     table = table.substr(0, table.length - 8);
@@ -581,9 +723,12 @@ function UpdateEvaluation(data) {
   var query = ground_truth.data[data.eval][0];
   table += "<tr><td>" + (data.eval + 1) + "</td>" + 
     '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
-    "<td>" + recall.toFixed(3) + "</td>" +
-    "<td>" + precision_10.toFixed(3) + "</td>" +
-    "<td>" + precision_r.toFixed(3) + "</td>" +
+    "<td>" + recall.toFixed(value_prec) +
+    "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
+    "<td>" + precision_10.toFixed(value_prec) +
+    "<span class='red'> [" + approx_precision_10.toFixed(value_prec) + "]</span></td>" +
+    "<td>" + precision_r.toFixed(value_prec) +
+    "<span class='red'> [" + approx_precision_r.toFixed(value_prec) + "]</span></td>" +
     "</tr>";
   table += "</tbody>";
   $("#evaluation-table").html(table);
@@ -741,8 +886,8 @@ function UpdateEntityChart(entities) {
     ex_corpus_freq[1] = Math.max(ex_corpus_freq[1], corpus_freq);
   }
 
-  var array = [["Entity", "Content Frequency",
-        "Snippet Frequency", "Corpus Frequency (relative)",
+  var array = [["Entity", "Content Freq",
+        "Snippet Freq", "Corpus Freq (relative)",
         "Score (relative)"]];
   var score_div = ex_content_freq[1] / ex_score[1];
   var freq_div = ex_content_freq[1] / ex_corpus_freq[1];

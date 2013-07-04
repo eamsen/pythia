@@ -105,22 +105,20 @@ struct EntityItem {
 };
 
 int FilterEntityItems(vector<EntityItem>* items) {
-  static const int kMinDocFreq = 2;
+  static const size_t kMinDocFreq = 2;
 
-  const int org_size = items->size();
-  int size = org_size;
-  int i = 0;
-  while (i < size) {
+  const size_t org_size = items->size();
+  size_t i = 0;
+  while (i < items->size()) {
     if (std::max((*items)[i].content_index.size(),
                  (*items)[i].snippet_index.size()) < kMinDocFreq) {
       (*items)[i] = items->back();
       items->pop_back();
-      --size;
     } else {
       ++i;
     }
   }
-  return org_size - size;
+  return org_size - items->size();
 }
 
 FullQueryRequestHandler::FullQueryRequestHandler(const Poco::URI& uri)
@@ -225,7 +223,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         return true;
       }
     }
-    return word.size() < 2 || word.size() > 40;
+    return word.size() < 2 || word.size() > 30;
   };
 
   auto& entity_cache = server_.EntityCache();
