@@ -606,6 +606,9 @@ function RenderEvaluation(evaluation) {
 function UpdateEvaluation(data) {
   var entities = data.entity_extraction.entity_items;
   var query = data.query_analysis.keywords.slice(0).join(" ");
+  for (var i in data.query_analysis.target_keywords) { 
+    query += " " + data.query_analysis.target_keywords[i];
+  }
   ScoreEntities(query, entities);
   SortEntities(entities);
   var relevant = {};
@@ -616,19 +619,21 @@ function UpdateEvaluation(data) {
   for (var i = 1; i < num_rel + 1; ++i) {
     relevant[ground_truth.data[data.eval][i]] = 0;
   }
+  var rank = 0;
   for (var i = 0; i < entities.length; ++i) {
     var name = entities[i][0];
     var filtered = entities[i][8];
     if (!filtered && relevant[name] === 0) {
       relevant[name] = i + 1;
       ++recall;
-      if (i < 10) {
+      if (rank < 10) {
         ++precision_10;
       }
-      if (i < num_rel) {
+      if (rank < num_rel) {
         ++precision_r;
       }
     }
+    rank += !filtered;
   }
   var approx_recall = 0;
   var approx_precision_10 = 0;
@@ -1058,7 +1063,7 @@ $(document).on("click", ".accordion-toggle",
 google.load("visualization", "1", {packages:["corechart"]});
 $.serverObserver.enable({
   url: server + "/index.html?" + (+new Date()),
-  frequency: 5000,
+  frequency: 15000,
   onServerOnline: function() {
     $("#server-status-area").css({"background-color": "#111e21"}); 
   },
