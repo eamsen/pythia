@@ -416,6 +416,9 @@ function TypeInfoCallback(data, status, xhr) {
 }
 
 function SearchCallback(data, status, xhr) {
+  if (data.entity_extraction === undefined) {
+    return;
+  }
   data.entity_extraction.entity_items =
       ClusterEntities(data.entity_extraction.entity_items);
   if (data.eval !== undefined) {
@@ -590,7 +593,8 @@ function RenderEvaluation(evaluation) {
     var approx_precision_r = evaluation.approx_precisions_r[i];
 
     table += "<tr><td>" + (i + 1) + "</td>" + 
-      '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
+      "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
+      "\"'>" + query  + "</a></td>" +
       "<td>" + recall.toFixed(value_prec) +
       "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
       "<td>" + precision_10.toFixed(value_prec) +
@@ -727,7 +731,8 @@ function UpdateEvaluation(data) {
   }
   var query = ground_truth.data[data.eval][0];
   table += "<tr><td>" + (data.eval + 1) + "</td>" + 
-    '<td><a href=\'' + server + '/?q=\"' + query + '\"\'>' + query  + "</a></td>" +
+    "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
+    "\"'>" + query  + "</a></td>" +
     "<td>" + recall.toFixed(value_prec) +
     "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
     "<td>" + precision_10.toFixed(value_prec) +
