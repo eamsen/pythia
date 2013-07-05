@@ -248,8 +248,15 @@ function ClusterEntities(entities) {
 
 function IsSimilar(words1, words2) {
   var num_similar = 0;
+  var num_shorts = [words1.length, words2.length];
+  for (var i = 0; i < words2.length; ++i) {
+    if (words2[i].length > 3) {
+      --num_shorts[1];
+    }
+  }
   for (var j = 0; j < words1.length; ++j) {
     if (words1[j].length > 3) {
+      --num_shorts[0];
       continue;
     }
     for (var i = 0; i < words2.length; ++i) {
@@ -283,7 +290,8 @@ function IsSimilar(words1, words2) {
       }
     }
   }
-  return num_similar > Math.min(words1.length, words2.length) * 0.6;
+  return num_similar > (Math.min(words1.length, words2.length) -
+                        Math.min(num_shorts[0], num_shorts[1])) * 0.6;
 }
 
 function PreFilter(query, entity) {
@@ -429,9 +437,7 @@ function SearchCallback(data, status, xhr) {
       // ["Total", data.duration / 1000],
       ["Query Analysis", data.query_analysis.duration / 1000],
       ["Document Retrieval", data.document_retrieval.duration / 1000],
-      ["Entity Extraction", data.entity_extraction.duration / 1000],
-      ["Entity Ranking", data.entity_ranking.duration / 1000],
-      ["Semantic Query Construction", data.semantic_query.duration / 1000]];
+      ["Entity Extraction", data.entity_extraction.duration / 1000]];
   UpdatePerformanceChart(durations, data.duration / 1000);
   var target_keywords = {};
   query = data.query_analysis.keywords.slice(0).join(" ");
@@ -489,24 +495,11 @@ function SearchCallback(data, status, xhr) {
   UpdateSemanticQuery(entities);
 
   var broccoli_query = "";
-  broccoli_query += data.semantic_query.broccoli_query;
   $("#broccoli-query-area").html(broccoli_query);
 
   var yago_target_types = "";
-  for (var i in data.semantic_query.target_types) {
-    var type = data.semantic_query.target_types[i][0];
-    var score = data.semantic_query.target_types[i][1];
-    var total_freq = data.semantic_query.target_types[i][2];
-    yago_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span> ";
-  }
   $("#yago-target-types").html(yago_target_types);
   var fb_target_types = "";
-  for (var i in data.semantic_query.fb_target_types) {
-    var type = data.semantic_query.fb_target_types[i][0];
-    var score = data.semantic_query.fb_target_types[i][1];
-    var total_freq = data.semantic_query.fb_target_types[i][2];
-    fb_target_types += "<span class=\"label\">" + type.toUpperCase() + "</span> ";
-  }
   $("#fb-target-types").html(fb_target_types);
 }
 
@@ -623,17 +616,17 @@ function UpdateEvaluation(data) {
   for (var i = 1; i < num_rel + 1; ++i) {
     relevant[ground_truth.data[data.eval][i]] = 0;
   }
-  var rank = 0;
+  var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
     var name = entities[i][0];
     var filtered = entities[i][8];
     if (!filtered && relevant[name] === 0) {
-      relevant[name] = i + 1;
+      relevant[name] = rank;
       ++recall;
-      if (rank < 10) {
+      if (rank <= 10) {
         ++precision_10;
       }
-      if (rank < num_rel) {
+      if (rank <= num_rel) {
         ++precision_r;
       }
     }
@@ -642,27 +635,30 @@ function UpdateEvaluation(data) {
   var approx_recall = 0;
   var approx_precision_10 = 0;
   var approx_precision_r = 0;
+  var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
     var name = entities[i][0];
     var name_array = name.split(" ");
     var filtered = entities[i][8];
-    if (!filtered && relevant[name] === undefined) {
+    if (!filtered && (relevant[name] === undefined || relevant[name] > rank)) {
       for (var j = 1; j < num_rel + 1; ++j) {
         var truth_name = ground_truth.data[data.eval][j];
-        if (relevant[truth_name] === 0 &&
+        if ((relevant[truth_name] === 0 || relevant[truth_name] > rank) &&
             IsSimilar(name_array, truth_name.split(" "))) {
-          relevant[truth_name] = i + 1;
-          ++approx_recall;
-          if (i < 10) {
-            ++approx_precision_10;
+          var prev_match = relevant[truth_name];
+          approx_recall += prev_match === 0;
+          if (rank <= 10) {
+            approx_precision_10 += prev_match > 10 || prev_match === 0;
           }
-          if (i < num_rel) {
-            ++approx_precision_r;
+          if (rank <= num_rel) {
+            approx_precision_r += prev_match > num_rel || prev_match === 0;
           }
+          relevant[truth_name] = rank;
           break;
         }
       }
     } 
+    rank += !filtered;
   }
   approx_recall = (recall + approx_recall) / num_rel;
   approx_precision_10 = (precision_10 + approx_precision_10) / 10;
