@@ -170,17 +170,25 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
       query_uri;
   auto response_it = web_cache.find(search_url);
   if (response_it == web_cache.end()) {
-    response_it = web_cache.insert({search_url,
-        HttpsGetRequest(search_url, timeout)}).first;
+    const string r = HttpsGetRequest(search_url, timeout);
+    if (r.size()) {
+      response_it = web_cache.insert({search_url, std::move(r)}).first;
+    }
   }
-  try {
   Poco::JSON::Parser json_parser;
   Poco::JSON::DefaultHandler json_handler;
   json_parser.setHandler(&json_handler);
   json_parser.parse(response_it->second);
   Poco::Dynamic::Var json_data = json_handler.result();
   const auto object = json_data.extract<Poco::JSON::Object::Ptr>();
-  const auto items = object->get("items").extract<Poco::JSON::Array::Ptr>();
+  static Poco::JSON::Array _empty_array;
+  Poco::JSON::Array::Ptr items = new Poco::JSON::Array();
+  try {
+    items.assign(object->get("items").extract<Poco::JSON::Array::Ptr>());
+  } catch (Poco::Exception& e) {
+    LOG(ERROR) << "Google result does not contain items object.";
+    web_cache.erase(search_url);
+  }
 
   EntityIndex index;
   const int num_items = items->size();
@@ -233,9 +241,10 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   vector<vector<pair<string, Entity::Type>>> extracted_content(num_items);
   vector<vector<pair<string, Entity::Type>>> extracted_snippets(num_items);
   {
-    #pragma omp parallel for
+    NamedEntityExtractor extractor;
+    // TODO(esawin): Enable real parallelization for SENNA.
+    // #pragma omp parallel for
     for (int i = 0; i < num_items; ++i) {
-      NamedEntityExtractor extractor;
       const string& url = items->getObject(i)->getValue<string>("link");
       const auto entity_it = entity_cache.find(url);
       if (entity_it == entity_cache.end()) {
@@ -243,7 +252,7 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
         const auto snippet_it = web_cache.find("snippet/" + url);
         extractor.Extract(content_it->second, &extracted_content[i]);
         extractor.Extract(snippet_it->second, &extracted_snippets[i]);
-        #pragma omp critical
+        // #pragma omp critical
         {
           entity_cache.insert({url, extracted_content[i]});
           entity_cache.insert({"snippet/" + url, extracted_snippets[i]});
@@ -334,13 +343,6 @@ void FullQueryRequestHandler::Handle(Request* request, Response* response) {
   response_stream << ",\"entity_extraction\":{"
       << "\"duration\":" << (end_time - start_time).Value()
       << ",\"entity_items\":" << EntityItem::JsonArray(entity_items) << "}";
-  } catch(const Poco::Exception& e) {
-    LOG(ERROR) << e.what();
-  } catch(const std::exception& e) {
-    LOG(ERROR) << e.what();
-  } catch (...) {
-    LOG(ERROR) << "Unknown exception occured.";
-  }
   end_time = Clock();
   response_stream << ",\"duration\":"
       << (end_time - request_start_time).Value() << "}";
