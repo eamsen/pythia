@@ -23,12 +23,12 @@ function SearchResult(query) {
   this.query = query;
   this.entities = [];
   this.type_scores = {};
-  this.coarse_type = null;
+  this.coarse_type = "unknown";
   return this;
 }
 
 SearchResult.prototype.CoarseType = function() {
-  if (!this.coarse_type) {
+  if (this.coarse_type === "unknown") {
     var max = [0, "unknown"];
     for (var k in this.type_scores) {
       if (this.type_scores[k] > max[0]) {
@@ -433,10 +433,10 @@ function TypeInfoCallback(data, status, xhr) {
           yago_types[j][0].length > 18) {
         continue;
       }
-      if (type_scores[yago_types[j][0]] == undefined) {
+      if (type_scores[yago_types[j][0]] === undefined) {
         type_scores[yago_types[j][0]] = [0, yago_types[j][1]];
       }
-      var itf = 1 / (yago_types[j][1] + 10000) / Math.log(yago_types[j][1] + 100);
+      var itf = 17 - Math.log(yago_types[j][1] + 100000);
       type_scores[yago_types[j][0]][0] += entity_score * itf;
       var score = type_scores[yago_types[j][0]][0];
       if (score > best_type[0]) {
@@ -445,9 +445,11 @@ function TypeInfoCallback(data, status, xhr) {
       }
     }
   }
-  // console.log(type_scores);
-  console.log(search_result.type_scores);
-  console.log(best_type);
+  // var sorted = Object.keys(type_scores).sort(function(a, b) {
+  //   return type_scores[b][0] - type_scores[a][0];
+  // });
+  // console.log(sorted);
+  $("#yago-target-types").html(best_type[1].toUpperCase());
 }
 
 function SearchCallback(data, status, xhr) {
