@@ -19,6 +19,30 @@ var server_options = {
   fbtt: 1
 };
 
+function SearchResult(query) {
+  this.query = query;
+  this.entities = [];
+  this.type_scores = {};
+  this.coarse_type = null;
+  return this;
+}
+
+SearchResult.prototype.CoarseType = function() {
+  if (!this.coarse_type) {
+    var max = [0, "unknown"];
+    for (var k in this.type_scores) {
+      if (this.type_scores[k] > max[0]) {
+        max[0] = this.type_scores[k];
+        max[1] = k;
+      }
+    }
+    this.coarse_type = max[1];
+  }
+  return this.coarse_type;
+}
+
+var search_result = new SearchResult(null);
+
 var entities = [];
 var query = null;
 var scoring_options = {
@@ -347,6 +371,8 @@ function Score(query, entity) {
 
 function UpdateSemanticQuery(entities) {
   QueryTypeInfo(entities);
+  var coarse_target_types = search_result.CoarseType();
+  $("#coarse-target-types").html(coarse_target_types.toUpperCase());
 }
 
 function UpdateEntityTable(entities) {
@@ -420,6 +446,7 @@ function TypeInfoCallback(data, status, xhr) {
     }
   }
   // console.log(type_scores);
+  console.log(search_result.type_scores);
   console.log(best_type);
 }
 
@@ -794,10 +821,19 @@ function ScoreEntities(query, entities) {
     if (scores[i].filtered) {
       // continue;
     }
-    entities[i][5] += scores[i].cf / ex_cfscore[1] * cfw +
-                      scores[i].sf / ex_sfscore[1] * sfw +
-                      scores[i].cdf / ex_cdscore[1] * cdfw +
-                      scores[i].sdf / ex_sdscore[1] * sdfw;
+    var value = scores[i].cf / ex_cfscore[1] * cfw +
+                scores[i].sf / ex_sfscore[1] * sfw +
+                scores[i].cdf / ex_cdscore[1] * cdfw +
+                scores[i].sdf / ex_sdscore[1] * sdfw;
+    entities[i][5] += value;
+    if (!scores[i].filtered) {
+      var type = entities[i][1];
+      if (search_result.type_scores[type] === undefined) {
+        search_result.type_scores[type] = value;
+      } else {
+        search_result.type_scores[type] += value;
+      }
+    }
   }
 }
 
@@ -1025,7 +1061,9 @@ $(document).ready(
       window.location.pathname = "";
     }
     if (UrlQuery()) {
-      Search(UserQuery(UserFormat(UrlQuery())));
+      var query = UserQuery(UserFormat(UrlQuery()));
+      search_result = new SearchResult(query);
+      Search(query);
     }
     EvaluateResults(false);
   }
