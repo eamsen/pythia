@@ -119,6 +119,17 @@ function UrlQuery(q) {
   return window.location.search.substr(3);
 }
 
+function TrimStr(s, length) {
+  var max_length = length || 20;
+  if (s.length <= max_length) {
+    return s;
+  }
+  var cut  = s.substr(0, max_length);
+  cut = cut.substr(0, Math.min(cut.length, cut.lastIndexOf(" ")));
+  cut += " ...";
+  return cut;
+}
+
 function InitVSlider(s, v, e) {
   $("#score-slider-" + s).slider({
     min: 0.0,
@@ -616,7 +627,7 @@ function RenderEvaluation(evaluation) {
 
     table += "<tr><td>" + (i + 1) + "</td>" + 
       "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
-      "\"'>" + query  + "</a></td>" +
+      "\"'>" + TrimStr(query)  + "</a></td>" +
       "<td>" + recall.toFixed(value_prec) +
       "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
       "<td>" + precision_10.toFixed(value_prec) +
@@ -757,7 +768,7 @@ function UpdateEvaluation(data) {
   var query = ground_truth.data[data.eval][0];
   table += "<tr><td>" + (data.eval + 1) + "</td>" + 
     "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
-    "\"'>" + query  + "</a></td>" +
+    "\"'>" + TrimStr(query)  + "</a></td>" +
     "<td>" + recall.toFixed(value_prec) +
     "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
     "<td>" + precision_10.toFixed(value_prec) +
