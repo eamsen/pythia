@@ -78,7 +78,8 @@ void TypeInfoRequestHandler::Handle(Request* request, Response* response) {
 
   const OntologyIndex& ontology = server_.OntologyIndex();
 
-  response_stream << "{";
+  LOG(INFO) << query.Text("eval");
+  response_stream << "{\"eval\":" << query.Text("eval") << ",";
 
   // Find target types.
   // (type name, score, global frequency).
