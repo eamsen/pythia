@@ -1,6 +1,6 @@
 // Copyright 2013 Eugen Sawin <esawin@me73.com>
 var server = "http://" + window.location.hostname + ":" + window.location.port;
-
+var broccoli_server = "http://broccoli.informatik.uni-freiburg.de";
 var options = {
   v: "0.1.2",
   show_performance: false,
@@ -536,11 +536,26 @@ function SearchCallback(data, status, xhr) {
 
   var broccoli_query = "";
   $("#broccoli-query-area").html(broccoli_query);
+  BroccoliSearch(broccoli_query);
 
   var yago_target_types = "";
   $("#yago-target-types").html(yago_target_types);
   var fb_target_types = "";
   $("#fb-target-types").html(fb_target_types);
+}
+
+function BroccoliSearch(query) {
+  $.ajax({url: broccoli_server + "/api/?s=$1 is-a Astronaut;$1 occurs-with walk* moon*" +
+    "&query=$1&hofhitgroups=8&nofclasses=0&nofinstances=9999&nofrelations=0&nofwords=0" +
+    "&format=jsonp&callback=BroccoliSearchCallback",
+    dataType: "jsonp",
+    jsonp: false,
+    success: SearchCallback});
+}
+
+function BroccoliSearchCallback(data, status, xhr) {
+  var entities = data.result.res.instances.data;
+  console.log(entities);
 }
 
 function UpdatePerformanceChart(durations, total) {
@@ -643,6 +658,7 @@ function RenderEvaluation(evaluation) {
 function UpdateEvaluation(data) {
   var entities = data.entity_extraction.entity_items;
   var query = data.query_analysis.keywords.slice(0).join(" ");
+  var num_data = ground_truth.data.length;
   for (var i in data.query_analysis.target_keywords) { 
     query += " " + data.query_analysis.target_keywords[i];
   }
@@ -716,68 +732,68 @@ function UpdateEvaluation(data) {
   evaluation.approx_precisions_10[data.eval] = approx_precision_10;
   evaluation.approx_precisions_r[data.eval] = approx_precision_r;
 
-  var table_header = "<thead><tr>" +
-    "<th>Id</th>" +
-    "<th>Query</th>" +
-    "<th>Recall</th>" +
-    "<th>P@10</th>" +
-    "<th>P@R</th>" +
-    "</tr></thead><tbody>";
-  var table = $("#evaluation-table").html();
   if (data.eval == 0) {
-    table = table_header;
-  } else if (data.eval == ground_truth.data.length - 1) {
-    var num = ground_truth.data.length;
-
+    var table_init = "<thead><tr>" +
+      "<th>Id</th>" +
+      "<th>Query</th>" +
+      "<th>Recall</th>" +
+      "<th>P@10</th>" +
+      "<th>P@R</th>" +
+      "</tr></thead><tbody>" +
+      "<tr class='error'><td>0</td>" + 
+      "<td>AVERAGE</td>" +
+      "<td id='evaluation-recall-0'>0.00" +
+      "<span> [0.00]</span></td>" +
+      "<td id='evaluation-prec10-0'>0.00" +
+      "<span> [0.00]</span></td>" +
+      "<td id='evaluation-precr-0'>0.00" +
+      "<span> [0.00]</span></td>" +
+      "</tr></tbody>";
+    $("#evaluation-table").html(table_init);
+  } else {
     evaluation.avg_recall = evaluation.recalls.reduce(
         function(v1, v2) { return v1 + v2; }
-    ) / num;
+    ) / num_data;
     evaluation.avg_precision_10 = evaluation.precisions_10.reduce(
         function(v1, v2) { return v1 + v2; } 
-    ) / num;
+    ) / num_data;
     evaluation.avg_precision_r = evaluation.precisions_r.reduce(
         function(v1, v2) { return v1 + v2; }
-    ) / num;
+    ) / num_data;
 
     evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(
         function(v1, v2) { return v1 + v2; }
-    ) / num;
+    ) / num_data;
     evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(
         function(v1, v2) { return v1 + v2; } 
-    ) / num;
+    ) / num_data;
     evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(
         function(v1, v2) { return v1 + v2; }
-    ) / num;
-
-    table = table_header +
-      "<tr class='error'>" + "<td>0</td>" + 
-      "<td>AVERAGE</td>" +
-      "<td>" + evaluation.avg_recall.toFixed(value_prec) +
-      "<span> [" + evaluation.avg_approx_recall.toFixed(value_prec) +
-      "]</span></td>" +
-      "<td>" + evaluation.avg_precision_10.toFixed(value_prec) +
-      "<span> [" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
-      "]</span></td>" +
-      "<td>" + evaluation.avg_precision_r.toFixed(value_prec) +
-      "<span> [" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
-      "]</span></td>" +
-      "</tr>" + table.substr(table_header.length);
-  } else {
-    table = table.substr(0, table.length - 8);
+    ) / num_data;
   }
-  var query = ground_truth.data[data.eval][0];
-  table += "<tr><td>" + (data.eval + 1) + "</td>" + 
-    "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
-    "\"'>" + TrimStr(query)  + "</a></td>" +
-    "<td>" + recall.toFixed(value_prec) +
-    "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
-    "<td>" + precision_10.toFixed(value_prec) +
-    "<span class='red'> [" + approx_precision_10.toFixed(value_prec) + "]</span></td>" +
-    "<td>" + precision_r.toFixed(value_prec) +
-    "<span class='red'> [" + approx_precision_r.toFixed(value_prec) + "]</span></td>" +
-    "</tr>";
-  table += "</tbody>";
-  $("#evaluation-table").html(table);
+  if (data.eval < num_data) {
+    var query = ground_truth.data[data.eval][0];
+    var row = "<tr><td>" + (data.eval + 1) + "</td>" + 
+      "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
+      "\"'>" + TrimStr(query)  + "</a></td>" +
+      "<td>" + recall.toFixed(value_prec) +
+      "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
+      "<td>" + precision_10.toFixed(value_prec) +
+      "<span class='red'> [" + approx_precision_10.toFixed(value_prec) + "]</span></td>" +
+      "<td>" + precision_r.toFixed(value_prec) +
+      "<span class='red'> [" + approx_precision_r.toFixed(value_prec) + "]</span></td>" +
+      "</tr>";
+    $("#evaluation-table > tbody:last").append(row);
+  }
+  $("#evaluation-recall-0").html(
+      evaluation.avg_recall.toFixed(value_prec) +
+      " [" + evaluation.avg_approx_recall.toFixed(value_prec) + "]");
+  $("#evaluation-prec10-0").html(
+      evaluation.avg_precision_10.toFixed(value_prec) +
+      " [" + evaluation.avg_approx_precision_10.toFixed(value_prec) + "]");
+  $("#evaluation-precr-0").html(
+      evaluation.avg_precision_r.toFixed(value_prec) +
+      " [" + evaluation.avg_approx_precision_r.toFixed(value_prec) + "]");
   EvaluateResults(false);
 }
 
