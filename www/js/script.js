@@ -208,7 +208,7 @@ function QueryTypeInfo(entities, eval) {
     if (i > 0) {
       es += '+';
     }
-    es += '"' + entities[i][0] + '"';
+    es += '"' + entities[i][0] + ':' + entities[i][5] + '"';
   }
   $.ajax({url: server + "/",
     data: "ti=" + es + "&" + ServerOptions() + "&eval=" + eval,
@@ -444,17 +444,9 @@ function TypeInfoCallback(data, status, xhr) {
   var best_type = [Number.MIN_VALUE, "unknown"];
   var k = data.yago_types.length;
   for (var i = 0; i < data.yago_types.length; ++i) {
-    var entity_score = 0;
     var entity_name = data.yago_types[i][0];
-    var yago_types = data.yago_types[i][1];
-    // TODO(esawin): Provide scores to the type info call directly, don't refer
-    // to the global entities.
-    for (var j = i; j < entities.length; ++j) {
-      if (entities[j][0] == entity_name) {
-        entity_score = entities[j][5];
-        break;
-      }
-    }
+    var entity_score = data.yago_types[i][1];
+    var yago_types = data.yago_types[i][2];
     for (var j = 0; j < yago_types.length; ++j) {
       if (// yago_types[j][1] > 2400000 ||
           yago_types[j][1] < 50 ||
@@ -478,12 +470,18 @@ function TypeInfoCallback(data, status, xhr) {
   // });
   if (data.eval == -1) {
     $("#yago-target-types").html(best_type[1].toUpperCase());
+    var type = best_type[1];
+    type = type.substr(0, 1).toUpperCase() + type.substr(1, type.length - 1);
+    var broccoli_query = "$1 is-a " + type +
+        ";$1 occurs-with " + search_result.query;
+    $("#broccoli-query-area").html(broccoli_query);
+    BroccoliSearch(broccoli_query, data.eval);
   } else {
     var type = best_type[1];
     type = type.substr(0, 1).toUpperCase() + type.substr(1, type.length - 1);
     var broccoli_query = "$1 is-a " + type +
         ";$1 occurs-with " + ground_truth.data[data.eval][0];
-    // console.log(broccoli_query);
+    console.log(broccoli_query);
     BroccoliSearch(broccoli_query, data.eval);
   }
 }
@@ -630,10 +628,11 @@ function EvaluateResults(init) {
     return;
   } else {
     if (evaluation.next >= ground_truth.data.length) {
-      evaluation.valid = true;
-      evaluation.next = 0;
-      $.cookie("evaluation", evaluation);
-      ApplySortability();
+      // evaluation.valid = true;
+      // evaluation.next = 0;
+      // $.cookie("evaluation", evaluation);
+      // sessionStorage.setItem("evaluation", JSON.stringify(evaluation));
+      // ApplySortability();
     } else {
       Search(ground_truth.data[evaluation.next][0], "&eval=" + evaluation.next);
       ++evaluation.next;
@@ -645,21 +644,40 @@ function RenderEvaluation(evaluation) {
   var table = "<thead><tr>" +
     "<th>Id</th>" +
     "<th>Query</th>" +
-    "<th>Recall</th>" +
-    "<th>P@10</th>" +
-    "<th>P@R</th>" +
-    "</tr></thead>" +
-    "<tr class=\"error\">" + "<td>0</td>" + 
+    "<th>1. Recall</th>" +
+    "<th>2. Recall</th>" +
+    "<th>1. P@10</th>" +
+    "<th>2. P@10</th>" +
+    "<th>1. P@R</th>" +
+    "<th>2. P@R</th>" +
+    "</tr></thead><tbody>" +
+    "<tr class='error'><td>0</td>" + 
     "<td>AVERAGE</td>" +
-    "<td>" + evaluation.avg_recall.toFixed(value_prec) +
-    "<span> [" + evaluation.avg_approx_recall.toFixed(value_prec) +
+    "<td id='evaluation-1-recall-0'>" +
+    evaluation.avg_recall.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_approx_recall.toFixed(value_prec) +
     "]</span></td>" +
-    "<td>" + evaluation.avg_precision_10.toFixed(value_prec) +
-    "<span> [" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
+    "<td id='evaluation-2-recall-0'>" +
+    evaluation.avg_sem_recall.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_recall.toFixed(value_prec) +
     "]</span></td>" +
-    "<td>" + evaluation.avg_precision_r.toFixed(value_prec) +
-    "<span> [" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
-    "]</span></td>";
+    "<td id='evaluation-1-prec10-0'>" +
+    evaluation.avg_precision_10.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td id='evaluation-2-prec10-0'>" +
+    evaluation.avg_sem_precision_10.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_precision_10.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td id='evaluation-1-precr-0'>" +
+    evaluation.avg_precision_r.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td id='evaluation-2-precr-0'>" +
+    evaluation.avg_sem_precision_r.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_precision_r.toFixed(value_prec) +
+    "]</span></td>" +
+    "</tr>";
 
   for (var i = 0; i < ground_truth.data.length; ++i) {
     var query = ground_truth.data[i][0];
@@ -670,15 +688,34 @@ function RenderEvaluation(evaluation) {
     var approx_precision_10 = evaluation.approx_precisions_10[i];
     var approx_precision_r = evaluation.approx_precisions_r[i];
 
+    var sem_recall = evaluation.sem_recalls[i];
+    var sem_precision_10 = evaluation.sem_precisions_10[i];
+    var sem_precision_r = evaluation.sem_precisions_r[i];
+    var sem_approx_recall = evaluation.sem_approx_recalls[i];
+    var sem_approx_precision_10 = evaluation.sem_approx_precisions_10[i];
+    var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i];
+
     table += "<tr><td>" + (i + 1) + "</td>" + 
       "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
       "\"'>" + TrimStr(query)  + "</a></td>" +
       "<td>" + recall.toFixed(value_prec) +
-      "<span class='red'> [" + approx_recall.toFixed(value_prec) + "]</span></td>" +
+      "<span class='red'> [" + approx_recall.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + sem_recall.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_recall.toFixed(value_prec) +
+      "]</span></td>" +
       "<td>" + precision_10.toFixed(value_prec) +
-      "<span class='red'> [" + approx_precision_10.toFixed(value_prec) + "]</span></td>" +
+      "<span class='red'> [" + approx_precision_10.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + sem_precision_10.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_precision_10.toFixed(value_prec) +
+      "]</span></td>" +
       "<td>" + precision_r.toFixed(value_prec) +
-      "<span class='red'> [" + approx_precision_r.toFixed(value_prec) + "]</span></td>" +
+      "<span class='red'> [" + approx_precision_r.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + sem_precision_r.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_precision_r.toFixed(value_prec) +
+      "]</span></td>" +
       "</tr>";
   }
   table += "</tbody>";
@@ -822,6 +859,12 @@ function UpdateSemanticEvaluation(entities_, eval) {
       m.precision_r.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_r.toFixed(value_prec) +
       "]</span>");
+
+  if (eval == ground_truth.data.length - 1) {
+    evaluation.valid = true;
+    evaluation.next = 0;
+    sessionStorage.setItem("evaluation", JSON.stringify(evaluation));
+  }
 }
 
 function UpdateEvaluation(data) {
@@ -1243,7 +1286,10 @@ $(document).ready(
     $.cookie.json = true;
     LoadCookie("options");
     LoadCookie("scoring_options");
-    LoadCookie("evaluation");
+    // LoadCookie("evaluation");
+    if (sessionStorage.getItem("evaluation") !== null) {
+      evaluation = JSON.parse(sessionStorage.getItem("evaluation"));
+    }
     UseOptions();
     InitSliders();
 

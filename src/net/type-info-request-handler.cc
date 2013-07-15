@@ -89,16 +89,19 @@ void TypeInfoRequestHandler::Handle(Request* request, Response* response) {
   const int is_a_relation_id = ontology.RelationId("is-a");
   DLOG_IF(FATAL, is_a_relation_id == OntologyIndex::kInvalidId)
       << "is-a relation is not indexed.";
-  vector<tuple<string, unordered_map<string, int>>> entity_types;
-  for (string& e: entities) {
-    flow::string::Replace("\"", "", &e);
-    string space_less = e;
+  // (entity name, entiy_score, {type -> type corpus freq}).
+  vector<tuple<string, float, unordered_map<string, int>>> entity_types;
+  for (const string& e: entities) {
+    vector<string> name_score = flow::string::Split(e, ":");
+    flow::string::Replace("\"", "", &name_score[0]);
+    string space_less = name_score[0];
     flow::string::Replace(" ", "", &space_less);
-    entity_types.push_back(make_tuple(e, unordered_map<string, int>()));
+    entity_types.push_back(make_tuple(name_score[0], std::stof(name_score[1]),
+          unordered_map<string, int>()));
     const auto& relations = ontology.RelationsByLhs(space_less);
     for (const auto& r: relations) {
       if (r.first == is_a_relation_id) {
-        get<1>(entity_types.back())[ontology.Name(r.second)] =
+        get<2>(entity_types.back())[ontology.Name(r.second)] =
             ontology.RhsFrequency(r.second);
       }
     }
