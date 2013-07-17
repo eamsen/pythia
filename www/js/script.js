@@ -858,12 +858,14 @@ function UpdateSemanticEvaluation(entities_, eval) {
   if (eval == ground_truth.data.length - 1) {
     evaluation.valid = true;
     evaluation.next = 0;
-    sessionStorage.setItem("evaluation", JSON.stringify(evaluation));
+    SaveSessionItem("evaluation");
   }
 }
 
 function UpdateEvaluation(data) {
   var entities = data.entity_extraction.entity_items;
+  var keywords = data.query_analysis.keywords;
+  console.log(keywords);
   var query = data.query_analysis.keywords.slice(0).join(" ");
   var num_data = ground_truth.data.length;
   for (var i = 0; i < data.query_analysis.target_keywords.length; ++i) { 
@@ -871,6 +873,7 @@ function UpdateEvaluation(data) {
   }
   ScoreEntities(query, entities);
   SortEntities(entities);
+  FilterEntities(entities);
 
   var m = MeasureStats(entities, data.eval);
 
@@ -949,7 +952,6 @@ function UpdateEvaluation(data) {
       " [" + evaluation.avg_approx_precision_r.toFixed(value_prec) + "]");
 
   QueryTypeInfo(entities, data.eval);
-  // BroccoliSearch(broccoli_query, data.eval);
   EvaluateResults(false);
 }
 
@@ -1274,15 +1276,25 @@ function LoadCookie(name) {
   window[name] = $.cookie(name);
 }
 
+function SaveSessionItem(name) {
+  sessionStorage.setItem(name, JSON.stringify(window[name]));
+}
+
+function LoadSessionItem(name) {
+  var item = JSON.parse(sessionStorage.getItem(name));
+  if (item === null || item.v === undefined || item.v < window[name].v) {
+    SaveSessionItem(name);
+    item = JSON.parse(sessionStorage.getItem(name));
+  }
+  window[name] = item;
+}
+
 $(document).ready(
   function() {
     $.cookie.json = true;
     LoadCookie("options");
     LoadCookie("scoring_options");
-    // LoadCookie("evaluation");
-    if (sessionStorage.getItem("evaluation") !== null) {
-      evaluation = JSON.parse(sessionStorage.getItem("evaluation"));
-    }
+    LoadSessionItem("evaluation");
     UseOptions();
     InitSliders();
 
