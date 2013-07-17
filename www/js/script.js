@@ -1,12 +1,18 @@
 // Copyright 2013 Eugen Sawin <esawin@me73.com>
 var server = "http://" + window.location.hostname + ":" + window.location.port;
 var broccoli_server = "http://broccoli.informatik.uni-freiburg.de";
+
+String.prototype.ReplaceAll = function(find, replace) {
+    return this.replace(new RegExp(find, 'g'), replace);
+}
+
 var options = {
-  v: "0.1.2",
+  v: "0.1.3",
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
   show_semantic_query: false,
+  show_semantic_entity_chart: false,
   show_scoring: false,
   show_entity_chart: false,
   show_entity_table: false,
@@ -196,19 +202,19 @@ function QueryTypeInfo(entities, eval) {
   if (eval === undefined) {
     eval = -1;
   }
-  var k = 10;
+  var k = 0;
   var es = "";
   for (var i = 0; i < entities.length; ++i) {
     if (entities[i][8]) {
       continue;
     }
-    if (k-- < 0) {
+    if (++k == 10) {
       break;
     }
-    if (i > 0) {
+    if (k > 1) {
       es += '+';
     }
-    es += '"' + entities[i][0] + ':' + entities[i][5] + '"';
+    es += entities[i][0] + ':' + entities[i][5];
   }
   $.ajax({url: server + "/",
     data: "ti=" + es + "&" + ServerOptions() + "&eval=" + eval,
@@ -468,22 +474,20 @@ function TypeInfoCallback(data, status, xhr) {
   // var sorted = Object.keys(type_scores).sort(function(a, b) {
   //   return type_scores[b][0] - type_scores[a][0];
   // });
+  // console.log(sorted);
+  var type = best_type[1].substr(0, 1).toUpperCase() +
+      best_type[1].substr(1, best_type[1].length - 1);
   if (data.eval == -1) {
     $("#yago-target-types").html(best_type[1].toUpperCase());
-    var type = best_type[1];
-    type = type.substr(0, 1).toUpperCase() + type.substr(1, type.length - 1);
     var broccoli_query = "$1 is-a " + type +
         ";$1 occurs-with " + search_result.query;
     $("#broccoli-query-area").html(broccoli_query);
-    BroccoliSearch(broccoli_query, data.eval);
   } else {
-    var type = best_type[1];
-    type = type.substr(0, 1).toUpperCase() + type.substr(1, type.length - 1);
     var broccoli_query = "$1 is-a " + type +
         ";$1 occurs-with " + ground_truth.data[data.eval][0];
-    console.log(broccoli_query);
-    BroccoliSearch(broccoli_query, data.eval);
   }
+  console.log(broccoli_query);
+  BroccoliSearch(broccoli_query, data.eval);
 }
 
 function SearchCallback(data, status, xhr) {
@@ -567,13 +571,12 @@ function BroccoliSearch(query, eval) {
   if (eval === undefined) {
     eval = -1;
   }
-  // $.ajax({url: broccoli_server + "/api/?s=$1 is-a Astronaut;$1 occurs-with walk* moon*" +
   $.ajax({url: broccoli_server + "/api/?s=" + query +
     "&query=$1&hofhitgroups=8&nofclasses=0&nofinstances=9999&nofrelations=0&nofwords=0" +
     "&format=jsonp&callback=BroccoliSearchCallback&callback-argument=" + eval,
     dataType: "jsonp",
-    jsonp: false,
-    success: SearchCallback});
+    jsonp: false
+  });
 }
 
 function BroccoliSearchCallback(data, arg) {
@@ -696,7 +699,7 @@ function RenderEvaluation(evaluation) {
     var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i];
 
     table += "<tr><td>" + (i + 1) + "</td>" + 
-      "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
+      "<td><a href='" + server + "/?q=\"" + query.ReplaceAll("'", "&#39;") +
       "\"'>" + TrimStr(query)  + "</a></td>" +
       "<td>" + recall.toFixed(value_prec) +
       "<span class='red'> [" + approx_recall.toFixed(value_prec) +
@@ -790,6 +793,10 @@ function MeasureStats(entities, eval) {
   return ret;
 }
 
+function Sum(a, b) {
+  return a + b;
+}
+
 function UpdateSemanticEvaluation(entities_, eval) {
   var query = ground_truth.data[eval][0];
   var num_data = ground_truth.data.length;
@@ -801,7 +808,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
     if (end == -2) {
       end = name.length;
     }
-    name = name.substr(beg, end - beg).replace("_", " ").toLowerCase();
+    name = name.substr(beg, end - beg).ReplaceAll("_", " ").toLowerCase();
     var score = parseInt(entities_[i].score);
     entities.push([name, score]);
   }
@@ -817,25 +824,13 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.sem_approx_precisions_10[eval] = m.approx_precision_10;
   evaluation.sem_approx_precisions_r[eval] = m.approx_precision_r;
 
-  evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(
-      function(v1, v2) { return v1 + v2; }
-  ) / num_data;
-  evaluation.avg_sem_precision_10 = evaluation.sem_precisions_10.reduce(
-      function(v1, v2) { return v1 + v2; } 
-  ) / num_data;
-  evaluation.avg_sem_precision_r = evaluation.sem_precisions_r.reduce(
-      function(v1, v2) { return v1 + v2; }
-  ) / num_data;
+  evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(Sum) / num_data;
+  evaluation.avg_sem_precision_10 = evaluation.sem_precisions_10.reduce(Sum) / num_data;
+  evaluation.avg_sem_precision_r = evaluation.sem_precisions_r.reduce(Sum) / num_data;
 
-  evaluation.avg_sem_approx_recall = evaluation.sem_approx_recalls.reduce(
-      function(v1, v2) { return v1 + v2; }
-  ) / num_data;
-  evaluation.avg_sem_approx_precision_10 = evaluation.sem_approx_precisions_10.reduce(
-      function(v1, v2) { return v1 + v2; } 
-  ) / num_data;
-  evaluation.avg_sem_approx_precision_r = evaluation.sem_approx_precisions_r.reduce(
-      function(v1, v2) { return v1 + v2; }
-  ) / num_data;
+  evaluation.avg_sem_approx_recall = evaluation.sem_approx_recalls.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_precision_10 = evaluation.sem_approx_precisions_10.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_precision_r = evaluation.sem_approx_precisions_r.reduce(Sum) / num_data;
 
   $("#evaluation-2-recall-0").html(
       evaluation.avg_sem_recall.toFixed(value_prec) +
@@ -871,7 +866,7 @@ function UpdateEvaluation(data) {
   var entities = data.entity_extraction.entity_items;
   var query = data.query_analysis.keywords.slice(0).join(" ");
   var num_data = ground_truth.data.length;
-  for (var i in data.query_analysis.target_keywords) { 
+  for (var i = 0; i < data.query_analysis.target_keywords.length; ++i) { 
     query += " " + data.query_analysis.target_keywords[i];
   }
   ScoreEntities(query, entities);
@@ -915,30 +910,18 @@ function UpdateEvaluation(data) {
       "</tr></tbody>";
     $("#evaluation-table").html(table_init);
   } else {
-    evaluation.avg_recall = evaluation.recalls.reduce(
-        function(v1, v2) { return v1 + v2; }
-    ) / num_data;
-    evaluation.avg_precision_10 = evaluation.precisions_10.reduce(
-        function(v1, v2) { return v1 + v2; } 
-    ) / num_data;
-    evaluation.avg_precision_r = evaluation.precisions_r.reduce(
-        function(v1, v2) { return v1 + v2; }
-    ) / num_data;
+    evaluation.avg_recall = evaluation.recalls.reduce(Sum) / num_data;
+    evaluation.avg_precision_10 = evaluation.precisions_10.reduce(Sum) / num_data;
+    evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum) / num_data;
 
-    evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(
-        function(v1, v2) { return v1 + v2; }
-    ) / num_data;
-    evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(
-        function(v1, v2) { return v1 + v2; } 
-    ) / num_data;
-    evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(
-        function(v1, v2) { return v1 + v2; }
-    ) / num_data;
+    evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum) / num_data;
+    evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(Sum) / num_data;
+    evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
   }
   if (data.eval < num_data) {
     var query = ground_truth.data[data.eval][0];
     var row = "<tr><td>" + (data.eval + 1) + "</td>" + 
-      "<td><a href='" + server + "/?q=\"" + query.replace("'", "&#39;") +
+      "<td><a href='" + server + "/?q=\"" + query.ReplaceAll("'", "&#39;") +
       "\"'>" + TrimStr(query)  + "</a></td>" +
       "<td>" + m.recall.toFixed(value_prec) +
       "<span class='red'> [" + m.approx_recall.toFixed(value_prec) + "]</span></td>" +
@@ -1102,6 +1085,9 @@ function UpdateSemanticEntityChart(entities) {
   var k = Math.min(20, entities.length);
   var array = [["Entity", "Score"]];
 
+  if (k == 0) {
+    array.push(["", 0]);
+  }
   for (var i = 0; i < k; ++i) {
     var name = entities[i].inst;
     var beg = name.lastIndexOf(":") + 1;
@@ -1109,7 +1095,7 @@ function UpdateSemanticEntityChart(entities) {
     if (end == -2) {
       end = name.length;
     }
-    name = name.substr(beg, end - beg).replace("_", " ");
+    name = name.substr(beg, end - beg).ReplaceAll("_", " ");
     var score = parseInt(entities[i].score);
     array.push([name.toUpperCase(), score]); 
   }
@@ -1220,6 +1206,10 @@ function UpdateOptions(elem, show) {
     options.show_semantic_query = show;
     return;
   }
+  if (elem.indexOf("Semantic Entity Chart") != -1) {
+    options.show_semantic_entity_chart = show;
+    return;
+  }
   if (elem.indexOf("Scoring") != -1) {
     options.show_scoring = show;
     return;
@@ -1254,6 +1244,9 @@ function UseOptions() {
   }
   if (options.show_semantic_query) {
     $("#semantic-query-toggle").click();
+  }
+  if (options.show_semantic_entity_chart) {
+    $("#semantic-entity-chart-toggle").click();
   }
   if (options.show_scoring) {
     $("#scoring-toggle").click();
