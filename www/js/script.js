@@ -27,6 +27,8 @@ var server_options = {
 
 function SearchResult(query) {
   this.query = query;
+  this.keywords = [];
+  this.target_keywords = [];
   this.entities = [];
   this.type_scores = {};
   this.coarse_type = "unknown";
@@ -66,9 +68,13 @@ var scoring_options = {
 };
 
 var ground_truth = {
-  v: "0.0.1",
+  v: "0.0.2",
   valid: false,
-  data: [],
+  queries: [],
+  entities: [],
+  keywords: [],
+  target_keywords: [],
+  coarse_types: [],
 };
 
 var evaluation = {
@@ -480,11 +486,11 @@ function TypeInfoCallback(data, status, xhr) {
   if (data.eval == -1) {
     $("#yago-target-types").html(best_type[1].toUpperCase());
     var broccoli_query = "$1 is-a " + type +
-        ";$1 occurs-with " + search_result.query;
+        ";$1 occurs-with " + search_result.keywords.join(" ");
     $("#broccoli-query-area").html(broccoli_query);
   } else {
     var broccoli_query = "$1 is-a " + type +
-        ";$1 occurs-with " + ground_truth.data[data.eval][0];
+        ";$1 occurs-with " + ground_truth.keywords[data.eval].join(" ");
   }
   console.log(broccoli_query);
   BroccoliSearch(broccoli_query, data.eval);
@@ -552,6 +558,12 @@ function SearchCallback(data, status, xhr) {
     documents += element;
   }
   $("#result-area").html(documents);
+
+  search_result.keywords = data.query_analysis.keywords;
+  search_result.target_keywords = data.query_analysis.target_keywords;
+  search_result.target_keywords = data.query_analysis.target_keywords;
+  search_result.entities = data.entity_extraction.entity_items;
+  // console.log(search_result)
 
   entities = data.entity_extraction.entity_items;
   ScoreEntities(query, entities);
@@ -630,14 +642,14 @@ function EvaluateResults(init) {
     RenderEvaluation(evaluation);
     return;
   } else {
-    if (evaluation.next >= ground_truth.data.length) {
+    if (evaluation.next >= ground_truth.queries.length) {
       // evaluation.valid = true;
       // evaluation.next = 0;
       // $.cookie("evaluation", evaluation);
       // sessionStorage.setItem("evaluation", JSON.stringify(evaluation));
       // ApplySortability();
     } else {
-      Search(ground_truth.data[evaluation.next][0], "&eval=" + evaluation.next);
+      Search(ground_truth.queries[evaluation.next], "&eval=" + evaluation.next);
       ++evaluation.next;
     }
   }
@@ -682,8 +694,8 @@ function RenderEvaluation(evaluation) {
     "]</span></td>" +
     "</tr>";
 
-  for (var i = 0; i < ground_truth.data.length; ++i) {
-    var query = ground_truth.data[i][0];
+  for (var i = 0; i < ground_truth.queries.length; ++i) {
+    var query = ground_truth.queries[i];
     var recall = evaluation.recalls[i];
     var precision_10 = evaluation.precisions_10[i];
     var precision_r = evaluation.precisions_r[i];
@@ -727,7 +739,7 @@ function RenderEvaluation(evaluation) {
 
 function MeasureStats(entities, eval) {
   var relevant = {};
-  var num_rel = ground_truth.data[eval].length - 1;
+  var num_rel = ground_truth.entities[eval].length;
 
   var ret = {
     recall: 0,
@@ -738,8 +750,8 @@ function MeasureStats(entities, eval) {
     approx_precision_r: 0,
   };
 
-  for (var i = 1; i < num_rel + 1; ++i) {
-    relevant[ground_truth.data[eval][i]] = 0;
+  for (var i = 0; i < num_rel; ++i) {
+    relevant[ground_truth.entities[eval][i]] = 0;
   }
   var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
@@ -763,8 +775,8 @@ function MeasureStats(entities, eval) {
     var name_array = name.split(" ");
     var filtered = entities[i][8];
     if (!filtered && (relevant[name] === undefined || relevant[name] > rank)) {
-      for (var j = 1; j < num_rel + 1; ++j) {
-        var truth_name = ground_truth.data[eval][j];
+      for (var j = 0; j < num_rel; ++j) {
+        var truth_name = ground_truth.entities[eval][j];
         if ((relevant[truth_name] === 0 || relevant[truth_name] > rank) &&
             IsSimilar(name_array, truth_name.split(" "))) {
           var prev_match = relevant[truth_name];
@@ -798,8 +810,8 @@ function Sum(a, b) {
 }
 
 function UpdateSemanticEvaluation(entities_, eval) {
-  var query = ground_truth.data[eval][0];
-  var num_data = ground_truth.data.length;
+  var query = ground_truth.queries[eval];
+  var num_data = ground_truth.queries.length;
   var entities = [];
   for (var i = 0; i < entities_.length; ++i) {
     var name = entities_[i].inst;
@@ -855,7 +867,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
       " <span class='red'>[" + m.approx_precision_r.toFixed(value_prec) +
       "]</span>");
 
-  if (eval == ground_truth.data.length - 1) {
+  if (eval == ground_truth.queries.length - 1) {
     evaluation.valid = true;
     evaluation.next = 0;
     SaveSessionItem("evaluation");
@@ -865,9 +877,8 @@ function UpdateSemanticEvaluation(entities_, eval) {
 function UpdateEvaluation(data) {
   var entities = data.entity_extraction.entity_items;
   var keywords = data.query_analysis.keywords;
-  console.log(keywords);
   var query = data.query_analysis.keywords.slice(0).join(" ");
-  var num_data = ground_truth.data.length;
+  var num_data = ground_truth.queries.length;
   for (var i = 0; i < data.query_analysis.target_keywords.length; ++i) { 
     query += " " + data.query_analysis.target_keywords[i];
   }
@@ -922,7 +933,7 @@ function UpdateEvaluation(data) {
     evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
   }
   if (data.eval < num_data) {
-    var query = ground_truth.data[data.eval][0];
+    var query = ground_truth.queries[data.eval];
     var row = "<tr><td>" + (data.eval + 1) + "</td>" + 
       "<td><a href='" + server + "/?q=\"" + query.ReplaceAll("'", "&#39;") +
       "\"'>" + TrimStr(query)  + "</a></td>" +
@@ -963,7 +974,11 @@ function GroundTruthRequest() {
 }
 
 function GroundTruthRequestCallback(data, status, xhr) {
-  ground_truth.data = data.ground_truth;
+  ground_truth.queries = data.ground_truth.queries;
+  ground_truth.entities = data.ground_truth.entities;
+  ground_truth.keywords = data.ground_truth.keywords;
+  ground_truth.target_keywords = data.ground_truth.target_keywords;
+  ground_truth.coarse_types = data.ground_truth.coarse_types;
   ground_truth.valid = true;
   EvaluateResults(false);
 }

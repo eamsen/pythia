@@ -16,6 +16,7 @@
 #include <glog/logging.h>
 #include <flow/clock.h>
 #include <flow/string.h>
+#include <flow/stringify.h>
 #include <string>
 #include <vector>
 #include <ostream>
@@ -23,6 +24,7 @@
 #include <sstream>
 #include "./request-handler-factory.h"
 #include "../io/serialize.h"
+#include "../nlp/query-analyser.h"
 
 using std::string;
 using std::vector;
@@ -39,6 +41,7 @@ using Poco::Util::Option;
 using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
 using flow::time::ThreadClock;
+using flow::io::JsonArray;
 using pyt::nlp::Tagger;
 
 namespace pyt {
@@ -90,14 +93,17 @@ Server::Server(const string& name, const string& version,
       LOG(INFO) << "Read binary ground truth index ["
           << ThreadClock() - start_time << "]";
     } else {
+      pyt::nlp::QueryAnalyser query_analyser_(Tagger());
       // Construct ground truth index from text files.
       for (int i = 0; i < 10; ++i) {
         ifstream stream(FLAGS_groundtruthdir + "/entities-" + std::to_string(i));
         if (!stream) {
           continue;
         }
-        stringstream json;
-        json << "[";
+        vector<string> queries;
+        vector<vector<string>> entities;
+        vector<vector<string>> keywords;
+        vector<vector<string>> target_keywords;
         string prev_query;
         while (stream.good()) {
           string query;
@@ -120,20 +126,22 @@ Server::Server(const string& name, const string& version,
           }
 
           if (query != prev_query) {
-            if (prev_query.size()) {
-              json << "],";
-            }
-            json << "[\"" << query << "\",";
-          } else if (prev_query.size()) {
-            json << ",";
+            queries.push_back(query);
+            entities.push_back({});
+            // Get the target keywords.
+            target_keywords.push_back(query_analyser_.TargetKeywords(query));
+            keywords.push_back(query_analyser_.Keywords(query,
+                  target_keywords.back()));
           }
-          json << "\"" << entity << "\"";
+          entities.back().push_back(entity);
           prev_query.swap(query);
         }
-        if (prev_query.size()) {
-          json << "]";
-        }
-        json << "]";
+        stringstream json;
+        json << "{\"queries\":" << JsonArray(queries)
+            << ",\"entities\":" << JsonArray(entities)
+            << ",\"keywords\":" << JsonArray(keywords)
+            << ",\"target_keywords\":" << JsonArray(target_keywords)
+            << "}";
         ground_truth_.insert({std::to_string(i), json.str()});
       }
       ofstream out_bin_stream(FLAGS_groundtruthcache);
