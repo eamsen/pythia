@@ -118,6 +118,8 @@ Server::Server(const string& name, const string& version,
           if (entity_end != string::npos) {
             entity = entity.substr(0, entity_end - 1);
           }
+          std::transform(query.begin(), query.end(), query.begin(),
+              ::tolower);
           std::transform(entity.begin(), entity.end(), entity.begin(),
               ::tolower);
 

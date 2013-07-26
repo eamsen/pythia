@@ -55,8 +55,9 @@ vector<string> QueryAnalyser::Keywords(const string& query,
            label == Tagger::kPosJJS;
   };
 
-  size_t pos = 0;
   vector<string> keywords;
+  const size_t num_target_keywords = target_keywords.size();
+
   // We need a first upper case letter and punctuation for the POS-tagger.
   string prop_query = query + ".";
   prop_query[0] = std::toupper(prop_query[0]); 
@@ -65,14 +66,13 @@ vector<string> QueryAnalyser::Keywords(const string& query,
     const int label = it->label;
     if (IsNN(label) || IsJJ(label)) {
       keywords.push_back(query.substr(it->offset.begin, it->offset.size));
-      if (pos < target_keywords.size() &&
-          target_keywords[pos].find(keywords.back()) != string::npos) {
-        // Ignore target keywords.
-        keywords.pop_back();
-        ++pos;
+      for (size_t pos = 0; pos < num_target_keywords; ++pos) {
+        if (target_keywords[pos].find(keywords.back()) != string::npos) {
+          // Ignore target keywords.
+          keywords.pop_back();
+          break;
+        }
       }
-    } else if (label == Tagger::kPosPOS) {
-      keywords.back() += query.substr(it->offset.begin, it->offset.size);
     }
   }
   return keywords;

@@ -487,10 +487,16 @@ function TypeInfoCallback(data, status, xhr) {
     $("#yago-target-types").html(best_type[1].toUpperCase());
     var broccoli_query = "$1 is-a " + type +
         ";$1 occurs-with " + search_result.keywords.join(" ");
+    if (search_result.keywords.length == 0) {
+      broccoli_query += search_result.target_keywords.join(" ");
+    }
     $("#broccoli-query-area").html(broccoli_query);
   } else {
     var broccoli_query = "$1 is-a " + type +
         ";$1 occurs-with " + ground_truth.keywords[data.eval].join(" ");
+    if (ground_truth.keywords[data.eval].length == 0) {
+      broccoli_query += ground_truth.target_keywords[data.eval].join(" ");
+    }
   }
   console.log(broccoli_query);
   BroccoliSearch(broccoli_query, data.eval);
@@ -525,6 +531,7 @@ function SearchCallback(data, status, xhr) {
   for (var i in data.query_analysis.keywords) { 
     var keyword = data.query_analysis.keywords[i];
     keywords[keyword] = true;
+    keywords[keyword + "'s"] = true;
   }
   var query_analysis = "";
   for (var i in data.query_analysis.query) {
@@ -593,6 +600,12 @@ function BroccoliSearch(query, eval) {
 
 function BroccoliSearchCallback(data, arg) {
   arg = parseInt(arg);
+
+  if (data.result.status !== "OK") {
+    console.log(data);
+    return;
+  }
+
   var entities = data.result.res.instances.data;
   if (arg == -1) {
     UpdateSemanticEntityChart(entities);
@@ -695,20 +708,20 @@ function RenderEvaluation(evaluation) {
     "</tr>";
 
   for (var i = 0; i < ground_truth.queries.length; ++i) {
-    var query = ground_truth.queries[i];
-    var recall = evaluation.recalls[i];
-    var precision_10 = evaluation.precisions_10[i];
-    var precision_r = evaluation.precisions_r[i];
-    var approx_recall = evaluation.approx_recalls[i];
-    var approx_precision_10 = evaluation.approx_precisions_10[i];
-    var approx_precision_r = evaluation.approx_precisions_r[i];
+    var query = ground_truth.queries[i] || 0.0;
+    var recall = evaluation.recalls[i] || 0.0;
+    var precision_10 = evaluation.precisions_10[i] || 0.0;
+    var precision_r = evaluation.precisions_r[i] || 0.0;
+    var approx_recall = evaluation.approx_recalls[i] || 0.0;
+    var approx_precision_10 = evaluation.approx_precisions_10[i] || 0.0;
+    var approx_precision_r = evaluation.approx_precisions_r[i] || 0.0;
 
-    var sem_recall = evaluation.sem_recalls[i];
-    var sem_precision_10 = evaluation.sem_precisions_10[i];
-    var sem_precision_r = evaluation.sem_precisions_r[i];
-    var sem_approx_recall = evaluation.sem_approx_recalls[i];
-    var sem_approx_precision_10 = evaluation.sem_approx_precisions_10[i];
-    var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i];
+    var sem_recall = evaluation.sem_recalls[i] || 0.0;
+    var sem_precision_10 = evaluation.sem_precisions_10[i] || 0.0;
+    var sem_precision_r = evaluation.sem_precisions_r[i] || 0.0;
+    var sem_approx_recall = evaluation.sem_approx_recalls[i] || 0.0;
+    var sem_approx_precision_10 = evaluation.sem_approx_precisions_10[i] || 0.0;
+    var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i] || 0.0;
 
     table += "<tr><td>" + (i + 1) + "</td>" + 
       "<td><a href='" + server + "/?q=\"" + query.ReplaceAll("'", "&#39;") +
