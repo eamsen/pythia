@@ -76,6 +76,10 @@ input[type="color"],
   color: #c93a3e;
 }
 
+.blue {
+  color: #43A6E8;
+}
+
 .label {
   background-color: transparent;
   border: 1px solid #a6a8a8;
@@ -129,6 +133,10 @@ table.sortable thead th:hover {
 
 .table tbody tr.error td {
   background-color: #c93a3e;
+}
+
+.table tbody tr.error2 td {
+  background-color: #0879C4;
 }
 
 .table-bordered thead:first-child tr:first-child > th:first-child,
