@@ -1195,7 +1195,7 @@ function UpdateEvaluation(data) {
       " [" + evaluation.avg_approx_recall.toFixed(value_prec) + "]");
   $("#evaluation-1-recalls-0").html(
       evaluation.avg_recall_s.toFixed(value_prec) +
-      " [" + evaluation.avg_approx_recall.toFixed(value_prec) + "]");
+      " [" + evaluation.avg_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-1-prec10-0").html(
       evaluation.avg_precision_10.toFixed(value_prec) +
       " [" + evaluation.avg_approx_precision_10.toFixed(value_prec) + "]");
