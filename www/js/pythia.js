@@ -805,7 +805,9 @@ function RenderEvaluation(evaluation) {
       "<td>" + sem_recall.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_recall.toFixed(value_prec) +
       "]</span></td>" +
-      "<td></td>" +
+      "<td>" + sem_recall.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_recall.toFixed(value_prec) +
+      "]</span></td>" +
       "<td>" + sem_precision_10.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision_10.toFixed(value_prec) +
       "]</span></td>" +
@@ -1038,27 +1040,27 @@ function UpdateSemanticEvaluation(entities_, eval) {
       evaluation.avg_sem_f_s.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_f_s.toFixed(value_prec) + "]");
 
-  $("#evaluation-2-recall-" + eval).html(
+  $("#evaluation-2-recall-" + (eval + 1)).html(
       m.recall.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-recalls-" + eval).html(
+  $("#evaluation-2-recalls-" + (eval + 1)).html(
       m.recall.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-prec10-" + eval).html(
+  $("#evaluation-2-prec10-" + (eval + 1)).html(
       m.precision_10.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_10.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-precr-" + eval).html(
+  $("#evaluation-2-precr-" + (eval + 1)).html(
       m.precision_r.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_r.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-precs-" + eval).html(
+  $("#evaluation-2-precs-" + (eval + 1)).html(
       m.precision_s.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_s.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-fs-" + eval).html(
+  $("#evaluation-2-fs-" + (eval + 1)).html(
       m.f_s.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_f_s.toFixed(value_prec) +
       "]</span>");
@@ -1175,17 +1177,17 @@ function UpdateEvaluation(data) {
       "</tr>" +
       "<tr><td>" + (data.eval + 1) + ".2</td>" + 
       "<td></td>" +
-      "<td id='evaluation-2-recall-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-recall-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-recalls-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-recalls-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-prec10-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-prec10-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-precr-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-precr-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-precs-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-precs-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-fs-" + data.eval + "'>0.00" + 
+      "<td id='evaluation-2-fs-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
       "</tr>";
     $("#evaluation-table > tbody:last").append(row);
