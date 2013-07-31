@@ -730,7 +730,10 @@ function RenderEvaluation(evaluation) {
     evaluation.avg_sem_recall.toFixed(value_prec) +
     " <span>[" + evaluation.avg_sem_approx_recall.toFixed(value_prec) +
     "]</span></td>" +
-    "<td></td>" +
+    "<td id='evaluation-2-recalls-0'>" +
+    evaluation.avg_sem_recall.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_recall.toFixed(value_prec) +
+    "]</span></td>" +
     "<td id='evaluation-2-prec10-0'>" +
     evaluation.avg_sem_precision_10.toFixed(value_prec) +
     " <span>[" + evaluation.avg_sem_approx_precision_10.toFixed(value_prec) +
@@ -821,6 +824,14 @@ function RenderEvaluation(evaluation) {
   $("#evaluation-table").html(table);
 }
 
+function FMeasure(recall, precision) {
+  var s = recall + precision;
+  if (s > 0) {
+    return 2.0 * recall * precision / s;
+  }
+  return 0;
+}
+
 function MeasureStats(entities, eval) {
   var relevant = {};
   var num_rel = ground_truth.entities[eval].length;
@@ -848,7 +859,7 @@ function MeasureStats(entities, eval) {
   // Compute maxima and average scores, this is required for cutoff testing.
   // There is no cutoff for semantic entities, so don't compute anything if
   // there are no scores.
-  var sem_eval = entities.length == 0 || entities[0].length == 2;
+  var sem_eval = entities.length === 0 || entities[0].length === 2;
   if (!sem_eval) {
     var scores = [];
     var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -927,11 +938,11 @@ function MeasureStats(entities, eval) {
     rank += !filtered;
   }
 
-  if (num_selected == 0) {
+  // Avoid division by zero.
+  if (num_selected === 0) {
     num_selected = 1;
   }
 
-  ret.recall_s = ret.precision_s / num_rel;
   ret.approx_recall = (ret.recall + ret.approx_recall) / num_rel;
   ret.approx_recall_s = (ret.precision_s + ret.approx_precision_s) / num_rel;
   ret.approx_precision_10 = (ret.precision_10 + ret.approx_precision_10) / 10;
@@ -940,20 +951,13 @@ function MeasureStats(entities, eval) {
                            num_selected;
 
   ret.recall /= num_rel;
+  ret.recall_s = ret.precision_s / num_rel;
   ret.precision_10 /= 10;
   ret.precision_r /= num_rel;
   ret.precision_s /= num_selected;
 
-  var prec_recall = ret.precision_s + ret.recall_s;
-  if (prec_recall > 0) {
-    ret.f_s = 2 * ret.precision_s * ret.recall_s / prec_recall;
-  }
-
-  var approx_prec_recall = ret.approx_precision_s + ret.approx_recall_s;
-  if (approx_prec_recall > 0) {
-    ret.approx_f_s = 2 * ret.approx_precision_s * ret.approx_recall_s /
-                     approx_prec_recall;
-  }
+  ret.f_s = FMeasure(ret.recall_s, ret.precision_s);
+  ret.approx_f_s = FMeasure(ret.approx_recall_s, ret.approx_precision_s);
 
   return ret;
 }
@@ -994,18 +998,31 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.sem_approx_precisions_s[eval] = m.approx_precision_s;
 
   evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(Sum) / num_data;
-  evaluation.avg_sem_precision_10 = evaluation.sem_precisions_10.reduce(Sum) / num_data;
-  evaluation.avg_sem_precision_r = evaluation.sem_precisions_r.reduce(Sum) / num_data;
-  evaluation.avg_sem_precision_s = evaluation.sem_precisions_s.reduce(Sum) / num_data;
-  evaluation.avg_sem_f_s = evaluation.sem_f_s.reduce(Sum) / num_data;
+  evaluation.avg_sem_precision_10 =
+      evaluation.sem_precisions_10.reduce(Sum) / num_data;
+  evaluation.avg_sem_precision_r =
+      evaluation.sem_precisions_r.reduce(Sum) / num_data;
+  evaluation.avg_sem_precision_s =
+      evaluation.sem_precisions_s.reduce(Sum) / num_data;
+  evaluation.avg_sem_f_s =
+      FMeasure(evaluation.avg_sem_recall, evaluation.avg_sem_precision_s);
 
-  evaluation.avg_sem_approx_recall = evaluation.sem_approx_recalls.reduce(Sum) / num_data;
-  evaluation.avg_sem_approx_precision_10 = evaluation.sem_approx_precisions_10.reduce(Sum) / num_data;
-  evaluation.avg_sem_approx_precision_r = evaluation.sem_approx_precisions_r.reduce(Sum) / num_data;
-  evaluation.avg_sem_approx_precision_s = evaluation.sem_approx_precisions_s.reduce(Sum) / num_data;
-  evaluation.avg_sem_approx_f_s = evaluation.sem_approx_f_s.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_recall =
+      evaluation.sem_approx_recalls.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_precision_10 =
+      evaluation.sem_approx_precisions_10.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_precision_r =
+      evaluation.sem_approx_precisions_r.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_precision_s =
+      evaluation.sem_approx_precisions_s.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_f_s =
+      FMeasure(evaluation.avg_sem_approx_recall,
+               evaluation.avg_sem_approx_precision_s);
 
   $("#evaluation-2-recall-0").html(
+      evaluation.avg_sem_recall.toFixed(value_prec) +
+      " [" + evaluation.avg_sem_approx_recall.toFixed(value_prec) + "]");
+  $("#evaluation-2-recalls-0").html(
       evaluation.avg_sem_recall.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_recall.toFixed(value_prec) + "]");
   $("#evaluation-2-prec10-0").html(
@@ -1022,6 +1039,10 @@ function UpdateSemanticEvaluation(entities_, eval) {
       " [" + evaluation.avg_sem_approx_f_s.toFixed(value_prec) + "]");
 
   $("#evaluation-2-recall-" + eval).html(
+      m.recall.toFixed(value_prec) +
+      " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
+      "]</span>");
+  $("#evaluation-2-recalls-" + eval).html(
       m.recall.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
       "]</span>");
@@ -1107,7 +1128,8 @@ function UpdateEvaluation(data) {
       "<td>SEMANTIC AVERAGE</td>" +
       "<td id='evaluation-2-recall-0'>0.00" +
       " <span>[0.00]</span></td>" +
-      "<td></td>" +
+      "<td id='evaluation-2-recalls-0'>0.00" +
+      " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-prec10-0'>0.00" +
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-precr-0'>0.00" +
@@ -1124,14 +1146,14 @@ function UpdateEvaluation(data) {
     evaluation.avg_precision_10 = evaluation.precisions_10.reduce(Sum) / num_data;
     evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum) / num_data;
     evaluation.avg_precision_s = evaluation.precisions_s.reduce(Sum) / num_data;
-    evaluation.avg_f_s = evaluation.f_s.reduce(Sum) / num_data;
+    evaluation.avg_f_s = FMeasure(evaluation.avg_recall_s, evaluation.avg_precision_s);
 
     evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum) / num_data;
     evaluation.avg_approx_recall_s = evaluation.approx_recalls_s.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_s = evaluation.approx_precisions_s.reduce(Sum) / num_data;
-    evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum) / num_data;
+    evaluation.avg_approx_f_s = FMeasure(evaluation.avg_approx_recall_s, evaluation.avg_approx_precision_s);
   }
   if (data.eval < num_data) {
     var query = ground_truth.queries[data.eval];
@@ -1155,7 +1177,8 @@ function UpdateEvaluation(data) {
       "<td></td>" +
       "<td id='evaluation-2-recall-" + data.eval + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td></td>" +
+      "<td id='evaluation-2-recalls-" + data.eval + "'>0.00" + 
+      " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-prec10-" + data.eval + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-precr-" + data.eval + "'>0.00" + 
