@@ -1,0 +1,17 @@
+carriers-that-blackberry-makes-phones-for  $1 is-a Company;$1 occurs-with offer*|prov*|sell|sell*|enab*|feat*|promo*|avail* blackberry;$1 occurs-with carrier*
+winners-of-the-acm-athena-award  $1 is-a Person;
+professional-sports-teams-in-philadelphia  $1 is-a Team;$2 equals Philadelphia;$1 occurs-with based|resid*|locat* professional $2;$3 is-a Sport;$1 occurs-with play* $3
+products-of-medimmune-inc  $1 is-a Substance;$2 equals MedImmune;$1 occurs-with manu*|market*|sell*|sold $2
+organizations-that-award-nobel-prizes  $1 is-a Organization;$1 occurs-with awards|selects|selecting -receive* -won -accept* nobel prize
+airlines-that-currently-use-boeing-747-planes  $1 is-a Airline;$1 occurs-with boeing 747
+members-of-the-beaux-arts-trio  $1 is-a Musician;$1 occurs-with beaux arts trio
+campuses-of-indiana-university  $1 is-a University;$2 equals Indiana_University;$1 occurs-with campus $2
+donors-to-the-home-depot-foundation  $1 is-a Organization;$1 occurs-with charit*|dona* home depot foundation
+airlines-that-air-canada-has-code-share-flights-with  $1 is-a Airline;$1 occurs-with codeshare* $2;$2 equals Air_Canada
+authors-awarded-an-anthony-award-at-bouchercon-in-2007  $1 is-a Person;$1 occurs-with 2007 $2;$2 equals Anthony_Award
+universities-that-are-members-of-the-sec-conference-for-football  $1 is-a University;$1 occurs-with member $2;$1 occurs-with football;$2 equals Southeastern_Conference
+sponsors-of-the-mancuso-quilt-festivals  $1 is-a Entity;
+chefs-with-a-show-on-the-food-network  $1 is-a Chef;$1 occurs-with show $2;$2 equals Food_Network
+members-of-the-band-jefferson-airplane  $1 is-a Musician;$2 equals Jefferson_Airplane;$1 occurs-with member* $2
+companies-that-john-hennessy-serves-on-the-board-of  $1 is-a Organization;$2 equals John_L._Hennessy;$1 occurs-with board serv*|memb* $2
+scotch-whisky-distilleries-on-the-island-of-islay  $1 is-a Distillery;$1 occurs-with isle islay
