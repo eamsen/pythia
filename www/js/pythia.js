@@ -69,7 +69,7 @@ var scoring_options = {
 
 var ground_truth = {
   v: "0.0.3",
-  req_set: 1,
+  req_set: 0,
   set: -1,
   valid: false,
   queries: [],
@@ -1616,13 +1616,13 @@ $(document).on("click", ".accordion-toggle",
 );
 
 google.load("visualization", "1", {packages:["corechart"]});
-$.serverObserver.enable({
-  url: server + "/index.html?" + (+new Date()),
-  frequency: 15000,
-  onServerOnline: function() {
-    $("#server-status-area").css({"background-color": "#111e21"}); 
-  },
-  onServerOffline: function() {
-    $("#server-status-area").css({"background-color": "#c93a3e"}); 
-  }
-});
+// $.serverObserver.enable({
+//   url: server + "/index.html?" + (+new Date()),
+//   frequency: 15000,
+//   onServerOnline: function() {
+//     $("#server-status-area").css({"background-color": "#111e21"}); 
+//   },
+//   onServerOffline: function() {
+//     $("#server-status-area").css({"background-color": "#c93a3e"}); 
+//   }
+// });
