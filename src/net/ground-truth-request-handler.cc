@@ -76,6 +76,7 @@ void GroundTruthRequestHandler::Handle(Request* request, Response* response) {
 
   const auto duration = Clock() - start_time;
   response_stream << "{\"duration\":" << duration.Value()
+      << ",\"set\":" << path
       << ",\"ground_truth\":" << ground_truth
       << "}";
 }

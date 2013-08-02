@@ -68,7 +68,9 @@ var scoring_options = {
 };
 
 var ground_truth = {
-  v: "0.0.2",
+  v: "0.0.3",
+  req_set: 1,
+  set: -1,
   valid: false,
   queries: [],
   entities: [],
@@ -78,8 +80,9 @@ var ground_truth = {
 };
 
 var evaluation = {
-  v: "0.0.6",
+  v: "0.0.7",
   valid: false,
+  set: -1,
   next: 0,
   f_s: [],
   approx_f_s: [],
@@ -663,12 +666,14 @@ function UpdatePerformanceChart(durations, total) {
 }
 
 function EvaluateResults(init) {
-  if (init === undefined || init == true) {
+  if (init === undefined || init == true ||
+      evaluation.set != ground_truth.req_set) {
     evaluation.valid = false;
     evaluation.next = 0;
+    evaluation.set = ground_truth.req_set;
   }
-  if (!ground_truth.valid) {
-    GroundTruthRequest();
+  if (!ground_truth.valid || ground_truth.req_set != ground_truth.set) {
+    GroundTruthRequest(ground_truth.req_set);
   } else if (evaluation.valid) {
     RenderEvaluation(evaluation);
     return;
@@ -1215,14 +1220,15 @@ function UpdateEvaluation(data) {
   EvaluateResults(false);
 }
 
-function GroundTruthRequest() {
+function GroundTruthRequest(id) {
   $.ajax({url: server + "/ground-truth/",
-    data: "0",
+    data: id.toString(),
     dataType: "json",
     success: GroundTruthRequestCallback});
 }
 
 function GroundTruthRequestCallback(data, status, xhr) {
+  ground_truth.set = data.set;
   ground_truth.queries = data.ground_truth.queries;
   ground_truth.entities = data.ground_truth.entities;
   ground_truth.keywords = data.ground_truth.keywords;
