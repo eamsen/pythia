@@ -58,6 +58,8 @@ input[type="tel"],
 input[type="color"],
 .uneditable-input {
   background-color: #0f1c1f;
+  color: rgb(244, 248, 247);
+  border-radius: 0px;
 }
 
 .keyword {

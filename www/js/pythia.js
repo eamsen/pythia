@@ -52,7 +52,9 @@ SearchResult.prototype.CoarseType = function() {
 var search_result = new SearchResult(null);
 
 var entities = [];
+
 var query = null;
+
 var scoring_options = {
   v: "0.1.5",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
@@ -68,7 +70,7 @@ var scoring_options = {
 };
 
 var ground_truth = {
-  v: "0.0.3",
+  v: "0.0.5",
   req_set: 0,
   set: -1,
   valid: false,
@@ -1545,7 +1547,7 @@ function UseOptions() {
 function LoadCookie(name) {
   if ($.cookie(name) == undefined ||
       $.cookie(name).v == undefined ||
-      $.cookie(name).v < window[name].v) {
+      $.cookie(name).v !== window[name].v) {
     $.cookie(name, window[name]);
   }
   window[name] = $.cookie(name);
@@ -1557,7 +1559,7 @@ function SaveSessionItem(name) {
 
 function LoadSessionItem(name) {
   var item = JSON.parse(sessionStorage.getItem(name));
-  if (item === null || item.v === undefined || item.v < window[name].v) {
+  if (item === null || item.v === undefined || item.v !== window[name].v) {
     SaveSessionItem(name);
     item = JSON.parse(sessionStorage.getItem(name));
   }

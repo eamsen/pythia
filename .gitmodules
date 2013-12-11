@@ -7,3 +7,6 @@
 [submodule "deps/flow"]
 	path = deps/flow
 	url = https://github.com/eamsen/flow
+[submodule "deps/flat-ui"]
+	path = deps/flat-ui
+	url = https://github.com/designmodo/Flat-UI.git
