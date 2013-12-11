@@ -7,8 +7,10 @@ GTESTLIBS:=-lgtest -lgtest_main
 POCODIR:=deps/poco/install
 GFLAGSDIR:=deps/gflags
 GLOGDIR:=deps/glog
-CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src
-CFLAGS:=-Wall -O3 -fopenmp
+FLOWDIR:=deps/flow
+CXX:=g++ -std=c++0x -I$(POCODIR)/include -I$(GFLAGSDIR)/src -I$(GLOGDIR)/src\
+	-I$(FLOWDIR)/include
+CFLAGS:=-Wall -O3 -fopenmp -Wno-write-strings
 LIBS:=-Llibs -L$(POCODIR)/lib\
 	-lpythia-io -lpythia-net -lpythia-nlp\
 	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
@@ -50,8 +52,9 @@ debug: clean all
 subprep:
 	@git submodule init >/dev/null;
 	@git submodule update;
+	@cd www; ln -s ../deps/flat-ui; cd - >/dev/null;
 
-depend: subprep senna poco gflags glog cpplint flow
+depend: makedirs subprep senna poco gflags glog cpplint flow
 	@echo "compiled all dependencies"
 
 makedirs:
@@ -93,7 +96,7 @@ cpplint:
 	# nothing to do
 
 flow:
-	@cd deps/flow; make; make install;
+	@cd deps/flow; make;
 
 check: makedirs $(TSTBINS)
 	@for t in $(TSTBINS); do ./$$t; done
