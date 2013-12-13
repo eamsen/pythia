@@ -57,11 +57,12 @@ var entities = [];
 var query = null;
 
 var scoring_options = {
-  v: "0.1.5",
+  v: "0.1.6",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   cdfw: 0.25,
   sdfw: 0.25,
+  cutoff: 0.25,
   ontology_filter: 1,
   similarity_filter: 1,
   coarse_type_filter: 1,
@@ -217,6 +218,7 @@ function InitSliders() {
   }
   InitVSlider("cdfw", scoring_options.cdfw, SetOptionFunc("cdfw"));
   InitVSlider("sdfw", scoring_options.sdfw, SetOptionFunc("sdfw"));
+  InitVSlider("cutoff", scoring_options.cutoff, SetOptionFunc("cutoff"));
 }
 
 function Search(query, opts) {
@@ -1413,7 +1415,7 @@ function UpdateSemanticEntityChart(entities) {
 }
 
 function ScoreCutoff(score, avg_score, min_score, max_score) {
-  return score < (max_score - avg_score) * 0.3 + avg_score;
+  return score < (max_score - avg_score) * scoring_options.cutoff + avg_score;
 }
 
 function UpdateEntityChart(entities) {
