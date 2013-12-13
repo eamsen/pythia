@@ -19,34 +19,23 @@
       <div class="page-header">
         <h1>Pythia</h1>
       </div>
+
+      <!-- Query input -->
       <div class="row">
         <div class="span12">
           <input class="span12" type="search" placeholder="search query" value=""
            name="query" id="query"></input>
         </div>
       </div>
+
+      <!-- Server status -->
       <div class="row">
         <div class="span12">
           <div id="server-status-area" class="status"></div>
         </div>
       </div>
-      <div class="row">
-        <div class="span12">
-          <a id="performance-toggle" 
-            class="accordion-toggle" data-toggle="collapse"
-            data-target="#performance-area">
-            <h5><span class="red">+</span> Performance</h5>
-          </a>
-          <div id="performance-area" class="collapse row">
-            <div class="span8">
-              <div id="performance-chart1" style="height: 230px;"></div>
-            </div>
-            <div class="span4">
-              <div id="performance-chart2" style="height: 230px;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+      <!-- Query analysis -->
       <div class="row">
         <div class="span6">
           <a id="query-analysis-toggle"
@@ -70,6 +59,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Semantic query -->
       <div class="row">
         <div class="span12">
           <a id="semantic-query-toggle"
@@ -81,6 +72,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Entity chart -->
       <div class="row">
         <div class="span12">
           <a id="entity-chart-toggle"
@@ -93,6 +86,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Semantic entity chart -->
       <div class="row">
         <div class="span12">
           <a id="semantic-entity-chart-toggle"
@@ -105,6 +100,56 @@
           </div>
         </div>
       </div>
+
+      <!-- Entity table -->
+      <div class="row">
+        <div class="span12">
+          <a id="entity-table-toggle"
+            class="accordion-toggle" data-toggle="collapse"
+            data-target="#entity-extraction-area">
+            <h5><span class="red">+</span> Entity Table</h5>
+          </a>
+          <div id="entity-extraction-area" class="collapse">
+            <table id="entity-table"
+              class="sortable table table-bordered table-condensed"></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Retrieved documents -->
+      <div class="row">
+        <div class="span12">
+          <a id="documents-toggle"
+            class="accordion-toggle" data-toggle="collapse"
+            data-target="#result-area">
+            <h5><span class="red">+</span> Retrieved Documents</h5>
+          </a>
+          <div id="result-area" class="collapse bordered">
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance -->
+      <div class="row">
+        <div class="span12">
+          <a id="performance-toggle" 
+            class="accordion-toggle" data-toggle="collapse"
+            data-target="#performance-area">
+            <h5><span class="red">+</span> Performance</h5>
+          </a>
+          <div id="performance-area" class="collapse row">
+            <div class="span8">
+              <div id="performance-chart1" style="height: 230px;"></div>
+            </div>
+            <div class="span4">
+              <div id="performance-chart2" style="height: 230px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Scoring -->
       <div class="row">
         <div class="span12">
           <a id="scoring-toggle"
@@ -177,6 +222,8 @@
           </div>
         </div>
       </div> 
+
+      <!-- Evaluation -->
       <div class="row">
         <div class="span12">
           <a id="evaluation-toggle"
@@ -190,30 +237,7 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="span12">
-          <a id="entity-table-toggle"
-            class="accordion-toggle" data-toggle="collapse"
-            data-target="#entity-extraction-area">
-            <h5><span class="red">+</span> Entity Table</h5>
-          </a>
-          <div id="entity-extraction-area" class="collapse">
-            <table id="entity-table"
-              class="sortable table table-bordered table-condensed"></table>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span12">
-          <a id="documents-toggle"
-            class="accordion-toggle" data-toggle="collapse"
-            data-target="#result-area">
-            <h5><span class="red">+</span> Retrieved Documents</h5>
-          </a>
-          <div id="result-area" class="collapse bordered">
-          </div>
-        </div>
-      </div>
+
     </div>
     <script src="flat-ui/js/jquery-1.8.3.min.js"></script>
     <script src="flat-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
