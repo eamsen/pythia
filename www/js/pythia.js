@@ -7,7 +7,7 @@ String.prototype.ReplaceAll = function(find, replace) {
 }
 
 var options = {
-  v: "0.1.3",
+  v: "0.1.4",
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
@@ -17,7 +17,8 @@ var options = {
   show_entity_chart: false,
   show_entity_table: false,
   show_evaluation: false,
-  show_documents: false
+  show_documents: false,
+  max_answer_entities: 100
 };
 
 var server_options = {
@@ -82,7 +83,7 @@ var ground_truth = {
 };
 
 var evaluation = {
-  v: "0.0.7",
+  v: "0.0.9",
   valid: false,
   set: -1,
   next: 0,
@@ -93,6 +94,7 @@ var evaluation = {
   recalls: [],
   sem_recalls: [],
   recalls_s: [],
+  sem_recalls_s: [],
   precisions_10: [],
   sem_precisions_10: [],
   precisions_r: [],
@@ -103,6 +105,7 @@ var evaluation = {
   approx_recalls_s: [],
   approx_precisions_10: [],
   sem_approx_recalls: [],
+  sem_approx_recalls_s: [],
   sem_approx_precisions_10: [],
   approx_precisions_r: [],
   sem_approx_precisions_r: [],
@@ -738,8 +741,8 @@ function RenderEvaluation(evaluation) {
     " <span>[" + evaluation.avg_sem_approx_recall.toFixed(value_prec) +
     "]</span></td>" +
     "<td id='evaluation-2-recalls-0'>" +
-    evaluation.avg_sem_recall.toFixed(value_prec) +
-    " <span>[" + evaluation.avg_sem_approx_recall.toFixed(value_prec) +
+    evaluation.avg_sem_recall_s.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) +
     "]</span></td>" +
     "<td id='evaluation-2-prec10-0'>" +
     evaluation.avg_sem_precision_10.toFixed(value_prec) +
@@ -775,11 +778,13 @@ function RenderEvaluation(evaluation) {
     var approx_f_s = evaluation.approx_f_s[i] || 0.0;
 
     var sem_recall = evaluation.sem_recalls[i] || 0.0;
+    var sem_recall_s = evaluation.sem_recalls_s[i] || 0.0;
     var sem_precision_10 = evaluation.sem_precisions_10[i] || 0.0;
     var sem_precision_r = evaluation.sem_precisions_r[i] || 0.0;
     var sem_precision_s = evaluation.sem_precisions_s[i] || 0.0;
     var sem_f_s = evaluation.sem_f_s[i] || 0.0;
     var sem_approx_recall = evaluation.sem_approx_recalls[i] || 0.0;
+    var sem_approx_recall_s = evaluation.sem_approx_recalls_s[i] || 0.0;
     var sem_approx_precision_10 = evaluation.sem_approx_precisions_10[i] || 0.0;
     var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i] || 0.0;
     var sem_approx_precision_s = evaluation.sem_approx_precisions_s[i] || 0.0;
@@ -812,8 +817,8 @@ function RenderEvaluation(evaluation) {
       "<td>" + sem_recall.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_recall.toFixed(value_prec) +
       "]</span></td>" +
-      "<td>" + sem_recall.toFixed(value_prec) +
-      "<span class='red'> [" + sem_approx_recall.toFixed(value_prec) +
+      "<td>" + sem_recall_s.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_recall_s.toFixed(value_prec) +
       "]</span></td>" +
       "<td>" + sem_precision_10.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision_10.toFixed(value_prec) +
@@ -866,37 +871,32 @@ function MeasureStats(entities, eval) {
   }
 
   // Compute maxima and average scores, this is required for cutoff testing.
-  // There is no cutoff for semantic entities, so don't compute anything if
-  // there are no scores.
   var sem_eval = entities.length === 0 || entities[0].length === 2;
-  if (!sem_eval) {
-    var scores = [];
-    var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
-    for (var i = 0; i < entities.length; ++i) {
-      var name = entities[i][0];
-      var score = entities[i][5];
-      var filtered = entities[i][8];
-      if (!filtered && relevant[name] === 0) {
-        if (score < ex_score[0]) {
-          ex_score[0] = score;
-        }
-        if (score > ex_score[1]) {
-          ex_score[1] = score;
-        }
-        scores.push(score);
-      }
+  var scores = [];
+  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
+  for (var i = 0; i < entities.length; ++i) {
+    var filtered = !sem_eval && entities[i][8];
+    if (filtered) {
+      continue;
     }
-    var avg_score = ExpMovAvg(scores, 10);
+    var score = entities[i][1 + (!sem_eval * 4)];
+    ex_score[0] = Math.min(ex_score[0], score);
+    ex_score[1] = Math.max(ex_score[1], score);
+    scores.push(score);
   }
+  var avg_score = ExpMovAvg(scores, options.max_answer_entities);
 
   // Compute recall and precisions.
   var num_selected = 0;
   var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
-    var name = entities[i][0];
-    var score = entities[i][5];
     var filtered = entities[i][8];
-    if (!filtered && relevant[name] === 0) {
+    if (filtered) {
+      continue;
+    }
+    var name = entities[i][0];
+    var score = entities[i][1 + (!sem_eval * 4)];
+    if (relevant[name] === 0) {
       relevant[name] = rank;
       ++ret.recall;
       if (rank <= 10) {
@@ -905,23 +905,26 @@ function MeasureStats(entities, eval) {
       if (rank <= num_rel) {
         ++ret.precision_r;
       }
-      if (sem_eval || !ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
+      if (!ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
         ++ret.precision_s;
       }
     }
-    num_selected += !filtered && (sem_eval ||
-                    !ScoreCutoff(score, avg_score, ex_score[0], ex_score[1]));
-    rank += !filtered;
+    num_selected += !ScoreCutoff(score, avg_score, ex_score[0], ex_score[1]);
+    rank += 1;
   }
 
   // Compute approximate recall and precisions.
+  var num_approx_selected = 0;
   var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
+    var filtered = entities[i][8];
+    if (filtered) {
+      continue;
+    }
     var name = entities[i][0];
     var name_array = name.split(" ");
-    var score = entities[i][5];
-    var filtered = entities[i][8];
-    if (!filtered && (relevant[name] === undefined || relevant[name] > rank)) {
+    var score = entities[i][1 + (!sem_eval * 4)];
+    if (relevant[name] === undefined || relevant[name] > rank) {
       for (var j = 0; j < num_rel; ++j) {
         var truth_name = ground_truth.entities[eval][j];
         if ((relevant[truth_name] === 0 || relevant[truth_name] > rank) &&
@@ -934,23 +937,21 @@ function MeasureStats(entities, eval) {
           if (rank <= num_rel) {
             ret.approx_precision_r += prev_match > num_rel || prev_match === 0;
           }
-          if (sem_eval ||
-              !ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
-            ret.approx_precision_s += prev_match > num_selected ||
-                                      prev_match === 0;
+          if (rank <= num_selected &&
+              (!ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) &&
+              (prev_match > num_selected || prev_match === 0)) {
+            ret.approx_precision_s += 1; 
           }
           relevant[truth_name] = rank;
           break;
         }
       }
     } 
-    rank += !filtered;
+    rank += 1;
   }
 
   // Avoid division by zero.
-  if (num_selected === 0) {
-    num_selected = 1;
-  }
+  num_selected = Math.max(num_selected, 1);
 
   ret.approx_recall = (ret.recall + ret.approx_recall) / num_rel;
   ret.approx_recall_s = (ret.precision_s + ret.approx_precision_s) / num_rel;
@@ -995,18 +996,21 @@ function UpdateSemanticEvaluation(entities_, eval) {
   var m = MeasureStats(entities, eval);
 
   evaluation.sem_recalls[eval] = m.recall;
+  evaluation.sem_recalls_s[eval] = m.recall_s;
   evaluation.sem_f_s[eval] = m.f_s;
   evaluation.sem_precisions_10[eval] = m.precision_10;
   evaluation.sem_precisions_r[eval] = m.precision_r;
   evaluation.sem_precisions_s[eval] = m.precision_s;
 
   evaluation.sem_approx_recalls[eval] = m.approx_recall;
+  evaluation.sem_approx_recalls_s[eval] = m.approx_recall_s;
   evaluation.sem_approx_f_s[eval] = m.approx_f_s;
   evaluation.sem_approx_precisions_10[eval] = m.approx_precision_10;
   evaluation.sem_approx_precisions_r[eval] = m.approx_precision_r;
   evaluation.sem_approx_precisions_s[eval] = m.approx_precision_s;
 
   evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(Sum) / num_data;
+  evaluation.avg_sem_recall_s = evaluation.sem_recalls_s.reduce(Sum) / num_data;
   evaluation.avg_sem_precision_10 =
       evaluation.sem_precisions_10.reduce(Sum) / num_data;
   evaluation.avg_sem_precision_r =
@@ -1014,10 +1018,12 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.avg_sem_precision_s =
       evaluation.sem_precisions_s.reduce(Sum) / num_data;
   evaluation.avg_sem_f_s =
-      FMeasure(evaluation.avg_sem_recall, evaluation.avg_sem_precision_s);
+      FMeasure(evaluation.avg_sem_recall_s, evaluation.avg_sem_precision_s);
 
   evaluation.avg_sem_approx_recall =
       evaluation.sem_approx_recalls.reduce(Sum) / num_data;
+  evaluation.avg_sem_approx_recall_s =
+      evaluation.sem_approx_recalls_s.reduce(Sum) / num_data;
   evaluation.avg_sem_approx_precision_10 =
       evaluation.sem_approx_precisions_10.reduce(Sum) / num_data;
   evaluation.avg_sem_approx_precision_r =
@@ -1025,15 +1031,15 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.avg_sem_approx_precision_s =
       evaluation.sem_approx_precisions_s.reduce(Sum) / num_data;
   evaluation.avg_sem_approx_f_s =
-      FMeasure(evaluation.avg_sem_approx_recall,
+      FMeasure(evaluation.avg_sem_approx_recall_s,
                evaluation.avg_sem_approx_precision_s);
 
   $("#evaluation-2-recall-0").html(
       evaluation.avg_sem_recall.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_recall.toFixed(value_prec) + "]");
   $("#evaluation-2-recalls-0").html(
-      evaluation.avg_sem_recall.toFixed(value_prec) +
-      " [" + evaluation.avg_sem_approx_recall.toFixed(value_prec) + "]");
+      evaluation.avg_sem_recall_s.toFixed(value_prec) +
+      " [" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-2-prec10-0").html(
       evaluation.avg_sem_precision_10.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_precision_10.toFixed(value_prec) + "]");
@@ -1052,8 +1058,8 @@ function UpdateSemanticEvaluation(entities_, eval) {
       " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
       "]</span>");
   $("#evaluation-2-recalls-" + (eval + 1)).html(
-      m.recall.toFixed(value_prec) +
-      " <span class='red'>[" + m.approx_recall.toFixed(value_prec) +
+      m.recall_s.toFixed(value_prec) +
+      " <span class='red'>[" + m.approx_recall_s.toFixed(value_prec) +
       "]</span>");
   $("#evaluation-2-prec10-" + (eval + 1)).html(
       m.precision_10.toFixed(value_prec) +
@@ -1348,16 +1354,29 @@ function FilterEntities(entities) {
 function ExpMovAvg(scores, k) {
   k = Math.min(k, scores.length);
   var a = 2.0 / (k + 1);
-  var b = scores.length - k;
-  var ema = scores[b];
-  for (var i = b - 1; i >= 0; --i) {
-    ema = a * scores[i] + (1 - a) * ema;
+  var ema = scores[k - 1];
+  for (var i = k - 1; i >= 0; --i) {
+    ema = a * scores[i] + (1.0 - a) * ema;
   }
   return ema;
 }
 
 function UpdateSemanticEntityChart(entities) {
-  var k = Math.min(20, entities.length);
+  var k = Math.min(window.options.max_answer_entities, entities.length);
+
+  var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
+  var score_sum = 0;
+  var scores = [];
+
+  for (var i = 0; i < k; ++i) {
+    var score = parseInt(entities[i].score);
+    score_sum += score;
+    scores.push(score);
+    ex_score[0] = Math.min(ex_score[0], score);
+    ex_score[1] = Math.max(ex_score[1], score);
+  }
+  var avg_score = ExpMovAvg(scores, window.options.max_answer_entities);
+
   var array = [["Entity", "Score"]];
 
   if (k == 0) {
@@ -1372,6 +1391,9 @@ function UpdateSemanticEntityChart(entities) {
     }
     name = name.substr(beg, end - beg).ReplaceAll("_", " ");
     var score = parseInt(entities[i].score);
+    if (ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
+      break;
+    }
     array.push([name.toUpperCase(), score]); 
   }
   var data = google.visualization.arrayToDataTable(array);
@@ -1391,11 +1413,11 @@ function UpdateSemanticEntityChart(entities) {
 }
 
 function ScoreCutoff(score, avg_score, min_score, max_score) {
-  return score < avg_score * 0.7 || score < max_score * 0.3;
+  return score < (max_score - avg_score) * 0.3 + avg_score;
 }
 
 function UpdateEntityChart(entities) {
-  var k = Math.min(20, entities.length);
+  var k = Math.min(window.options.max_answer_entities, entities.length);
   
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   var ex_content_freq = [Number.MAX_VALUE, Number.MIN_VALUE];
@@ -1432,7 +1454,7 @@ function UpdateEntityChart(entities) {
   var score_div = ex_content_freq[1] / ex_score[1];
   var freq_div = ex_content_freq[1] / ex_corpus_freq[1];
   // var avg_score = score_sum / k;
-  var avg_score = ExpMovAvg(scores, 10);
+  var avg_score = ExpMovAvg(scores, window.options.max_answer_entities);
   for (var i = 0; i < k; ++i) {
     var name = entities[i][0];
     var type = entities[i][1];
