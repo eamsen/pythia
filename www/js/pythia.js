@@ -57,12 +57,13 @@ var entities = [];
 var query = null;
 
 var scoring_options = {
-  v: "0.1.6",
+  v: "0.1.7",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   cdfw: 0.25,
   sdfw: 0.25,
-  cutoff: 0.25,
+  cutoff: 0.60,
+  sem_cutoff: 0.50,
   ontology_filter: 1,
   similarity_filter: 1,
   coarse_type_filter: 1,
@@ -219,6 +220,7 @@ function InitSliders() {
   InitVSlider("cdfw", scoring_options.cdfw, SetOptionFunc("cdfw"));
   InitVSlider("sdfw", scoring_options.sdfw, SetOptionFunc("sdfw"));
   InitVSlider("cutoff", scoring_options.cutoff, SetOptionFunc("cutoff"));
+  InitVSlider("sem-cutoff", scoring_options.sem_cutoff, SetOptionFunc("sem_cutoff"));
 }
 
 function Search(query, opts) {
@@ -526,7 +528,7 @@ function TypeInfoCallback(data, status, xhr) {
       broccoli_query += ground_truth.target_keywords[data.eval].join(" ");
     }
   }
-  console.log(broccoli_query);
+  // console.log(broccoli_query);
   BroccoliSearch(broccoli_query, data.eval);
 }
 
@@ -630,7 +632,7 @@ function BroccoliSearchCallback(data, arg) {
   arg = parseInt(arg);
 
   if (data.result.status !== "OK") {
-    console.log(data);
+    console.log(data.result.status);
     return;
   }
 
@@ -907,11 +909,11 @@ function MeasureStats(entities, eval) {
       if (rank <= num_rel) {
         ++ret.precision_r;
       }
-      if (!ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
+      if (!ScoreCutoff(sem_eval, score, avg_score, ex_score[0], ex_score[1])) {
         ++ret.precision_s;
       }
     }
-    num_selected += !ScoreCutoff(score, avg_score, ex_score[0], ex_score[1]);
+    num_selected += !ScoreCutoff(sem_eval, score, avg_score, ex_score[0], ex_score[1]);
     rank += 1;
   }
 
@@ -940,7 +942,7 @@ function MeasureStats(entities, eval) {
             ret.approx_precision_r += prev_match > num_rel || prev_match === 0;
           }
           if (rank <= num_selected &&
-              (!ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) &&
+              (!ScoreCutoff(sem_eval, score, avg_score, ex_score[0], ex_score[1])) &&
               (prev_match > num_selected || prev_match === 0)) {
             ret.approx_precision_s += 1; 
           }
@@ -1360,7 +1362,7 @@ function ExpMovAvg(scores, k) {
   for (var i = k - 1; i >= 0; --i) {
     ema = a * scores[i] + (1.0 - a) * ema;
   }
-  return ema;
+  return [ema, k];
 }
 
 function UpdateSemanticEntityChart(entities) {
@@ -1393,7 +1395,7 @@ function UpdateSemanticEntityChart(entities) {
     }
     name = name.substr(beg, end - beg).ReplaceAll("_", " ");
     var score = parseInt(entities[i].score);
-    if (ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
+    if (ScoreCutoff(true, score, avg_score, ex_score[0], ex_score[1])) {
       break;
     }
     array.push([name.toUpperCase(), score]); 
@@ -1414,8 +1416,12 @@ function UpdateSemanticEntityChart(entities) {
   chart.draw(data, options);
 }
 
-function ScoreCutoff(score, avg_score, min_score, max_score) {
-  return score < (max_score - avg_score) * scoring_options.cutoff + avg_score;
+function ScoreCutoff(sem, score, avg_score, min_score, max_score) {
+  var cutoff = scoring_options.cutoff;
+  if (sem) {
+    cutoff = scoring_options.sem_cutoff;
+  }
+  return score < avg_score[0] + (2.0 * cutoff - 1.0) * (max_score - avg_score[0]);
 }
 
 function UpdateEntityChart(entities) {
@@ -1469,7 +1475,7 @@ function UpdateEntityChart(entities) {
     if (filtered) {
       continue;
     }
-    if (ScoreCutoff(score, avg_score, ex_score[0], ex_score[1])) {
+    if (ScoreCutoff(false, score, avg_score, ex_score[0], ex_score[1])) {
       break;
     }
     array.push([name.toUpperCase(), content_freq, snippet_freq,
