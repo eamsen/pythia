@@ -62,7 +62,7 @@ var scoring_options = {
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   cdfw: 0.25,
   sdfw: 0.25,
-  cutoff: 0.60,
+  cutoff: 0.64,
   sem_cutoff: 0.50,
   ontology_filter: 1,
   similarity_filter: 1,
