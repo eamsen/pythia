@@ -701,6 +701,9 @@ function EvaluateResults(init) {
 }
 
 function RenderEvaluation(evaluation) {
+  if (!options.show_evaluation) {
+    return;
+  }
   var table = "<thead><tr>" +
     "<th>Id</th>" +
     "<th>Query</th>" +
@@ -1090,6 +1093,9 @@ function UpdateSemanticEvaluation(entities_, eval) {
 }
 
 function UpdateEvaluation(data) {
+  if (!options.show_evaluation) {
+    return;
+  }
   var entities = data.entity_extraction.entity_items;
   var keywords = data.query_analysis.keywords;
   var query = data.query_analysis.keywords.slice(0).join(" ");
@@ -1533,6 +1539,9 @@ function UpdateOptions(elem, show) {
   }
   if (elem.indexOf("Evaluation") != -1) {
     options.show_evaluation = show;
+    if (show) {
+      EvaluateResults();
+    }
     return;
   }
   if (elem.indexOf("Documents") != -1) {
