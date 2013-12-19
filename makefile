@@ -16,7 +16,7 @@ LIBS:=-Llibs -L$(POCODIR)/lib\
 	$(GLOGDIR)/.libs/libglog.a $(GFLAGSDIR)/.libs/libgflags.a\
 	-lPocoJSON\
 	-lPocoNetSSL -lPocoCrypto -lPocoNet -lPocoUtil -lPocoXML -lPocoFoundation\
-	-lpthread -lrt -lssl -lcrypto
+	-lpthread -lrt -lssl -lcrypto -lunwind
 TSTFLAGS:=-O0 -Wall -g
 TSTLIBS:=$(GTESTLIBS) $(LIBS)
 BINS:=pythia
