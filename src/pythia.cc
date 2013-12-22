@@ -10,8 +10,8 @@ using std::vector;
 using std::string;
 
 DEFINE_int32(port, 55073, "Server listen port.");
-DEFINE_int32(threads, 4, "Max number of threads.");
-DEFINE_int32(queue_size, 32, "Max number of queued connections.");
+DEFINE_int32(threads, 8, "Max number of threads.");
+DEFINE_int32(queue_size, 64, "Max number of queued connections.");
 DEFINE_string(doc_path, "www", "Web documents directory.");
 
 static const char* kUsage = "Usage: ./pythia";

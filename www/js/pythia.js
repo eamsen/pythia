@@ -7,7 +7,7 @@ String.prototype.ReplaceAll = function(find, replace) {
 }
 
 var options = {
-  v: "0.1.4",
+  v: "0.1.5",
   show_performance: false,
   show_query_analysis: false,
   show_target_types: false,
@@ -18,6 +18,7 @@ var options = {
   show_entity_table: false,
   show_evaluation: false,
   show_documents: false,
+  show_log_dump: false,
   max_answer_entities: 100
 };
 
@@ -702,6 +703,33 @@ function EvaluateResults(init) {
   }
 }
 
+var eval_log = [];
+
+function LogEvaluation(eval, entities, m) {
+  var gt = ground_truth.entities[eval];
+  eval_log[eval] = [eval.toString(),
+                    m.recall_s, m.precision_s,
+                    m.approx_recall_s, m.approx_precision_s].join(",");
+  var rank = 1;
+  for (var i = 0; i < entities.length; ++i) {
+    var entity = entities[i];
+    var name = entity[0];
+    var type = entity[1];
+    var score = entity[5];
+    var answer_type = entity[9];
+    var filtered = entity[8];
+    if (filtered) {
+      continue;
+    }
+    eval_log[eval] += "," + [rank, name, score, answer_type].join(",");
+    rank += 1;
+  }
+}
+
+function DumpLog() {
+  $("#log-dump-area").html(eval_log.join(";"));
+}
+
 function RenderEvaluation(evaluation) {
   if (!options.show_evaluation) {
     return;
@@ -894,6 +922,8 @@ function MeasureStats(entities, eval) {
   var scores = [];
   var ex_score = [Number.MAX_VALUE, Number.MIN_VALUE];
   for (var i = 0; i < entities.length; ++i) {
+    // Init entity answer type to 0: none.
+    entities[i].push(0);
     var filtered = !sem_eval && entities[i][8];
     if (filtered) {
       continue;
@@ -917,6 +947,7 @@ function MeasureStats(entities, eval) {
     var score = entities[i][1 + (!sem_eval * 4)];
     if (relevant[name] === 0) {
       relevant[name] = rank;
+      entities[i][9] = 1;
       ++ret.recall;
       if (rank <= 10) {
         ++ret.precision_10;
@@ -961,6 +992,7 @@ function MeasureStats(entities, eval) {
               (prev_match > num_selected || prev_match === 0)) {
             ret.approx_precision_s += 1; 
           }
+          entities[i][9] = 2;
           relevant[truth_name] = rank;
           break;
         }
@@ -1108,6 +1140,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
     evaluation.valid = true;
     evaluation.next = 0;
     SaveSessionItem("evaluation");
+    DumpLog();
   }
 }
 
@@ -1141,6 +1174,8 @@ function UpdateEvaluation(data) {
   evaluation.approx_precisions_10[data.eval] = m.approx_precision_10;
   evaluation.approx_precisions_r[data.eval] = m.approx_precision_r;
   evaluation.approx_precisions_s[data.eval] = m.approx_precision_s;
+
+  LogEvaluation(data.eval, entities, m);
 
   if (data.eval == 0) {
     var table_init = "<thead><tr>" +
@@ -1570,12 +1605,16 @@ function UpdateOptions(elem, show) {
   if (elem.indexOf("Evaluation") != -1) {
     options.show_evaluation = show;
     if (show) {
-      EvaluateResults();
+      EvaluateResults(false);
     }
     return;
   }
   if (elem.indexOf("Documents") != -1) {
     options.show_documents = show;
+    return;
+  }
+  if (elem.indexOf("Log Dump") != -1) {
+    options.show_log_dump = show;
     return;
   }
 }
@@ -1610,6 +1649,9 @@ function UseOptions() {
   }
   if (options.show_documents) {
     $("#documents-toggle").click();
+  }
+  if (options.show_log_dump) {
+    $("#log-dump-toggle").click();
   }
 }
 
