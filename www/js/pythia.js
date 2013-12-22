@@ -708,6 +708,7 @@ var eval_log = [];
 function LogEvaluation(eval, entities, m) {
   var gt = ground_truth.entities[eval];
   eval_log[eval] = [eval.toString(),
+                    ground_truth.entities[eval].length,
                     m.recall_s, m.precision_s,
                     m.approx_recall_s, m.approx_precision_s].join(",");
   var rank = 1;
