@@ -83,16 +83,38 @@ def find_max_precision(query):
 
 
 def main():
+  epsilon = 0.0000001
   queries = parse_log(sys.argv[1]);
   # print "\n".join(map(str, queries))
   print "id\t recall\t\t prec\t\t f"
+  avg_f_ratio = [0.0, 0.0]
   for q in queries:
     best = find_max_precision(q)
-    print "%i r\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
+    f_scores = (f_score(q.select_r, q.select_p),
+                f_score(q.select_app_r, q.select_app_p))
+    f_ratio = [0.0, 0.0]
+    if best[4] < epsilon:
+      f_ratio[0] = 1.0
+    else:
+      f_ratio[0] = f_scores[0] / best[4]
+    if best[5] < epsilon:
+      f_ratio[1] = 1.0
+    else:
+      f_ratio[1] = f_scores[1] / best[5]
+    avg_f_ratio[0] += f_ratio[0]
+    avg_f_ratio[1] += f_ratio[1]
+
+    print "%i s\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
       (q.num, q.select_r, q.select_app_r, q.select_p, q.select_app_p,\
-       f_score(q.select_r, q.select_p), f_score(q.select_app_r, q.select_app_p))
-    print "%i o\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" % (q.num, best[0], best[1], best[2], best[3], best[4], best[5])
+       f_scores[0], f_scores[1])
+    print "%i o\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
+        (q.num, best[0], best[1], best[2], best[3], best[4], best[5],
+         f_ratio[0], f_ratio[1])
     print
+
+  avg_f_ratio[0] /= len(queries)
+  avg_f_ratio[1] /= len(queries)
+  print "avg\t %.2f/%.2f\n" % (avg_f_ratio[0], avg_f_ratio[1])
 
 
 if __name__ == "__main__":
