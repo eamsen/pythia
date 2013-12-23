@@ -46,9 +46,7 @@ def parse_log(path):
     return queries;
 
 def f_score(recall, prec):
-  if recall == 0.0 and prec == 0.0:
-    return 0.0
-  return 2.0 * recall * prec / (recall + prec)
+  return 2.0 * recall * prec / max(0.001, recall + prec)
 
 def find_max_precision(query):
   num_answers = query.num_answers
@@ -83,15 +81,30 @@ def find_max_precision(query):
 
 
 def main():
-  epsilon = 0.0000001
+  epsilon = 0.01
   queries = parse_log(sys.argv[1]);
   # print "\n".join(map(str, queries))
-  print "id\t recall\t\t prec\t\t f"
+  # print "id\t recall\t\t prec\t\t f"
   avg_f_ratio = [0.0, 0.0]
+  avg_f_opt = [0.0, 0.0]
+  avg_f_select = [0.0, 0.0]
+  avg_p_select = [0.0, 0.0]
+  avg_r_select = [0.0, 0.0]
   for q in queries:
     best = find_max_precision(q)
+    avg_f_opt[0] += best[4]
+    avg_f_opt[1] += best[5]
+
+    avg_p_select[0] += q.select_p
+    avg_p_select[1] += q.select_app_p
+    avg_r_select[0] += q.select_r
+    avg_r_select[1] += q.select_app_r
+
     f_scores = (f_score(q.select_r, q.select_p),
                 f_score(q.select_app_r, q.select_app_p))
+    avg_f_select[0] += f_scores[0]
+    avg_f_select[1] += f_scores[1]
+
     f_ratio = [0.0, 0.0]
     if best[4] < epsilon:
       f_ratio[0] = 1.0
@@ -104,17 +117,40 @@ def main():
     avg_f_ratio[0] += f_ratio[0]
     avg_f_ratio[1] += f_ratio[1]
 
-    print "%i s\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
-      (q.num, q.select_r, q.select_app_r, q.select_p, q.select_app_p,\
-       f_scores[0], f_scores[1])
-    print "%i o\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
-        (q.num, best[0], best[1], best[2], best[3], best[4], best[5],
-         f_ratio[0], f_ratio[1])
-    print
+    #print "%i s\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
+    #  (q.num, q.select_r, q.select_app_r, q.select_p, q.select_app_p,\
+    #   f_scores[0], f_scores[1])
+    #print "%i o\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f" %\
+    #    (q.num, best[0], best[1], best[2], best[3], best[4], best[5],
+    #     f_ratio[0], f_ratio[1])
+    #print
+
+    #     Query &$F@Opt$ &$R@S$ &$P@S$ &$F@S$ &$Q_S$\\
+    print "%i &%.2f/%.2f &%.2f/%.2f &%.2f/%.2f &%.2f/%.2f &%.2f/%.2f \\\\" %\
+      (q.num + 1, best[4], best[5], q.select_r, q.select_app_r,\
+       q.select_p, q.select_app_p, f_scores[0], f_scores[1],
+       f_ratio[0], f_ratio[1])
 
   avg_f_ratio[0] /= len(queries)
   avg_f_ratio[1] /= len(queries)
-  print "avg\t %.2f/%.2f\n" % (avg_f_ratio[0], avg_f_ratio[1])
+  avg_f_opt[0] /= len(queries)
+  avg_f_opt[1] /= len(queries)
+  avg_f_select[0] /= len(queries)
+  avg_f_select[1] /= len(queries)
+  avg_r_select[0] /= len(queries)
+  avg_r_select[1] /= len(queries)
+  avg_p_select[0] /= len(queries)
+  avg_p_select[1] /= len(queries)
+
+  avg_f_select = (f_score(avg_r_select[0], avg_p_select[0]),
+                  f_score(avg_r_select[1], avg_p_select[1]))
+  avg_f_ratio = (avg_f_select[0] / avg_f_opt[0], avg_f_select[1] / avg_f_opt[1])
+
+  print "ratio\t\t f opt\t\t f\t\t recall\t\t prec"
+  print "%.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\n" %\
+    (avg_f_ratio[0], avg_f_ratio[1], avg_f_opt[0], avg_f_opt[1],\
+     avg_f_select[0], avg_f_select[1], avg_r_select[0], avg_r_select[1],\
+     avg_p_select[0], avg_p_select[1])
 
 
 if __name__ == "__main__":

@@ -1233,6 +1233,7 @@ function UpdateEvaluation(data) {
     evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum) / num_data;
     evaluation.avg_precision_s = evaluation.precisions_s.reduce(Sum) / num_data;
     evaluation.avg_f_s = FMeasure(evaluation.avg_recall_s, evaluation.avg_precision_s);
+    // evaluation.avg_f_s = evaluation.f_s.reduce(Sum) / num_data;
 
     evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum) / num_data;
     evaluation.avg_approx_recall_s = evaluation.approx_recalls_s.reduce(Sum) / num_data;
@@ -1240,6 +1241,7 @@ function UpdateEvaluation(data) {
     evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_s = evaluation.approx_precisions_s.reduce(Sum) / num_data;
     evaluation.avg_approx_f_s = FMeasure(evaluation.avg_approx_recall_s, evaluation.avg_approx_precision_s);
+    // evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum) / num_data;
   }
   if (data.eval < num_data) {
     var query = ground_truth.queries[data.eval];
