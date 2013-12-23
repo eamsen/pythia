@@ -710,7 +710,7 @@ function LogEvaluation(eval, entities, m) {
   eval_log[eval] = [eval.toString(),
                     ground_truth.entities[eval].length,
                     m.recall_s, m.precision_s,
-                    m.approx_recall_s, m.approx_precision_s].join(",");
+                    m.approx_recall_s, m.approx_precision_s].join(", ");
   var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
     var entity = entities[i];
@@ -722,13 +722,13 @@ function LogEvaluation(eval, entities, m) {
     if (filtered) {
       continue;
     }
-    eval_log[eval] += "," + [rank, name, score, answer_type].join(",");
+    eval_log[eval] += ", " + [rank, name, score, answer_type].join(", ");
     rank += 1;
   }
 }
 
 function DumpLog() {
-  $("#log-dump-area").html(eval_log.join(";"));
+  $("#log-dump-area").html(eval_log.join("; "));
 }
 
 function RenderEvaluation(evaluation) {
