@@ -731,12 +731,20 @@ function LogEvaluation(eval, entities, m) {
     eval_log.stats[eval].push(answer_type);
     rank += 1;
   }
-  DumpLog();
+  DumpLog(eval);
 }
 
-function DumpLog() {
+function DumpLog(eval) {
   var dump = "";
-  for (var i = 0; i < eval_log.stats.length; ++i) {
+  var end = eval + 1;
+  if (eval) {
+    dump = $("#log-dump-area").html();
+  }
+  if (eval === undefined) {
+    end = eval_log.stats.length;
+    eval = 0;
+  }
+  for (var i = eval; i < end; ++i) {
     if (i > 0) {
       dump += "; ";
     }
