@@ -703,14 +703,17 @@ function EvaluateResults(init) {
   }
 }
 
-var eval_log = [];
+var eval_log = {
+  v: "0.0.1",
+  stats: [],
+};
 
 function LogEvaluation(eval, entities, m) {
   var gt = ground_truth.entities[eval];
-  eval_log[eval] = [eval.toString(),
+  eval_log.stats[eval] = [eval,
                     ground_truth.entities[eval].length,
                     m.recall_s, m.precision_s,
-                    m.approx_recall_s, m.approx_precision_s].join(", ");
+                    m.approx_recall_s, m.approx_precision_s];
   var rank = 1;
   for (var i = 0; i < entities.length; ++i) {
     var entity = entities[i];
@@ -722,13 +725,29 @@ function LogEvaluation(eval, entities, m) {
     if (filtered) {
       continue;
     }
-    eval_log[eval] += ", " + [rank, name, score, answer_type].join(", ");
+    eval_log.stats[eval].push(rank);
+    eval_log.stats[eval].push(name);
+    eval_log.stats[eval].push(score);
+    eval_log.stats[eval].push(answer_type);
     rank += 1;
   }
+  DumpLog();
 }
 
 function DumpLog() {
-  $("#log-dump-area").html(eval_log.join("; "));
+  var dump = "";
+  for (var i = 0; i < eval_log.stats.length; ++i) {
+    if (i > 0) {
+      dump += "; ";
+    }
+    for (var d = 0; d < eval_log.stats[i].length; ++d) {
+      if (d > 0) {
+        dump += ", ";
+      }
+      dump += eval_log.stats[i][d];
+    }
+  }
+  $("#log-dump-area").html(dump);
 }
 
 function RenderEvaluation(evaluation) {
@@ -1073,7 +1092,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.avg_sem_precision_s =
       evaluation.sem_precisions_s.reduce(Sum) / num_data;
   evaluation.avg_sem_f_s =
-      FMeasure(evaluation.avg_sem_recall_s, evaluation.avg_sem_precision_s);
+      evaluation.sem_f_s.reduce(Sum) / num_data;
 
   evaluation.avg_sem_approx_recall =
       evaluation.sem_approx_recalls.reduce(Sum) / num_data;
@@ -1086,8 +1105,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.avg_sem_approx_precision_s =
       evaluation.sem_approx_precisions_s.reduce(Sum) / num_data;
   evaluation.avg_sem_approx_f_s =
-      FMeasure(evaluation.avg_sem_approx_recall_s,
-               evaluation.avg_sem_approx_precision_s);
+      evaluation.sem_approx_f_s.reduce(Sum) / num_data;
 
   $("#evaluation-2-gt-0").html(
       evaluation.avg_num_answers.toFixed(value_prec));
@@ -1141,6 +1159,7 @@ function UpdateSemanticEvaluation(entities_, eval) {
     evaluation.valid = true;
     evaluation.next = 0;
     SaveSessionItem("evaluation");
+    SaveSessionItem("eval_log");
     DumpLog();
   }
 }
@@ -1232,16 +1251,16 @@ function UpdateEvaluation(data) {
     evaluation.avg_precision_10 = evaluation.precisions_10.reduce(Sum) / num_data;
     evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum) / num_data;
     evaluation.avg_precision_s = evaluation.precisions_s.reduce(Sum) / num_data;
-    evaluation.avg_f_s = FMeasure(evaluation.avg_recall_s, evaluation.avg_precision_s);
-    // evaluation.avg_f_s = evaluation.f_s.reduce(Sum) / num_data;
+    // evaluation.avg_f_s = FMeasure(evaluation.avg_recall_s, evaluation.avg_precision_s);
+    evaluation.avg_f_s = evaluation.f_s.reduce(Sum) / num_data;
 
     evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum) / num_data;
     evaluation.avg_approx_recall_s = evaluation.approx_recalls_s.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
     evaluation.avg_approx_precision_s = evaluation.approx_precisions_s.reduce(Sum) / num_data;
-    evaluation.avg_approx_f_s = FMeasure(evaluation.avg_approx_recall_s, evaluation.avg_approx_precision_s);
-    // evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum) / num_data;
+    // evaluation.avg_approx_f_s = FMeasure(evaluation.avg_approx_recall_s, evaluation.avg_approx_precision_s);
+    evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum) / num_data;
   }
   if (data.eval < num_data) {
     var query = ground_truth.queries[data.eval];
@@ -1686,6 +1705,8 @@ $(document).ready(
     LoadCookie("options");
     LoadCookie("scoring_options");
     LoadSessionItem("evaluation");
+    LoadSessionItem("eval_log");
+    DumpLog();
     UseOptions();
     InitSliders();
 

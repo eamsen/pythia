@@ -142,9 +142,9 @@ def main():
   avg_p_select[0] /= len(queries)
   avg_p_select[1] /= len(queries)
 
-  avg_f_select = (f_score(avg_r_select[0], avg_p_select[0]),
-                  f_score(avg_r_select[1], avg_p_select[1]))
-  avg_f_ratio = (avg_f_select[0] / avg_f_opt[0], avg_f_select[1] / avg_f_opt[1])
+  # avg_f_select = (f_score(avg_r_select[0], avg_p_select[0]),
+  #                 f_score(avg_r_select[1], avg_p_select[1]))
+  # avg_f_ratio = (avg_f_select[0] / avg_f_opt[0], avg_f_select[1] / avg_f_opt[1])
 
   print "ratio\t\t f opt\t\t f\t\t recall\t\t prec"
   print "%.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\n" %\
