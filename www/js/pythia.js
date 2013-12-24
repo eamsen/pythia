@@ -748,6 +748,9 @@ function DumpLog(eval) {
     if (i > 0) {
       dump += "; ";
     }
+    if (!eval_log.stats[i]) {
+      eval_log.stats[i] = [];
+    }
     for (var d = 0; d < eval_log.stats[i].length; ++d) {
       if (d > 0) {
         dump += ", ";
