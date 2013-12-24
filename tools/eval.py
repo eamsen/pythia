@@ -45,8 +45,9 @@ def parse_log(path):
       queries.append(parse_query(r.split(",")))
     return queries;
 
-def f_score(recall, prec):
-  return 2.0 * recall * prec / max(0.001, recall + prec)
+def f_score(recall, prec, a=1.0):
+  a *= a
+  return (a + 1.0) * recall * prec / max(0.001, a * prec + recall)
 
 def find_max_precision(query):
   num_answers = query.num_answers
