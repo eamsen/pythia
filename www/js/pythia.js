@@ -58,14 +58,14 @@ var entities = [];
 var query = null;
 
 var scoring_options = {
-  v: "0.1.8",
+  v: "0.1.9",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.34],
   cdfw: 0.25,
   sdfw: 0.60,
   cutoff: 0.64,
   sem_cutoff: 0.50,
-  ontology_filter: 1,
+  ontology_filter: 0,
   similarity_filter: 1,
   coarse_type_filter: 1,
   yago_type_filter: 0,
@@ -1421,9 +1421,12 @@ function SortEntities(entities, i) {
 
 function FilterEntities(entities) {
   if (scoring_options.coarse_type_filter) {
-    var k = Math.min(10, entities.length);
+    // Filter by coarse type as provided by the backend.
+    var k = Math.min(options.max_answer_entities, entities.length);
     var type_scores = {misc: -0.1};
-    var best_type = [Number.MIN_VALUE, "unknown"];
+    // Find the two most frequent types.
+    var best_types = [[Number.MIN_VALUE, "unknown"],
+                      [Number.MIN_VALUE, "unknown"]];
     for (var i = 0; i < k; ++i) {
       var entity = entities[i];
       var name = entity[0];
@@ -1439,12 +1442,26 @@ function FilterEntities(entities) {
         type_scores[type] = 0;
       }
       type_scores[type] += Math.log(score + 1) * (score + 0.5);
-      if (type_scores[type] > best_type[0]) {
-        best_type[0] = type_scores[type];
-        best_type[1] = type;
+      if (type_scores[type] > best_types[0][0]) {
+        if (type != best_types[0][1]) {
+          best_types[1][0] = best_types[0][0];
+          best_types[1][1] = best_types[0][1];
+        }
+        best_types[0][0] = type_scores[type];
+        best_types[0][1] = type;
+      } else if (type != best_types[0][1] &&
+                 type_scores[type] > best_types[1][0]) {
+        best_types[1][0] = type_scores[type];
+        best_types[1][1] = type;
       }
     }
-    for (var i = 0; i < k; ++i) {
+    if (best_types[0][0] * 0.5 > best_types[1][0]) {
+      // Use only the best type if the scores of second best are not
+      // sufficiently close.
+      best_types[1][0] = best_types[0][0];
+      best_types[1][1] = best_types[0][1];
+    }
+    for (var i = 0; i < entities.length; ++i) {
       var entity = entities[i];
       var name = entity[0];
       var type = entity[1];
@@ -1452,7 +1469,8 @@ function FilterEntities(entities) {
       if (filtered) {
         continue;
       }
-      if (type != best_type[1]) {
+      if (type != best_types[0][1] && type != best_types[1][1]) {
+        // Filter on type mismatch.
         entity[8] = true;
       }
     }
