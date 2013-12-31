@@ -881,7 +881,7 @@ function RenderEvaluation(evaluation) {
     var sem_f_s = evaluation.sem_f_s[i] || 0.0;
     var sem_approx_recall = evaluation.sem_approx_recalls[i] || 0.0;
     var sem_approx_recall_s = evaluation.sem_approx_recalls_s[i] || 0.0;
-    var sem_approx_precision0 = evaluation.sem_approx_precisions[i] || 0.0;
+    var sem_approx_precision = evaluation.sem_approx_precisions[i] || 0.0;
     var sem_approx_precision_10 = evaluation.sem_approx_precisions_10[i] || 0.0;
     var sem_approx_precision_r = evaluation.sem_approx_precisions_r[i] || 0.0;
     var sem_approx_precision_s = evaluation.sem_approx_precisions_s[i] || 0.0;
