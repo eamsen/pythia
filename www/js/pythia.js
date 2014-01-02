@@ -1129,34 +1129,34 @@ function UpdateSemanticEvaluation(entities_, eval) {
   evaluation.sem_approx_precisions_r[eval] = m.approx_precision_r;
   evaluation.sem_approx_precisions_s[eval] = m.approx_precision_s;
 
-  evaluation.avg_num_answers = evaluation.num_answers.reduce(Sum) / num_data;
-  evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(Sum) / num_data;
-  evaluation.avg_sem_recall_s = evaluation.sem_recalls_s.reduce(Sum) / num_data;
+  evaluation.avg_num_answers = evaluation.num_answers.reduce(Sum, 0) / num_data;
+  evaluation.avg_sem_recall = evaluation.sem_recalls.reduce(Sum, 0) / num_data;
+  evaluation.avg_sem_recall_s = evaluation.sem_recalls_s.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_precision =
-      evaluation.sem_precisions.reduce(Sum) / num_data;
+      evaluation.sem_precisions.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_precision_10 =
-      evaluation.sem_precisions_10.reduce(Sum) / num_data;
+      evaluation.sem_precisions_10.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_precision_r =
-      evaluation.sem_precisions_r.reduce(Sum) / num_data;
+      evaluation.sem_precisions_r.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_precision_s =
-      evaluation.sem_precisions_s.reduce(Sum) / num_data;
+      evaluation.sem_precisions_s.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_f_s =
-      evaluation.sem_f_s.reduce(Sum) / num_data;
+      evaluation.sem_f_s.reduce(Sum, 0) / num_data;
 
   evaluation.avg_sem_approx_recall =
-      evaluation.sem_approx_recalls.reduce(Sum) / num_data;
+      evaluation.sem_approx_recalls.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_recall_s =
-      evaluation.sem_approx_recalls_s.reduce(Sum) / num_data;
+      evaluation.sem_approx_recalls_s.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_precision =
-      evaluation.sem_approx_precisions.reduce(Sum) / num_data;
+      evaluation.sem_approx_precisions.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_precision_10 =
-      evaluation.sem_approx_precisions_10.reduce(Sum) / num_data;
+      evaluation.sem_approx_precisions_10.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_precision_r =
-      evaluation.sem_approx_precisions_r.reduce(Sum) / num_data;
+      evaluation.sem_approx_precisions_r.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_precision_s =
-      evaluation.sem_approx_precisions_s.reduce(Sum) / num_data;
+      evaluation.sem_approx_precisions_s.reduce(Sum, 0) / num_data;
   evaluation.avg_sem_approx_f_s =
-      evaluation.sem_approx_f_s.reduce(Sum) / num_data;
+      evaluation.sem_approx_f_s.reduce(Sum, 0) / num_data;
 
   $("#evaluation-2-gt-0").html(
       evaluation.avg_num_answers.toFixed(value_prec));
@@ -1310,24 +1310,24 @@ function UpdateEvaluation(data) {
       "</tr></tbody>";
     $("#evaluation-table").html(table_init);
   } else {
-    evaluation.avg_num_answers = evaluation.num_answers.reduce(Sum) / num_data;
-    evaluation.avg_recall = evaluation.recalls.reduce(Sum) / num_data;
-    evaluation.avg_recall_s = evaluation.recalls_s.reduce(Sum) / num_data;
-    evaluation.avg_precision = evaluation.precisions.reduce(Sum) / num_data;
-    evaluation.avg_precision_10 = evaluation.precisions_10.reduce(Sum) / num_data;
-    evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum) / num_data;
-    evaluation.avg_precision_s = evaluation.precisions_s.reduce(Sum) / num_data;
+    evaluation.avg_num_answers = evaluation.num_answers.reduce(Sum, 0) / num_data;
+    evaluation.avg_recall = evaluation.recalls.reduce(Sum, 0) / num_data;
+    evaluation.avg_recall_s = evaluation.recalls_s.reduce(Sum, 0) / num_data;
+    evaluation.avg_precision = evaluation.precisions.reduce(Sum, 0) / num_data;
+    evaluation.avg_precision_10 = evaluation.precisions_10.reduce(Sum, 0) / num_data;
+    evaluation.avg_precision_r = evaluation.precisions_r.reduce(Sum, 0) / num_data;
+    evaluation.avg_precision_s = evaluation.precisions_s.reduce(Sum, 0) / num_data;
     // evaluation.avg_f_s = FMeasure(evaluation.avg_recall_s, evaluation.avg_precision_s);
-    evaluation.avg_f_s = evaluation.f_s.reduce(Sum) / num_data;
+    evaluation.avg_f_s = evaluation.f_s.reduce(Sum, 0) / num_data;
 
-    evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum) / num_data;
-    evaluation.avg_approx_recall_s = evaluation.approx_recalls_s.reduce(Sum) / num_data;
-    evaluation.avg_approx_precision = evaluation.approx_precisions.reduce(Sum) / num_data;
-    evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(Sum) / num_data;
-    evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum) / num_data;
-    evaluation.avg_approx_precision_s = evaluation.approx_precisions_s.reduce(Sum) / num_data;
+    evaluation.avg_approx_recall = evaluation.approx_recalls.reduce(Sum, 0) / num_data;
+    evaluation.avg_approx_recall_s = evaluation.approx_recalls_s.reduce(Sum, 0) / num_data;
+    evaluation.avg_approx_precision = evaluation.approx_precisions.reduce(Sum, 0) / num_data;
+    evaluation.avg_approx_precision_10 = evaluation.approx_precisions_10.reduce(Sum, 0) / num_data;
+    evaluation.avg_approx_precision_r = evaluation.approx_precisions_r.reduce(Sum, 0) / num_data;
+    evaluation.avg_approx_precision_s = evaluation.approx_precisions_s.reduce(Sum, 0) / num_data;
     // evaluation.avg_approx_f_s = FMeasure(evaluation.avg_approx_recall_s, evaluation.avg_approx_precision_s);
-    evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum) / num_data;
+    evaluation.avg_approx_f_s = evaluation.approx_f_s.reduce(Sum, 0) / num_data;
   }
   if (data.eval < num_data) {
     var query = ground_truth.queries[data.eval];
