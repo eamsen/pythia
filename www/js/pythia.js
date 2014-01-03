@@ -779,9 +779,9 @@ function RenderEvaluation(evaluation) {
     "<th>GT</th>" +
     "<th>Recall</th>" +
     "<th>Prec</th>" +
-    "<th>Recall@S</th>" +
     "<th>Prec@10</th>" +
     "<th>Prec@R</th>" +
+    "<th>Recall@S</th>" +
     "<th>Prec@S</th>" +
     "<th>F@S</th>" +
     "</tr></thead><tbody>" +
@@ -798,10 +798,6 @@ function RenderEvaluation(evaluation) {
     evaluation.avg_precision.toFixed(value_prec) +
     " <span>[" + evaluation.avg_approx_precision.toFixed(value_prec) +
     "]</span></td>" +
-    "<td id='evaluation-1-recalls-0'>" +
-    evaluation.avg_recall_s.toFixed(value_prec) +
-    " <span>[" + evaluation.avg_approx_recall_s.toFixed(value_prec) +
-    "]</span></td>" +
     "<td id='evaluation-1-prec10-0'>" +
     evaluation.avg_precision_10.toFixed(value_prec) +
     " <span>[" + evaluation.avg_approx_precision_10.toFixed(value_prec) +
@@ -809,6 +805,10 @@ function RenderEvaluation(evaluation) {
     "<td id='evaluation-1-precr-0'>" +
     evaluation.avg_precision_r.toFixed(value_prec) +
     " <span>[" + evaluation.avg_approx_precision_r.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td id='evaluation-1-recalls-0'>" +
+    evaluation.avg_recall_s.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_approx_recall_s.toFixed(value_prec) +
     "]</span></td>" +
     "<td id='evaluation-1-precs-0'>" +
     evaluation.avg_precision_s.toFixed(value_prec) +
@@ -832,10 +832,6 @@ function RenderEvaluation(evaluation) {
     evaluation.avg_sem_precision.toFixed(value_prec) +
     " <span>[" + evaluation.avg_sem_approx_precision.toFixed(value_prec) +
     "]</span></td>" +
-    "<td id='evaluation-2-recalls-0'>" +
-    evaluation.avg_sem_recall_s.toFixed(value_prec) +
-    " <span>[" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) +
-    "]</span></td>" +
     "<td id='evaluation-2-prec10-0'>" +
     evaluation.avg_sem_precision_10.toFixed(value_prec) +
     " <span>[" + evaluation.avg_sem_approx_precision_10.toFixed(value_prec) +
@@ -843,6 +839,10 @@ function RenderEvaluation(evaluation) {
     "<td id='evaluation-2-precr-0'>" +
     evaluation.avg_sem_precision_r.toFixed(value_prec) +
     " <span>[" + evaluation.avg_sem_approx_precision_r.toFixed(value_prec) +
+    "]</span></td>" +
+    "<td id='evaluation-2-recalls-0'>" +
+    evaluation.avg_sem_recall_s.toFixed(value_prec) +
+    " <span>[" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) +
     "]</span></td>" +
     "<td id='evaluation-2-precs-0'>" +
     evaluation.avg_sem_precision_s.toFixed(value_prec) +
@@ -897,14 +897,14 @@ function RenderEvaluation(evaluation) {
       "<td>" + precision.toFixed(value_prec) +
       "<span class='red'> [" + approx_precision.toFixed(value_prec) +
       "]</span></td>" +
-      "<td>" + recall_s.toFixed(value_prec) +
-      "<span class='red'> [" + approx_recall_s.toFixed(value_prec) +
-      "]</span></td>" +
       "<td>" + precision_10.toFixed(value_prec) +
       "<span class='red'> [" + approx_precision_10.toFixed(value_prec) +
       "]</span></td>" +
       "<td>" + precision_r.toFixed(value_prec) +
       "<span class='red'> [" + approx_precision_r.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + recall_s.toFixed(value_prec) +
+      "<span class='red'> [" + approx_recall_s.toFixed(value_prec) +
       "]</span></td>" +
       "<td>" + precision_s.toFixed(value_prec) +
       "<span class='red'> [" + approx_precision_s.toFixed(value_prec) +
@@ -922,14 +922,14 @@ function RenderEvaluation(evaluation) {
       "<td>" + sem_precision.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision.toFixed(value_prec) +
       "]</span></td>" +
-      "<td>" + sem_recall_s.toFixed(value_prec) +
-      "<span class='red'> [" + sem_approx_recall_s.toFixed(value_prec) +
-      "]</span></td>" +
       "<td>" + sem_precision_10.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision_10.toFixed(value_prec) +
       "]</span></td>" +
       "<td>" + sem_precision_r.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision_r.toFixed(value_prec) +
+      "]</span></td>" +
+      "<td>" + sem_recall_s.toFixed(value_prec) +
+      "<span class='red'> [" + sem_approx_recall_s.toFixed(value_prec) +
       "]</span></td>" +
       "<td>" + sem_precision_s.toFixed(value_prec) +
       "<span class='red'> [" + sem_approx_precision_s.toFixed(value_prec) +
@@ -1166,15 +1166,15 @@ function UpdateSemanticEvaluation(entities_, eval) {
   $("#evaluation-2-prec-0").html(
       evaluation.avg_sem_precision.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_precision.toFixed(value_prec) + "]");
-  $("#evaluation-2-recalls-0").html(
-      evaluation.avg_sem_recall_s.toFixed(value_prec) +
-      " [" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-2-prec10-0").html(
       evaluation.avg_sem_precision_10.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_precision_10.toFixed(value_prec) + "]");
   $("#evaluation-2-precr-0").html(
       evaluation.avg_sem_precision_r.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_precision_r.toFixed(value_prec) + "]");
+  $("#evaluation-2-recalls-0").html(
+      evaluation.avg_sem_recall_s.toFixed(value_prec) +
+      " [" + evaluation.avg_sem_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-2-precs-0").html(
       evaluation.avg_sem_precision_s.toFixed(value_prec) +
       " [" + evaluation.avg_sem_approx_precision_s.toFixed(value_prec) + "]");
@@ -1192,10 +1192,6 @@ function UpdateSemanticEvaluation(entities_, eval) {
       m.precision.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision.toFixed(value_prec) +
       "]</span>");
-  $("#evaluation-2-recalls-" + (eval + 1)).html(
-      m.recall_s.toFixed(value_prec) +
-      " <span class='red'>[" + m.approx_recall_s.toFixed(value_prec) +
-      "]</span>");
   $("#evaluation-2-prec10-" + (eval + 1)).html(
       m.precision_10.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_10.toFixed(value_prec) +
@@ -1203,6 +1199,10 @@ function UpdateSemanticEvaluation(entities_, eval) {
   $("#evaluation-2-precr-" + (eval + 1)).html(
       m.precision_r.toFixed(value_prec) +
       " <span class='red'>[" + m.approx_precision_r.toFixed(value_prec) +
+      "]</span>");
+  $("#evaluation-2-recalls-" + (eval + 1)).html(
+      m.recall_s.toFixed(value_prec) +
+      " <span class='red'>[" + m.approx_recall_s.toFixed(value_prec) +
       "]</span>");
   $("#evaluation-2-precs-" + (eval + 1)).html(
       m.precision_s.toFixed(value_prec) +
@@ -1264,9 +1264,9 @@ function UpdateEvaluation(data) {
       "<th>GT</th>" +
       "<th>Recall</th>" +
       "<th>Prec</th>" +
-      "<th>Recall@S</th>" +
       "<th>Prec@10</th>" +
       "<th>Prec@R</th>" +
+      "<th>Recall@S</th>" +
       "<th>Prec@S</th>" +
       "<th>F@S</th>" +
       "</tr></thead><tbody>" +
@@ -1278,11 +1278,11 @@ function UpdateEvaluation(data) {
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-1-prec-0'>0.00" +
       " <span>[0.00]</span></td>" +
-      "<td id='evaluation-1-recalls-0'>0.00" +
-      " <span>[0.00]</span></td>" +
       "<td id='evaluation-1-prec10-0'>0.00" +
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-1-precr-0'>0.00" +
+      " <span>[0.00]</span></td>" +
+      "<td id='evaluation-1-recalls-0'>0.00" +
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-1-precs-0'>0.00" +
       " <span>[0.00]</span></td>" +
@@ -1297,11 +1297,11 @@ function UpdateEvaluation(data) {
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-prec-0'>0.00" +
       " <span>[0.00]</span></td>" +
-      "<td id='evaluation-2-recalls-0'>0.00" +
-      " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-prec10-0'>0.00" +
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-precr-0'>0.00" +
+      " <span>[0.00]</span></td>" +
+      "<td id='evaluation-2-recalls-0'>0.00" +
       " <span>[0.00]</span></td>" +
       "<td id='evaluation-2-precs-0'>0.00" +
       " <span>[0.00]</span></td>" +
@@ -1340,12 +1340,12 @@ function UpdateEvaluation(data) {
       "<span class='red'> [" + m.approx_recall.toFixed(value_prec) + "]</span></td>" +
       "<td>" + m.precision.toFixed(value_prec) +
       "<span class='red'> [" + m.approx_precision.toFixed(value_prec) + "]</span></td>" +
-      "<td>" + m.recall_s.toFixed(value_prec) +
-      "<span class='red'> [" + m.approx_recall_s.toFixed(value_prec) + "]</span></td>" +
       "<td>" + m.precision_10.toFixed(value_prec) +
       "<span class='red'> [" + m.approx_precision_10.toFixed(value_prec) + "]</span></td>" +
       "<td>" + m.precision_r.toFixed(value_prec) +
       "<span class='red'> [" + m.approx_precision_r.toFixed(value_prec) + "]</span></td>" +
+      "<td>" + m.recall_s.toFixed(value_prec) +
+      "<span class='red'> [" + m.approx_recall_s.toFixed(value_prec) + "]</span></td>" +
       "<td>" + m.precision_s.toFixed(value_prec) +
       "<span class='red'> [" + m.approx_precision_s.toFixed(value_prec) + "]</span></td>" +
       "<td>" + m.f_s.toFixed(value_prec) +
@@ -1358,11 +1358,11 @@ function UpdateEvaluation(data) {
       " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-prec-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
-      "<td id='evaluation-2-recalls-" + (data.eval + 1) + "'>0.00" + 
-      " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-prec10-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-precr-" + (data.eval + 1) + "'>0.00" + 
+      " <span class='red'>[0.00]</span></td>" +
+      "<td id='evaluation-2-recalls-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
       "<td id='evaluation-2-precs-" + (data.eval + 1) + "'>0.00" + 
       " <span class='red'>[0.00]</span></td>" +
@@ -1379,15 +1379,15 @@ function UpdateEvaluation(data) {
   $("#evaluation-1-prec-0").html(
       evaluation.avg_precision.toFixed(value_prec) +
       " [" + evaluation.avg_approx_precision.toFixed(value_prec) + "]");
-  $("#evaluation-1-recalls-0").html(
-      evaluation.avg_recall_s.toFixed(value_prec) +
-      " [" + evaluation.avg_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-1-prec10-0").html(
       evaluation.avg_precision_10.toFixed(value_prec) +
       " [" + evaluation.avg_approx_precision_10.toFixed(value_prec) + "]");
   $("#evaluation-1-precr-0").html(
       evaluation.avg_precision_r.toFixed(value_prec) +
       " [" + evaluation.avg_approx_precision_r.toFixed(value_prec) + "]");
+  $("#evaluation-1-recalls-0").html(
+      evaluation.avg_recall_s.toFixed(value_prec) +
+      " [" + evaluation.avg_approx_recall_s.toFixed(value_prec) + "]");
   $("#evaluation-1-precs-0").html(
       evaluation.avg_precision_s.toFixed(value_prec) +
       " [" + evaluation.avg_approx_precision_s.toFixed(value_prec) + "]");
