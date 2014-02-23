@@ -58,7 +58,7 @@ var entities = [];
 var query = null;
 
 var scoring_options = {
-  v: "0.1.9",
+  v: "0.1.10",
   cfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.30],
   sfw: [0.6, 0.58, 0.55, 0.53, 0.5, 0.48, 0.45, 0.43, 0.4, 0.38, 0.34],
   cdfw: 0.25,
@@ -70,7 +70,7 @@ var scoring_options = {
   coarse_type_filter: 1,
   yago_type_filter: 0,
   fb_type_filter: 0,
-  entity_clustering: 0,
+  entity_clustering: 1,
 };
 
 var ground_truth = {
@@ -293,7 +293,7 @@ function PrefixEditDistance(prefix, word) {
   return min_dist;
 }
 
-function MergeEntities(e1, e2) {
+function MergeEntitiesOld(e1, e2) {
   var e = [];
   var num_words1 = e1[0].split(" ").length;
   var num_words2 = e2[0].split(" ").length;
@@ -314,6 +314,42 @@ function MergeEntities(e1, e2) {
   e[5] = e1[5] + e2[5];
   e[6] = e1[6].concat(e2[6]);
   e[7] = e1[7].concat(e2[7]);
+  return e; 
+}
+
+function MergeEntities(e1, e2) {
+  var type_ranks = {"misc": 0, "organization": 1, "location": 2, "person": 3};
+  var e = [];
+  var e1split = e1[0].split(" ");
+  var e2split = e2[0].split(" ");
+  var nw1 = e1split.length;
+  var nw2 = e2split.length;
+  e[0] = e2[0];
+  e[1] = e2[1];
+  e[6] = e2[6];
+  e[7] = e2[7];
+  if (e1[2] >= e2[2] || (nw1 >= nw2 || type_ranks[e1[1]] >= type_ranks[e2[1]])) {
+    e[0] = e1[0];
+    e[1] = e1[1];
+    e[6] = e1[6];
+    e[7] = e1[7];
+  }
+  // var esplit = e[0].split(" ");
+  // // Fill out missing name parts.
+  // if (e[1] == "person" && esplit.length < 2) {
+  //   if (nw1 > 1 && nw1 < 4 &&
+  //       (e1split[0][0] == esplit[0][0] || e1split[0][nw1-1] == esplit[0][0])) {
+  //     e[0] = e1[0];
+  //   }
+  //   if (nw2 > 1 && nw2 < 4 &&
+  //       (e2split[0][0] == esplit[0][0] || e2split[0][nw2-1] == esplit[0][0])) {
+  //     e[0] = e2split[0];
+  //   }
+  // }
+  e[2] = Math.max(e1[2], e2[2]);
+  e[3] = Math.max(e1[3], e2[3]);
+  e[4] = Math.max(e1[4], e2[4]);
+  e[5] = Math.max(e1[5], e2[5]);
   return e; 
 }
 
@@ -1692,7 +1728,7 @@ function UpdateOptions(elem, show) {
     options.show_query_analysis = show;
     return;
   }
-  if (elem.indexOf("Target Types") != -1) {
+  if (elem.indexOf("Semantic Answer Types") != -1) {
     options.show_target_types = show;
     return;
   }
@@ -1700,7 +1736,7 @@ function UpdateOptions(elem, show) {
     options.show_semantic_query = show;
     return;
   }
-  if (elem.indexOf("Semantic Entity Chart") != -1) {
+  if (elem.indexOf("Semantic Entity Selection") != -1) {
     options.show_semantic_entity_chart = show;
     return;
   }
@@ -1708,7 +1744,7 @@ function UpdateOptions(elem, show) {
     options.show_scoring = show;
     return;
   }
-  if (elem.indexOf("Entity Selection Chart") != -1) {
+  if (elem.indexOf("Entity Selection") != -1) {
     options.show_entity_chart = show;
     return;
   }
@@ -1727,7 +1763,7 @@ function UpdateOptions(elem, show) {
     options.show_documents = show;
     return;
   }
-  if (elem.indexOf("Log Dump") != -1) {
+  if (elem.indexOf("Log") != -1) {
     options.show_log_dump = show;
     return;
   }

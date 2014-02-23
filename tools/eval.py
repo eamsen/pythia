@@ -147,10 +147,12 @@ def main():
   #                 f_score(avg_r_select[1], avg_p_select[1]))
   # avg_f_ratio = (avg_f_select[0] / avg_f_opt[0], avg_f_select[1] / avg_f_opt[1])
 
-  print "ratio\t\t f opt\t\t f\t\t recall\t\t prec"
+  print "Q\t\t F@S opt\t F@S\t\t R@S\t\t P@S"
   print "%.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\t %.2f/%.2f\n" %\
-    (avg_f_ratio[0], avg_f_ratio[1], avg_f_opt[0], avg_f_opt[1],\
-     avg_f_select[0], avg_f_select[1], avg_r_select[0], avg_r_select[1],\
+    (avg_f_ratio[0], avg_f_ratio[1],\
+     avg_f_opt[0], avg_f_opt[1],\
+     avg_f_select[0], avg_f_select[1],\
+     avg_r_select[0], avg_r_select[1],\
      avg_p_select[0], avg_p_select[1])
 
 
